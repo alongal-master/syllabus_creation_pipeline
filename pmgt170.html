@@ -1,0 +1,1711 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Syllabus Creation Pipeline — PMGT170 Visual</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,600;0,9..40,700;1,9..40,400&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #f6f8fa;
+      --bg-warm: #eaeef2;
+      --surface: #ffffff;
+      --surface2: #eaeef2;
+      --border: #d0d7de;
+      --text: #1f2328;
+      --muted: #656d76;
+      --accent-setup: #1a7f37;
+      --accent-agent1: #0969da;
+      --accent-agent2: #8250df;
+      --accent-generator: #0550ae;
+      --accent-validator: #bf3989;
+      --accent-orchestrator: #9a6700;
+      --pass: #1a7f37;
+      --fail: #cf222e;
+      --font-sans: "DM Sans", ui-sans-serif, system-ui, sans-serif;
+      --radius: 14px;
+      --shadow: 0 2px 12px rgba(31,35,40,.08);
+      --shadow-hover: 0 8px 24px rgba(31,35,40,.12);
+      /* Pillar highlight backgrounds */
+      --pillar-arc-bg: #eef5ff;
+      --pillar-arc-border: #9ec8ff;
+      --pillar-generation-bg: #e6ffec;
+      --pillar-generation-border: #7ee787;
+      --pillar-validation-bg: #fff0f6;
+      --pillar-validation-border: #ff9ecd;
+      --header-offset: 180px;
+    }
+    * { box-sizing: border-box; }
+    html {
+      scroll-behavior: smooth;
+      scroll-padding-top: calc(var(--header-offset) + 0.75rem);
+    }
+    body {
+      margin: 0;
+      font-family: var(--font-sans);
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.55;
+      min-height: 100vh;
+    }
+    .landing-section {
+      width: 100%;
+      padding: 3rem 1.25rem 4rem;
+      scroll-margin-top: 0;
+    }
+    .landing-section .section-inner {
+      max-width: 680px;
+      margin: 0 auto;
+    }
+    .landing-section .section-heading {
+      margin: 0 0 2rem;
+      font-size: 1.35rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      scroll-margin-top: calc(var(--header-offset) + 0.75rem);
+    }
+    .landing-section.arc {
+      background: linear-gradient(180deg, #eef5ff 0%, #dbeafe 50%, #eef5ff 100%);
+      color: #1e3a5f;
+    }
+    .landing-section.arc .section-heading { color: #1e40af; }
+    .landing-section.arc .muted-override { color: #3b5998; }
+    .landing-section.generation {
+      background: linear-gradient(180deg, #ecfdf5 0%, #d1fae5 50%, #ecfdf5 100%);
+      color: #14532d;
+    }
+    .landing-section.generation .section-heading { color: #047857; }
+    .landing-section.generation .muted-override { color: #065f46; }
+    .landing-section.validation {
+      background: linear-gradient(180deg, #fdf2f8 0%, #fce7f3 50%, #fdf2f8 100%);
+      color: #831843;
+    }
+    .landing-section.validation .section-heading { color: #9d174d; }
+    .landing-section.validation .muted-override { color: #831843; }
+    .landing-section.revision {
+      background: linear-gradient(180deg, #fffbeb 0%, #fef3c7 50%, #fffbeb 100%);
+      color: #78350f;
+    }
+    .landing-section.revision .section-heading { color: #b45309; }
+    .landing-section.revision .muted-override { color: #92400e; }
+    .landing-section.revision .info-block {
+      background: rgba(180,83,9,.08);
+      border-color: rgba(180,83,9,.2);
+    }
+    .landing-section.revision .info-block .info-icon {
+      background: rgba(180,83,9,.2);
+      color: #b45309;
+    }
+    .landing-section.revision .stop-card { border-color: rgba(180,83,9,.25); }
+    .landing-section.revision table,
+    .landing-section.revision .content,
+    .landing-section.revision .info-content { color: var(--text); }
+    .landing-section.final-syllabus {
+      background: linear-gradient(180deg, #f0fdf4 0%, #dcfce7 50%, #f0fdf4 100%);
+      color: #14532d;
+    }
+    .landing-section.final-syllabus .section-heading { color: #15803d; }
+    .landing-section.final-syllabus .muted-override { color: #166534; }
+    .landing-section.final-syllabus .info-block {
+      background: rgba(21,128,61,.08);
+      border-color: rgba(21,128,61,.2);
+    }
+    .landing-section.final-syllabus .info-block .info-icon {
+      background: rgba(21,128,61,.2);
+      color: #15803d;
+    }
+    .landing-section.final-syllabus table,
+    .landing-section.final-syllabus .content,
+    .landing-section.final-syllabus .info-content { color: var(--text); }
+    .page-header {
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+      background: rgba(255,255,255,.82);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      border-bottom: 1px solid var(--border);
+      padding: 1rem 1.25rem 0.8rem;
+      text-align: center;
+      box-shadow: 0 6px 18px rgba(31,35,40,.08);
+    }
+    .page-header h1 {
+      margin: 0;
+      font-size: 1.35rem;
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.35rem;
+    }
+    .page-header .sub {
+      margin: 0.25rem 0 0;
+      color: var(--muted);
+      font-size: 0.84rem;
+      font-weight: 600;
+    }
+    .process-intro {
+      margin: 0.5rem 0 0;
+      font-size: 0.8rem;
+      color: var(--muted);
+      max-width: 520px;
+      margin-left: auto;
+      margin-right: auto;
+      line-height: 1.4;
+      display: none;
+    }
+    .process-nav-wrap {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-top: 0.7rem;
+      padding-top: 0.75rem;
+      border-top: 1px solid rgba(208, 215, 222, 0.26);
+    }
+    .pillar-legend {
+      display: flex;
+      flex-wrap: nowrap;
+      align-items: center;
+      justify-content: center;
+      gap: 1.35rem;
+      width: min(100%, 1100px);
+      overflow-x: auto;
+      scrollbar-width: thin;
+      scroll-behavior: smooth;
+      padding: 0.15rem 0.35rem 0.3rem;
+    }
+    .pillar-legend-item {
+      position: relative;
+      flex: 0 0 auto;
+      font-size: 0.93rem;
+      color: var(--muted);
+      display: inline-flex;
+      align-items: center;
+      gap: 0.45rem;
+      text-decoration: none;
+      padding: 0.45rem 0.35rem;
+      font-weight: 700;
+      letter-spacing: 0.01em;
+      border-radius: 999px;
+      transition: color 0.2s, transform 0.2s, background 0.2s, box-shadow 0.2s;
+    }
+    .pillar-legend-item:hover {
+      color: var(--text);
+      background: rgba(255,255,255,.72);
+    }
+    .pillar-legend-item.active {
+      color: #0969da;
+      background: transparent;
+      box-shadow: none;
+    }
+    .pillar-legend-item.active::before {
+      content: "";
+      position: absolute;
+      left: 50%;
+      transform: translateX(-50%);
+      bottom: 0.12rem;
+      width: 68%;
+      height: 1px;
+      border-radius: 2px;
+      background: rgba(9, 105, 218, 0.3);
+    }
+    .pillar-legend-item:focus-visible {
+      outline: 2px solid #0969da;
+      outline-offset: 2px;
+    }
+    .pillar-legend-item i {
+      width: 11px;
+      height: 11px;
+      border-radius: 4px;
+    }
+    .pillar-legend-item::after {
+      content: "\2192";
+      position: absolute;
+      right: -0.92rem;
+      top: 50%;
+      transform: translateY(-50%);
+      color: #98a2ad;
+      font-size: 0.88rem;
+      font-weight: 700;
+      pointer-events: none;
+    }
+    .pillar-legend-item:last-child::after { display: none; }
+    .pillar-legend-item.arc i { background: var(--pillar-arc-bg); border: 1px solid var(--pillar-arc-border); }
+    .pillar-legend-item.generation i { background: var(--pillar-generation-bg); border: 1px solid var(--pillar-generation-border); }
+    .pillar-legend-item.validation i { background: var(--pillar-validation-bg); border: 1px solid var(--pillar-validation-border); }
+    .pillar-legend-item.revision i { background: #fef3c7; border: 1px solid #fcd34d; }
+    .pillar-legend-item.final i { background: #dcfce7; border: 1px solid #86efac; }
+    .journey-path {
+      position: relative;
+      padding-left: 2.5rem;
+    }
+    .landing-section.arc .journey-path::before {
+      content: "";
+      position: absolute;
+      left: 13px;
+      top: 12px;
+      bottom: 12px;
+      width: 4px;
+      background: linear-gradient(180deg, var(--accent-setup), var(--accent-agent1), var(--accent-agent2));
+      border-radius: 4px;
+      opacity: 0.8;
+    }
+    .landing-section.generation .journey-path::before {
+      content: "";
+      position: absolute;
+      left: 13px;
+      top: 12px;
+      bottom: 12px;
+      width: 4px;
+      background: linear-gradient(180deg, var(--accent-generator), var(--accent-generator));
+      border-radius: 4px;
+      opacity: 0.8;
+    }
+    .landing-section.validation .journey-path::before {
+      content: "";
+      position: absolute;
+      left: 13px;
+      top: 12px;
+      bottom: 12px;
+      width: 4px;
+      background: linear-gradient(180deg, var(--accent-validator), var(--accent-orchestrator), var(--accent-validator), var(--pass));
+      border-radius: 4px;
+      opacity: 0.8;
+    }
+    .stop {
+      position: relative;
+      margin-bottom: 1.25rem;
+      animation: stopIn 0.4s ease-out backwards;
+    }
+    .stop:nth-child(1) { animation-delay: 0.05s; }
+    .stop:nth-child(2) { animation-delay: 0.1s; }
+    .stop:nth-child(3) { animation-delay: 0.15s; }
+    .stop:nth-child(4) { animation-delay: 0.2s; }
+    .stop:nth-child(5) { animation-delay: 0.25s; }
+    .stop:nth-child(6) { animation-delay: 0.3s; }
+    .stop:nth-child(7) { animation-delay: 0.35s; }
+    .stop:nth-child(8) { animation-delay: 0.4s; }
+    .stop:nth-child(9) { animation-delay: 0.45s; }
+    .stop:nth-child(10) { animation-delay: 0.5s; }
+    .stop:nth-child(11) { animation-delay: 0.55s; }
+    .stop:nth-child(12) { animation-delay: 0.6s; }
+    .stop:nth-child(13) { animation-delay: 0.65s; }
+    .stop:nth-child(14) { animation-delay: 0.7s; }
+    @keyframes stopIn {
+      from { opacity: 0; transform: translateX(-12px); }
+      to { opacity: 1; transform: translateX(0); }
+    }
+    .stop-node {
+      position: absolute;
+      left: -2.5rem;
+      top: 1.25rem;
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.875rem;
+      border: 3px solid rgba(255,255,255,.95);
+      box-shadow: var(--shadow);
+      z-index: 1;
+    }
+    .landing-section .stop-card {
+      background: rgba(255,255,255,.92);
+      border: 1px solid rgba(0,0,0,.08);
+      box-shadow: var(--shadow);
+    }
+    .landing-section.arc .stop-card { border-color: rgba(30,64,175,.2); }
+    .landing-section.generation .stop-card { border-color: rgba(4,120,87,.2); }
+    .landing-section.validation .stop-card { border-color: rgba(157,23,77,.2); }
+    .landing-section .stop-card:hover { box-shadow: var(--shadow-hover); }
+    .stop.role-setup .stop-node { background: var(--accent-setup); }
+    .stop.role-agent1 .stop-node { background: var(--accent-agent1); }
+    .stop.role-agent2 .stop-node { background: var(--accent-agent2); }
+    .stop.role-generator .stop-node { background: var(--accent-generator); color: #0d1117; }
+    .stop.role-validator .stop-node { background: var(--accent-validator); }
+    .stop.role-orchestrator .stop-node { background: var(--accent-orchestrator); color: #0d1117; }
+    .stop.role-orchestrator.decision-approve .stop-node { box-shadow: var(--shadow), 0 0 0 3px rgba(26,127,55,.35); }
+    .stop-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1rem 1.15rem;
+      box-shadow: var(--shadow);
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .stop:not([class*="pillar-"]) .stop-card:hover {
+      border-color: var(--surface2);
+      box-shadow: var(--shadow-hover);
+    }
+    .stop-meta {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin-bottom: 0.6rem;
+      flex-wrap: wrap;
+    }
+    .stop-who {
+      font-weight: 600;
+      font-size: 0.9rem;
+      display: flex;
+      align-items: center;
+      gap: 0.35rem;
+    }
+    .stop-phase {
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--muted);
+      padding: 0;
+      background: transparent;
+      border: none;
+      border-radius: 0;
+      box-shadow: none;
+    }
+    .stop-body {
+      font-size: 0.875rem;
+      color: var(--text);
+    }
+    .stop-body p { margin: 0 0 0.5rem; }
+    .stop-body p:last-child { margin-bottom: 0; }
+    .stop-body strong { color: var(--text); }
+    details {
+      margin-top: 0.75rem;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      background: rgba(255,255,255,.6);
+      overflow: hidden;
+    }
+    summary {
+      padding: 0.55rem 0.85rem;
+      cursor: pointer;
+      font-size: 0.8125rem;
+      color: var(--muted);
+      list-style: none;
+      user-select: none;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    summary::-webkit-details-marker { display: none; }
+    summary::before {
+      content: "\25B6";
+      display: inline-block;
+      font-size: 0.55rem;
+      transition: transform 0.2s;
+    }
+    details[open] summary::before { transform: rotate(90deg); }
+    details .content {
+      padding: 0.85rem 1rem;
+      border-top: 1px solid var(--border);
+      font-size: 0.8125rem;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.8125rem;
+    }
+    th, td {
+      padding: 0.45rem 0.65rem;
+      text-align: left;
+      border-bottom: 1px solid var(--border);
+    }
+    th { color: var(--muted); font-weight: 600; }
+    tr:last-child td { border-bottom: none; }
+    .score-pass { color: var(--pass); }
+    .score-fail { color: var(--fail); }
+    .decision-badge {
+      display: inline-block;
+      padding: 0.3rem 0.6rem;
+      border-radius: 8px;
+      font-size: 0.8rem;
+      font-weight: 600;
+    }
+    .decision-revise { background: rgba(207,34,46,.15); color: var(--fail); }
+    .decision-approve { background: rgba(26,127,55,.18); color: var(--pass); }
+    .journey-divider {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      margin: 1.5rem 0 1rem;
+      padding-left: 2.5rem;
+    }
+    .journey-divider .line {
+      flex: 1;
+      height: 2px;
+      background: linear-gradient(90deg, var(--border), transparent);
+      border-radius: 2px;
+    }
+    .journey-divider .label {
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: var(--muted);
+      white-space: nowrap;
+    }
+    .landing-section details {
+      background: rgba(255,255,255,.7);
+      border-color: rgba(0,0,0,.1);
+    }
+    .landing-section.final-syllabus {
+      background: linear-gradient(180deg, #f0fdf4 0%, #dcfce7 50%, #f0fdf4 100%);
+      color: #14532d;
+    }
+    .landing-section.final-syllabus .section-heading { color: #15803d; }
+    .landing-section.final-syllabus .muted-override { color: #166534; }
+    .landing-section.final-syllabus .info-block {
+      background: rgba(21,128,61,.08);
+      border-color: rgba(21,128,61,.2);
+    }
+    .landing-section.final-syllabus .info-block .info-icon {
+      background: rgba(21,128,61,.2);
+      color: #15803d;
+    }
+    .landing-section .stop-body,
+    .landing-section .stop-who,
+    .landing-section .stop-body strong,
+    .landing-section table,
+    .landing-section th,
+    .landing-section td,
+    .landing-section details .content { color: var(--text); }
+    .landing-section summary { color: var(--muted); }
+    .lesson-list {
+      font-size: 0.75rem;
+      margin-bottom: 1rem;
+    }
+    .lesson-list th { padding: 0.35rem 0.5rem; }
+    .lesson-list td { padding: 0.3rem 0.5rem; }
+    .lesson-list + p { margin-top: 0.75rem; }
+    details .content .lesson-list:last-of-type { margin-bottom: 0; }
+    .stage-label {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      font-size: 0.7rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--muted);
+      margin-bottom: 0.5rem;
+    }
+    .stage-label::before {
+      content: "";
+      display: inline-block;
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: currentColor;
+    }
+    .info-block {
+      display: flex;
+      gap: 0.5rem;
+      align-items: flex-start;
+      padding: 0.6rem 0.75rem;
+      margin-bottom: 0.75rem;
+      border-radius: 10px;
+      background: rgba(9,105,218,.08);
+      border: 1px solid rgba(9,105,218,.18);
+      font-size: 0.875rem;
+      line-height: 1.45;
+    }
+    .landing-section.generation .info-block {
+      background: rgba(4,120,87,.08);
+      border-color: rgba(4,120,87,.18);
+    }
+    .landing-section.validation .info-block {
+      background: rgba(157,23,77,.08);
+      border-color: rgba(157,23,77,.18);
+    }
+    .landing-section.arc .info-block {
+      background: rgba(30,64,175,.08);
+      border-color: rgba(30,64,175,.18);
+    }
+    .landing-section.arc .info-block .info-icon {
+      background: rgba(30,64,175,.2);
+      color: #1e40af;
+    }
+    .info-block .info-icon {
+      flex-shrink: 0;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: rgba(9,105,218,.2);
+      color: #0969da;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.75rem;
+      font-weight: 700;
+    }
+    .landing-section.generation .info-block .info-icon {
+      background: rgba(4,120,87,.2);
+      color: #047857;
+    }
+    .landing-section.validation .info-block .info-icon {
+      background: rgba(157,23,77,.2);
+      color: #9d174d;
+    }
+    .info-block .info-content { flex: 1; min-width: 0; }
+    .info-block .info-content p:last-child { margin-bottom: 0; }
+    .info-block .info-content p { margin: 0 0 0.35rem; }
+    .validator-list { font-size: 0.8125rem; margin: 0.5rem 0 0; }
+    .validator-list dt { font-weight: 600; color: var(--text); margin-top: 0.5rem; }
+    .validator-list dt:first-child { margin-top: 0; }
+    .validator-list dd { margin: 0.15rem 0 0; color: var(--muted); padding-left: 0; }
+
+    .validator-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 0.9rem;
+      margin-top: 0.75rem;
+    }
+    .validator-stack { display: flex; flex-direction: column; gap: 0.9rem; margin-top: 0.6rem; }
+    .validator-info .info-content p { margin-top: 0; }
+    .validator-info .validator-what { margin: 0.25rem 0 0.55rem; }
+
+    .validator-item { display: flex; flex-direction: column; gap: 0.45rem; }
+    .what-is-box {
+      border: 1px solid rgba(255,255,255,0.14);
+      background: rgba(15,23,42,0.35);
+      border-radius: 14px;
+      padding: 0.75rem 0.8rem;
+      box-shadow: 0 8px 18px rgba(0,0,0,0.22);
+    }
+    .validator-title { font-weight: 700; color: var(--text); margin-bottom: 0.25rem; font-size: 0.95rem; }
+    .validator-what { color: var(--muted); font-size: 0.82rem; line-height: 1.35; }
+
+    details.speech-toggle {
+      border-radius: 14px;
+      padding: 0;
+    }
+    details.speech-toggle > summary {
+      list-style: none;
+      cursor: pointer;
+      user-select: none;
+      font-weight: 600;
+      color: var(--text);
+      font-size: 0.8rem;
+      padding: 0.5rem 0.65rem;
+      border-radius: 12px;
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.12);
+    }
+    details.speech-toggle > summary::-webkit-details-marker { display: none; }
+    details.speech-toggle > summary::after {
+      content: "\25B8";
+      float: right;
+      opacity: 0.9;
+      transform: rotate(0deg);
+      transition: transform 180ms ease;
+    }
+    details.speech-toggle[open] > summary::after { transform: rotate(90deg); }
+
+    .speech-bubble {
+      position: relative;
+      margin-top: 0.45rem;
+      padding: 0.7rem 0.8rem;
+      border-radius: 16px;
+      background: rgba(255,255,255,0.92);
+      color: rgba(15,23,42,0.95);
+      font-size: 0.82rem;
+      line-height: 1.4;
+      box-shadow: 0 10px 22px rgba(0,0,0,0.25);
+    }
+    .speech-bubble::before {
+      content: "";
+      position: absolute;
+      top: -8px;
+      left: 18px;
+      width: 16px;
+      height: 16px;
+      background: rgba(255,255,255,0.92);
+      transform: rotate(45deg);
+      border-radius: 3px;
+      box-shadow: -2px -2px 6px rgba(0,0,0,0.06);
+    }
+    .table-wrap { overflow-x: auto; margin-bottom: 0.5rem; -webkit-overflow-scrolling: touch; }
+    .plain-table {
+      width: 100%;
+      min-width: 560px;
+      border-collapse: collapse;
+      font-size: 0.8125rem;
+      line-height: 1.4;
+    }
+    .plain-table th,
+    .plain-table td {
+      padding: 0.5rem 0.65rem;
+      text-align: left;
+      vertical-align: top;
+      border: 1px solid var(--border);
+    }
+    .plain-table th {
+      background: rgba(0,0,0,.04);
+      font-weight: 600;
+      color: var(--text);
+    }
+    .plain-table tbody tr:nth-child(even) { background: rgba(255,255,255,.5); }
+    .plain-table td { word-wrap: break-word; max-width: 28em; }
+
+    .revision-brief-list { display: flex; flex-direction: column; gap: 1rem; }
+    .revision-brief-item {
+      padding: 0.85rem 1rem;
+      background: rgba(255,255,255,.6);
+      border: 1px solid rgba(180,83,9,.2);
+      border-radius: var(--radius);
+      border-left: 4px solid #b45309;
+    }
+    .revision-brief-title {
+      font-size: 0.8125rem;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 0.35rem;
+    }
+    .revision-brief-title .severity {
+      font-weight: 600;
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+    }
+    .revision-brief-title .severity.critical { color: var(--fail); }
+    .revision-brief-title .severity.important { color: #9d174d; }
+    .revision-brief-title .severity.moderate { color: var(--muted); }
+    .revision-brief-issue {
+      font-size: 0.8rem;
+      color: var(--muted);
+      line-height: 1.4;
+      margin-bottom: 0.5rem;
+    }
+    .revision-brief-instruction {
+      font-size: 0.8125rem;
+      line-height: 1.5;
+      color: var(--text);
+    }
+
+    .validator-summary-list { display: flex; flex-direction: column; gap: 1.25rem; }
+    .validator-summary-item {
+      font-size: 0.8125rem;
+      line-height: 1.5;
+      padding: 0.75rem 1rem;
+      background: rgba(255,255,255,.5);
+      border-radius: var(--radius);
+      border-left: 4px solid var(--border);
+    }
+    .validator-summary-name {
+      font-weight: 700;
+      font-size: 0.875rem;
+      color: var(--text);
+      margin-bottom: 0.5rem;
+      display: block;
+    }
+    .validator-works,
+    .validator-improve {
+      margin-top: 0.5rem;
+      color: var(--text);
+    }
+    .validator-works strong,
+    .validator-improve strong {
+      display: block;
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+      color: var(--muted);
+      margin-bottom: 0.25rem;
+    }
+    .validator-improve strong { color: #9d174d; }
+    .validator-works p,
+    .validator-improve p {
+      margin: 0;
+      font-size: 0.8125rem;
+      line-height: 1.5;
+    }
+    .validator-summary-text { color: var(--text); }
+    @media (max-width: 520px) {
+      .validator-summary-item { grid-template-columns: 1fr; }
+      .pillar-legend { gap: 1.15rem; }
+      .pillar-legend-item { font-size: 0.85rem; padding: 0.42rem 0.3rem; }
+      .pillar-legend-item::after { right: -0.75rem; }
+    }
+  </style>
+</head>
+<body>
+  <header class="page-header">
+    <h1>Syllabus Creation Pipeline</h1>
+    <p class="sub">PMGT170 &mdash; Project Management</p>
+    <div class="process-nav-wrap">
+      <nav class="pillar-legend" aria-label="Jump to section">
+        <a href="#arc" class="pillar-legend-item arc"><i></i> Learning Arc Design</a>
+        <a href="#generation" class="pillar-legend-item generation"><i></i> Generation</a>
+        <a href="#validation-1" class="pillar-legend-item validation"><i></i> Validation 1</a>
+        <a href="#revision-1" class="pillar-legend-item revision"><i></i> Revision 1</a>
+        <a href="#validation-2" class="pillar-legend-item validation"><i></i> Validation 2</a>
+        <a href="#final-syllabus" class="pillar-legend-item final"><i></i> Final syllabus</a>
+      </nav>
+    </div>
+  </header>
+
+  <!-- ========== ARC DESIGN ========== -->
+  <section class="landing-section arc">
+    <div class="section-inner">
+      <h2 class="section-heading" id="arc">&#x1F9ED; Learning Arc Design</h2>
+      <p class="muted-override" style="margin: -1rem 0 1.5rem; font-size: 0.9rem;">This stage defines the course flow and the core concepts that drive progression</p>
+      <div class="journey-path">
+
+      <article class="stop role-setup pillar-arc">
+        <div class="stop-node" aria-hidden="true">&#x1F4CD;</div>
+        <div class="stop-card">
+          <div class="stop-meta">
+            <span class="stop-who">&#x1F4CD; Context</span>
+          </div>
+          <div class="stop-body">
+            <div class="info-block">
+              <span class="info-icon" aria-hidden="true">i</span>
+              <div class="info-content">
+                <p><strong>This is the only input we give to the pipeline.</strong> Everything else (arc, concepts, lessons) is designed by the system from this. We define the course name, context, a few constraints, and the graduate skills. Those outcomes are <strong>collected by industry professionals (humans)</strong> &mdash; they describe what learners must be able to do by the end.</p>
+              </div>
+            </div>
+            <p>Here: <strong>PMGT170 &mdash; Project Management</strong>, a 4-unit course for career-switching adults in an AAS Business degree program. Delivered as AI-native 1-on-1 tutoring with 15&ndash;40 minute standalone lessons.</p>
+            <details>
+              <summary>&#x1F3AF; Six Course Mastery Outcomes (graduate skills)</summary>
+              <div class="content">
+                <table>
+                  <tr><th>#</th><th>Outcome</th></tr>
+                  <tr><td>1</td><td>Develop and execute project plans across the project lifecycle by defining scope, breaking work into tasks/WBS, and creating schedules/timelines with needed resources.</td></tr>
+                  <tr><td>2</td><td>Identify appropriate PM methodologies and use project tools to design and track project workflow.</td></tr>
+                  <tr><td>3</td><td>Identify project risks and constraints and apply mitigation strategies to manage them.</td></tr>
+                  <tr><td>4</td><td>Lead and manage project teams, with strong emphasis on conflict management and team collaboration.</td></tr>
+                  <tr><td>5</td><td>Create measurement systems with deadlines/benchmarks, evaluate deliverable quality, and manage budgets/costs while allocating resources.</td></tr>
+                  <tr><td>6</td><td>Negotiate and manage stakeholder relations.</td></tr>
+                </table>
+              </div>
+            </details>
+            <details>
+              <summary>&#x1F4C4; Course context &amp; structural rules</summary>
+              <div class="content">
+                <p>This course is part of an AAS Business degree for career-switching adults. Students have completed Business Psychology (PSYC140) and Management Fundamentals in Term 1. Each lesson is a standalone, 15&ndash;40 minute AI-tutor session. Design constraints: every lesson connects to a specific lifecycle phase; core concepts appear in at least 3 lessons across different units; no lesson introduces more than 2 new concepts; team and stakeholder dynamics appear in execution and control units; each unit has 8&ndash;10 lessons.</p>
+              </div>
+            </details>
+          </div>
+        </div>
+      </article>
+
+      <article class="stop role-agent1 pillar-arc">
+        <div class="stop-node" aria-hidden="true">&#x1F9ED;</div>
+        <div class="stop-card">
+          <div class="stop-meta">
+            <span class="stop-who">&#x1F9ED; Agent: Learning Arc Designer</span>
+          </div>
+          <div class="stop-body">
+            <div class="info-block">
+              <span class="info-icon" aria-hidden="true">i</span>
+              <div class="info-content">
+                <p><strong>What it is:</strong> The learning arc is the course's <strong>identity and learning flow</strong> &mdash; what changes from lesson to lesson and unit to unit, why it changes, and how the course systematically builds toward mastery. It turns the syllabus into a structured journey rather than a topic list.</p>
+              </div>
+            </div>
+            <p class="milestone-label" style="margin-bottom: 0.5rem; font-size: 0.9rem; font-weight: 700; color: var(--accent2);">Learning arc: The project lifecycle arc</p>
+            <p style="margin-top: 0;">Project management is a lifecycle discipline &mdash; practitioners define, plan, execute, and close projects in sequence. Organizing the course this way gives career-switching adults a reusable mental model they can apply on day one of any PM role.</p>
+            <ul style="margin: 0.5rem 0 0 1.25rem; padding-left: 0.25rem;">
+              <li><strong>Defining the project</strong>: Establishes what projects are, how to scope them, who the stakeholders are, and which methodology fits &mdash; giving students the foundation to make informed planning decisions.</li>
+              <li><strong>Planning the work</strong>: Builds the core planning toolkit: WBS, scheduling, resource allocation, and budgeting &mdash; so students can produce a workable project plan.</li>
+              <li><strong>Leading the execution</strong>: Shifts from planning to doing: managing teams, handling conflict, identifying and mitigating risks in real time, communicating with stakeholders, and tracking progress with PM tools.</li>
+              <li><strong>Controlling and closing</strong>: Addresses performance measurement, quality evaluation, cost management, course-correction, and formal project closure with lessons learned.</li>
+            </ul>
+            <p style="margin: 0.75rem 0 0;"><strong>Organizing principle:</strong> Students begin by defining and scoping projects with clear boundaries, then develop the ability to plan work in detail, then manage the human and operational complexity of execution, and finally control outcomes and close projects professionally. By Unit 4, they can run a small project end-to-end and explain their decisions at each phase.</p>
+          </div>
+        </div>
+      </article>
+
+      <article class="stop role-agent2 pillar-arc">
+        <div class="stop-node" aria-hidden="true">&#x1F9E9;</div>
+        <div class="stop-card">
+          <div class="stop-meta">
+            <span class="stop-who">&#x1F9E9; Agent: Core Concepts Planner</span>
+          </div>
+          <div class="stop-body">
+            <div class="info-block">
+              <span class="info-icon" aria-hidden="true">i</span>
+              <div class="info-content">
+                <p><strong>Role:</strong> Defines the 6&ndash;12 irreducible core concepts learners must internalize &mdash; with definitions, how they relate, which are threshold concepts, and when/how they are staged across the course. The Generator uses this so every lesson deepens or integrates these concepts.</p>
+              </div>
+            </div>
+            <details>
+              <summary>&#x1F4DA; 9 Core Concepts (3 threshold)</summary>
+              <div class="content">
+                <table>
+                  <tr><th>Concept</th><th>Description / role in course</th></tr>
+                  <tr><td><strong>Scope</strong> <em>(threshold)</em></td><td>The defined boundaries of what a project will and will not deliver, expressed as specific deliverables and exclusions. Introduced in Unit 1, spirals through all four units.</td></tr>
+                  <tr><td><strong>Work breakdown structure (WBS)</strong> <em>(threshold)</em></td><td>A hierarchical decomposition of all project work into smaller, manageable, and assignable tasks. Central to Unit 2, reinforced through scheduling and budgeting.</td></tr>
+                  <tr><td><strong>Project constraints and tradeoffs (triple constraint)</strong> <em>(threshold)</em></td><td>The interdependent relationship between scope, time, and cost &mdash; changing one forces adjustments in the others. Introduced in Unit 1, applied across all units.</td></tr>
+                  <tr><td><strong>Risk</strong></td><td>An uncertain event or condition that, if it occurs, has a positive or negative effect on project objectives. Three-pass spiral: identification, assessment, real-time monitoring.</td></tr>
+                  <tr><td><strong>Stakeholders</strong></td><td>Any individual or group that can affect or is affected by the project, each with distinct interests, influence, and communication needs. Appears in all four units.</td></tr>
+                  <tr><td><strong>Scheduling and dependencies</strong></td><td>The process of sequencing tasks, estimating durations, identifying dependencies, and producing a timeline. Core to Unit 2.</td></tr>
+                  <tr><td><strong>PM methodology (waterfall vs. agile)</strong></td><td>The overarching approach that determines how a project is structured, planned, and executed. Introduced in Unit 1, grounded in practice in Unit 3.</td></tr>
+                  <tr><td><strong>Monitoring and control</strong></td><td>The ongoing process of comparing actual performance against the plan, identifying variances, and taking corrective action. Central to Unit 4.</td></tr>
+                  <tr><td><strong>Team leadership and conflict resolution</strong></td><td>The ability to build, motivate, and guide a project team, and to recognize and resolve interpersonal conflicts. Central to Unit 3.</td></tr>
+                </table>
+              </div>
+            </details>
+          </div>
+        </div>
+      </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== GENERATION ========== -->
+  <section class="landing-section generation">
+    <div class="section-inner">
+      <h2 class="section-heading" id="generation">&#x270F;&#xFE0F; Generation</h2>
+      <p class="muted-override" style="margin: -1rem 0 1.5rem; font-size: 0.9rem;">The Generator turns the arc and concepts into the first full lesson syllabus</p>
+      <div class="journey-path">
+      <article class="stop role-generator pillar-generation">
+        <div class="stop-node" aria-hidden="true">v1</div>
+        <div class="stop-card">
+          <div class="stage-label">Stage &mdash; Generation v1</div>
+          <div class="stop-meta">
+            <span class="stop-who">&#x270F;&#xFE0F; Agent: Generator</span>
+          </div>
+          <div class="stop-body">
+            <div class="info-block">
+              <span class="info-icon" aria-hidden="true">i</span>
+              <div class="info-content">
+                <p><strong>What this stage does:</strong> Builds the full syllabus from the selected arc and core concepts. Each lesson must advance the learner's progression, deepen or integrate concepts, and increase realism or independence. Lesson titles are short, natural, and practical. No lesson may be generic &mdash; each must earn its place in the sequence.</p>
+              </div>
+            </div>
+            <p><strong>v1 output:</strong> 4 units, 38 lessons (9 + 10 + 9 + 10). Each unit follows the project lifecycle arc from definition through closure. All 9 core concepts spiral across multiple units.</p>
+            <details>
+              <summary>&#x1F4CB; Full lesson list &mdash; v1 (38 lessons)</summary>
+              <div class="content">
+                <p style="font-size: 0.8125rem; color: var(--muted); margin-bottom: 1rem;">
+Units with lessons. Format: Lesson number, Title, Key mastery outcome.
+</p>
+
+<details>
+  <summary>Unit 1: Defining the project (9 lessons)</summary>
+  <div class="content">
+    <p style="font-size: 0.8125rem; color: var(--muted); margin-bottom: 0.5rem;">Establishes what projects are, how to scope them, who the stakeholders are, and which methodology fits.</p>
+    <table class="lesson-list">
+      <tr><th>Lesson</th><th>Title</th><th>Key outcome</th></tr>
+      <tr><td>1</td><td>What makes something a project</td><td>Distinguish projects from ongoing operations</td></tr>
+      <tr><td>2</td><td>Spotting the real problem before you start</td><td>Create a clear problem statement</td></tr>
+      <tr><td>3</td><td>Drawing the line: what's in and what's out</td><td>Create a scope statement with exclusions</td></tr>
+      <tr><td>4</td><td>Who cares about your project (and why it matters)</td><td>Classify stakeholders using power-interest grid</td></tr>
+      <tr><td>5</td><td>The triple constraint: scope, time, and cost</td><td>Predict constraint impacts</td></tr>
+      <tr><td>6</td><td>Picking your approach: waterfall vs. agile</td><td>Select methodology for a given scenario</td></tr>
+      <tr><td>7</td><td>Spotting risks before they find you</td><td>Identify realistic risks and distinguish from issues</td></tr>
+      <tr><td>8</td><td>Writing a project charter that gets approval</td><td>Synthesize scope, stakeholders, constraints into a charter</td></tr>
+      <tr><td>9</td><td>Communicating your project to different audiences</td><td>Adapt project messaging for stakeholder groups</td></tr>
+    </table>
+  </div>
+</details>
+
+<details>
+  <summary>Unit 2: Planning the work (10 lessons)</summary>
+  <div class="content">
+    <p style="font-size: 0.8125rem; color: var(--muted); margin-bottom: 0.5rem;">Builds the core planning toolkit: WBS, scheduling, resource allocation, and budgeting.</p>
+    <table class="lesson-list">
+      <tr><th>Lesson</th><th>Title</th><th>Key outcome</th></tr>
+      <tr><td>1</td><td>Breaking work into pieces: building a WBS</td><td>Create a two-level WBS from scope</td></tr>
+      <tr><td>2</td><td>Estimating how long things actually take</td><td>Apply estimation techniques</td></tr>
+      <tr><td>3</td><td>Putting tasks in order: dependencies and sequencing</td><td>Create a task sequence respecting dependencies</td></tr>
+      <tr><td>4</td><td>Building a schedule that works</td><td>Build schedule with milestones and critical path</td></tr>
+      <tr><td>5</td><td>Who does what: assigning real people with real limits</td><td>Create resource assignment matrix</td></tr>
+      <tr><td>6</td><td>Building a project budget from the ground up</td><td>Build bottom-up budget from WBS</td></tr>
+      <tr><td>7</td><td>Planning for what could go wrong</td><td>Create risk mitigation plan</td></tr>
+      <tr><td>8</td><td>Setting baselines you can measure against</td><td>Identify scope, schedule, cost baselines</td></tr>
+      <tr><td>9</td><td>Choosing the right tools for your project</td><td>Set up tracking board or Gantt chart</td></tr>
+      <tr><td>10</td><td>Putting the whole plan together</td><td>Assemble complete project plan</td></tr>
+    </table>
+  </div>
+</details>
+
+<details>
+  <summary>Unit 3: Leading the execution (9 lessons)</summary>
+  <div class="content">
+    <p style="font-size: 0.8125rem; color: var(--muted); margin-bottom: 0.5rem;">Shifts from planning to doing: managing teams, handling conflict, tracking progress.</p>
+    <table class="lesson-list">
+      <tr><th>Lesson</th><th>Title</th><th>Key outcome</th></tr>
+      <tr><td>1</td><td>Kicking off the project with your team</td><td>Create kickoff meeting agenda</td></tr>
+      <tr><td>2</td><td>Building a team that actually works together</td><td>Identify team development stages</td></tr>
+      <tr><td>3</td><td>When team members disagree: managing conflict</td><td>Select conflict resolution approach</td></tr>
+      <tr><td>4</td><td>Keeping stakeholders in the loop during execution</td><td>Create tailored status updates</td></tr>
+      <tr><td>5</td><td>Managing risks as they happen</td><td>Update risk register during execution</td></tr>
+      <tr><td>6</td><td>Tracking progress without micromanaging</td><td>Identify key progress metrics</td></tr>
+      <tr><td>7</td><td>Dealing with scope creep in the middle of the project</td><td>Apply change control process</td></tr>
+      <tr><td>8</td><td>Making tradeoff decisions under pressure</td><td>Evaluate tradeoffs using triple constraint</td></tr>
+      <tr><td>9</td><td>Running agile in practice: sprints, standups, and retros</td><td>Adapt agile practices to a scenario</td></tr>
+    </table>
+  </div>
+</details>
+
+<details>
+  <summary>Unit 4: Controlling and closing (10 lessons)</summary>
+  <div class="content">
+    <p style="font-size: 0.8125rem; color: var(--muted); margin-bottom: 0.5rem;">Performance measurement, quality evaluation, cost management, and formal closure.</p>
+    <table class="lesson-list">
+      <tr><th>Lesson</th><th>Title</th><th>Key outcome</th></tr>
+      <tr><td>1</td><td>Measuring project performance with earned value</td><td>Calculate PV, EV, AC</td></tr>
+      <tr><td>2</td><td>Reading the warning signs: variance analysis</td><td>Interpret SV and CV plus root cause</td></tr>
+      <tr><td>3</td><td>Getting back on track: corrective action</td><td>Recommend corrective actions</td></tr>
+      <tr><td>4</td><td>Keeping costs under control</td><td>Apply cost control techniques</td></tr>
+      <tr><td>5</td><td>Is the work good enough? Evaluating quality</td><td>Create acceptance criteria</td></tr>
+      <tr><td>6</td><td>Handling change requests without losing control</td><td>Evaluate change requests via impact analysis</td></tr>
+      <tr><td>7</td><td>Negotiating with stakeholders when things go wrong</td><td>Propose resolution for conflicting stakeholders</td></tr>
+      <tr><td>8</td><td>Closing the project: deliverables, sign-offs, and handoffs</td><td>Create closure checklist</td></tr>
+      <tr><td>9</td><td>What went right, what went wrong: lessons learned</td><td>Conduct lessons-learned review</td></tr>
+      <tr><td>10</td><td>Running a project from start to finish</td><td>Apply full lifecycle to scenario</td></tr>
+    </table>
+  </div>
+</details>
+              </div>
+            </details>
+          </div>
+        </div>
+      </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== VALIDATION 1 ========== -->
+  <section class="landing-section validation">
+    <div class="section-inner">
+      <h2 class="section-heading" id="validation-1">&#x2705; Validation 1</h2>
+      <p class="muted-override" style="margin: -1rem 0 1.5rem; font-size: 0.9rem;">Eight specialist validators score each draft; the Lead Orchestrator decides APPROVE or REVISE (send back to Generator)</p>
+      <div class="journey-path">
+
+      <div class="journey-divider">
+        <span class="label">Validation round 1</span>
+        <span class="line"></span>
+      </div>
+      <article class="stop role-validator pillar-validation">
+        <div class="stop-node" aria-hidden="true">1</div>
+        <div class="stop-card">
+          <div class="stage-label">Stage &mdash; Validation round 1</div>
+          <div class="stop-meta">
+            <span class="stop-who">&#x1F50D; Agent: Eight validators (parallel)</span>
+          </div>
+          <div class="stop-body">
+            <div class="info-block">
+              <span class="info-icon" aria-hidden="true">i</span>
+              <div class="info-content">
+                <p><strong>What validation does:</strong> After each Generation run, eight validators run in parallel. Each has one dimension; passing score is 8/10. If any validator fails, the Lead sends a revision brief to the Generator.</p>
+              </div>
+            </div>
+            <p><strong>Introducing the eight validators:</strong></p>
+<div class="validator-stack">
+  <div class="info-block validator-info">
+    <span class="info-icon" aria-hidden="true">&#x1F9ED;</span>
+    <div class="info-content">
+      <p><strong>Learning Arc Validator</strong></p>
+      <p class="validator-what"><strong>Core question:</strong> Is there a strong throughline that aligns with the chosen learning arc?</p>
+      <details class="speech-toggle">
+        <summary>What they said?</summary>
+        <div class="speech-bubble"><strong>Summary:</strong> The course follows the project lifecycle arc with clear structural intent across all four units. Core concepts like scope, risk, and stakeholder management spiral across all four units with increasing depth and complexity, preventing the course from reading as a generic topic list.</div>
+      </details>
+    </div>
+  </div>
+
+  <div class="info-block validator-info">
+    <span class="info-icon" aria-hidden="true">&#x1F9E9;</span>
+    <div class="info-content">
+      <p><strong>Core Concept Validator</strong></p>
+      <p class="validator-what"><strong>Core question:</strong> Does this build structured, integrated understanding of the core concepts?</p>
+      <details class="speech-toggle">
+        <summary>What they said?</summary>
+        <div class="speech-bubble"><strong>Summary:</strong> The course builds strong, integrated understanding of all nine core concepts through deliberate spiraling and progressive complexity. All three threshold concepts receive excellent scaffolding. Minor distribution gaps: stakeholders absent from Unit 2, methodology thinly represented in Unit 2.</div>
+      </details>
+    </div>
+  </div>
+
+  <div class="info-block validator-info">
+    <span class="info-icon" aria-hidden="true">&#x1F4C8;</span>
+    <div class="info-content">
+      <p><strong>Mastery Progression Validator</strong></p>
+      <p class="validator-what"><strong>Core question:</strong> Does competence genuinely build toward the performance levels defined in the graduate skills.</p>
+      <details class="speech-toggle">
+        <summary>What they said?</summary>
+        <div class="speech-bubble"><strong>Summary:</strong> Competence builds convincingly across all four units. The capstone lesson requires integrated lifecycle diagnosis that exceeds any single outcome benchmark. Minor concerns: brief cognitive demand dip at Unit 3 start, one lower Bloom's level outcome in baselines lesson.</div>
+      </details>
+    </div>
+  </div>
+
+  <div class="info-block validator-info">
+    <span class="info-icon" aria-hidden="true">&#x1F9E0;</span>
+    <div class="info-content">
+      <p><strong>Learning Theory Validator</strong></p>
+      <p class="validator-what"><strong>Core question:</strong> Is this aligned with how humans actually learn?</p>
+      <details class="speech-toggle">
+        <summary>What they said?</summary>
+        <div class="speech-bubble"><strong>Summary:</strong> Strong alignment with learning science. Threshold concepts receive spaced, interleaved exposure. Integration lessons create powerful retrieval and synthesis opportunities. Important concern: earned value lesson introduces PV, EV, AC with no prior-knowledge anchor for the target audience.</div>
+      </details>
+    </div>
+  </div>
+
+  <div class="info-block validator-info">
+    <span class="info-icon" aria-hidden="true">&#x1F3AF;</span>
+    <div class="info-content">
+      <p><strong>Outcome Alignment Validator</strong></p>
+      <p class="validator-what"><strong>Core question:</strong> Are all learning outcomes demonstrably achieved at the complexity level defined the learning arc?</p>
+      <details class="speech-toggle">
+        <summary>What they said?</summary>
+        <div class="speech-bubble"><strong>Summary:</strong> All six course outcomes are covered at or above benchmark complexity. Each outcome maps to multiple lessons that build from foundational exposure to applied practice. Minor concerns: conflict management concentrated in one lesson, negotiation skill verb concentrated in one lesson.</div>
+      </details>
+    </div>
+  </div>
+
+  <div class="info-block validator-info">
+    <span class="info-icon" aria-hidden="true">&#x26A1;</span>
+    <div class="info-content">
+      <p><strong>Engagement Validator</strong></p>
+      <p class="validator-what"><strong>Core question:</strong> Would a real learner feel pulled forward?</p>
+      <details class="speech-toggle">
+        <summary>What they said?</summary>
+        <div class="speech-bubble"><strong>Summary:</strong> The course builds genuine momentum through an intuitive lifecycle arc and conversational titles. Main risk: mid-course planning sag in Unit 2 where six back-to-back procedural lessons could stall pull-forward energy. Communication lesson after charter creates anticlimactic Unit 1 ending.</div>
+      </details>
+    </div>
+  </div>
+
+  <div class="info-block validator-info">
+    <span class="info-icon" aria-hidden="true">&#x1F3F7;&#xFE0F;</span>
+    <div class="info-content">
+      <p><strong>Naming Validator</strong></p>
+      <p class="validator-what"><strong>Core question:</strong> Do the titles alone communicate the shape and ambition of this course?</p>
+      <details class="speech-toggle">
+        <summary>What they said?</summary>
+        <div class="speech-bubble"><strong>Summary:</strong> The 38 lesson titles tell a coherent story using practical, conversational language. A handful rely on a repeating colon pattern that becomes predictable, and a few titles run long, but overall naming is confident and jargon-appropriate.</div>
+      </details>
+    </div>
+  </div>
+
+  <div class="info-block validator-info">
+    <span class="info-icon" aria-hidden="true">&#x1F3CB;&#xFE0F;</span>
+    <div class="info-content">
+      <p><strong>Difficulty Load Validator</strong></p>
+      <p class="validator-what"><strong>Core question:</strong> Is pacing controlled and cognitive load appropriate per lesson and across the arc?</p>
+      <details class="speech-toggle">
+        <summary>What they said?</summary>
+        <div class="speech-bubble"><strong>Summary:</strong> Several lessons exceed safe cognitive load: earned value introduces three quantitative metrics with no prior-knowledge anchor (critical), the charter lesson synthesizes five concepts (important), agile packs three ceremonies into one lesson (important), and variance analysis builds on a single prior lesson (important). The course needs structural fixes before approval.</div>
+      </details>
+    </div>
+  </div>
+
+<p><strong>Round 1 scores:</strong> 7 of 8 validators passed. Difficulty Load failed with a score of 7/10.</p>
+            <details>
+              <summary>&#x1F4CA; Validator score table &mdash; Round 1</summary>
+              <div class="content">
+                <table class="plain-table">
+                  <tr><th>Validator</th><th>Score</th><th>Pass/Fail</th></tr>
+                  <tr><td>Learning Arc Validator</td><td class="score-pass">9 / 10</td><td class="score-pass">PASS</td></tr>
+                  <tr><td>Core Concept Validator</td><td class="score-pass">9 / 10</td><td class="score-pass">PASS</td></tr>
+                  <tr><td>Mastery Progression Validator</td><td class="score-pass">9 / 10</td><td class="score-pass">PASS</td></tr>
+                  <tr><td>Learning Theory Validator</td><td class="score-pass">9 / 10</td><td class="score-pass">PASS</td></tr>
+                  <tr><td>Outcome Alignment Validator</td><td class="score-pass">9 / 10</td><td class="score-pass">PASS</td></tr>
+                  <tr><td>Engagement Validator</td><td class="score-pass">8 / 10</td><td class="score-pass">PASS</td></tr>
+                  <tr><td>Naming Validator</td><td class="score-pass">8 / 10</td><td class="score-pass">PASS</td></tr>
+                  <tr><td>Difficulty Load Validator</td><td class="score-fail">7 / 10</td><td class="score-fail">FAIL</td></tr>
+                </table>
+              </div>
+            </details>
+            <details class="validator-summaries" style="margin-top: 0.75rem;">
+              <summary>&#x1F4CB; Short summary per validator &mdash; Round 1</summary>
+              <div class="content" style="margin-top: 0.5rem;">
+                <div class="validator-summary-list">
+                  <div class="validator-summary-item">
+                    <span class="validator-summary-name">Learning Arc Validator (9/10 &mdash; PASS)</span>
+                    <div class="validator-works"><strong>What works:</strong><p>The define-plan-execute-control/close progression is visible in lesson sequencing logic. Core concepts spiral across all four units. Unit transitions are driven by lifecycle gates.</p></div>
+                  </div>
+                  <div class="validator-summary-item">
+                    <span class="validator-summary-name">Core Concept Validator (9/10 &mdash; PASS)</span>
+                    <div class="validator-works"><strong>What works:</strong><p>All nine concepts appear in 3+ units. Threshold concepts receive multi-stage scaffolding. Concept ordering respects prerequisites throughout.</p></div>
+                  </div>
+                  <div class="validator-summary-item">
+                    <span class="validator-summary-name">Mastery Progression Validator (9/10 &mdash; PASS)</span>
+                    <div class="validator-works"><strong>What works:</strong><p>Cognitive demand ramps from Remember/Understand through Apply/Analyze to Evaluate/Create. The capstone exceeds all six outcome benchmarks.</p></div>
+                  </div>
+                  <div class="validator-summary-item">
+                    <span class="validator-summary-name">Learning Theory Validator (9/10 &mdash; PASS)</span>
+                    <div class="validator-works"><strong>What works:</strong><p>Threshold concepts follow ZPD principles. Strong interleaving with contextual variation. Risk management follows an exemplary three-pass spiral.</p></div>
+                  </div>
+                  <div class="validator-summary-item">
+                    <span class="validator-summary-name">Outcome Alignment Validator (9/10 &mdash; PASS)</span>
+                    <div class="validator-works"><strong>What works:</strong><p>Every outcome addressed by 3+ lessons across multiple units. Benchmark-level specificity matched precisely for all six outcomes.</p></div>
+                  </div>
+                  <div class="validator-summary-item">
+                    <span class="validator-summary-name">Engagement Validator (8/10 &mdash; PASS)</span>
+                    <div class="validator-works"><strong>What works:</strong><p>Lifecycle arc provides strong narrative spine. Lesson titles are conversational. Unit 3 is the emotional high point.</p></div>
+                    <div class="validator-improve"><strong>To improve:</strong><p>Unit 2 planning sag with five consecutive procedural lessons. Communication lesson after charter is anticlimactic.</p></div>
+                  </div>
+                  <div class="validator-summary-item">
+                    <span class="validator-summary-name">Naming Validator (8/10 &mdash; PASS)</span>
+                    <div class="validator-works"><strong>What works:</strong><p>Titles tell a coherent story. PM vocabulary surfaced naturally. No academic or hype language detected.</p></div>
+                    <div class="validator-improve"><strong>To improve:</strong><p>Overuse of colon pattern in ~30% of titles. A few titles run too long.</p></div>
+                  </div>
+                  <div class="validator-summary-item" style="border-left-color: var(--fail);">
+                    <span class="validator-summary-name">Difficulty Load Validator (7/10 &mdash; FAIL)</span>
+                    <div class="validator-works"><strong>What works:</strong><p>Most lessons focus on one concept. Threshold concepts introduced with scaffolded first exposures. Risk pacing is exemplary.</p></div>
+                    <div class="validator-improve"><strong>Required fixes:</strong><p>Split earned value into two lessons with a conceptual bridge. Reduce charter scope to 2&ndash;3 sections. Simplify agile to one organizing concept. Separate variance interpretation from root cause diagnosis.</p></div>
+                  </div>
+                </div>
+              </div>
+            </details>
+          </div>
+        </div>
+      </article>
+      <article class="stop role-orchestrator pillar-validation">
+        <div class="stop-node" aria-hidden="true">&#x2696;&#xFE0F;</div>
+        <div class="stop-card">
+          <div class="stop-meta">
+            <span class="stop-who">&#x2696;&#xFE0F; Agent: Lead Orchestrator</span>
+          </div>
+          <div class="stop-body">
+            <div class="info-block">
+              <span class="info-icon" aria-hidden="true">i</span>
+              <div class="info-content">
+                <p><strong>What the Lead does:</strong> After validators report, the Lead decides APPROVE or REVISE. If any validator scores below 8, the Lead does not approve: they merge findings into a revision brief (required changes for the Generator) and send the process back to Generation.</p>
+              </div>
+            </div>
+            <p><span class="decision-badge decision-revise">&#x1F504; REVISE</span> Difficulty Load Validator scored 7/10 (below threshold). The Lead compiled 6 blocker items into a revision brief targeting cognitive overload in the earned value lesson, charter synthesis lesson, agile ceremony lesson, and Unit 2 engagement pacing.</p>
+            <details>
+              <summary>&#x1F4CC; Revision brief &mdash; 6 blocker items</summary>
+              <div class="content">
+                <div class="revision-brief-list">
+                  <div class="revision-brief-item">
+                    <div class="revision-brief-title"><span class="severity critical">CRITICAL</span> &mdash; Difficulty Load Validator</div>
+                    <div class="revision-brief-issue">"Measuring project performance with earned value" introduces PV, EV, and AC calculations simultaneously &mdash; the highest transfer-distance content in the course with no prior-knowledge anchor.</div>
+                    <div class="revision-brief-instruction"><strong>Required fix:</strong> Split into two lessons: (1) a conceptual bridge lesson on tracking progress with simple metrics like percent-complete and visual dashboards, and (2) a lesson introducing earned value formulas with guided practice. This adds 1 lesson to Unit 4.</div>
+                  </div>
+                  <div class="revision-brief-item">
+                    <div class="revision-brief-title"><span class="severity critical">CRITICAL</span> &mdash; Difficulty Load Validator</div>
+                    <div class="revision-brief-issue">"Writing a project charter that gets approval" asks students to synthesize five concepts into a single document and evaluate persuasiveness in a 15&ndash;40 minute session.</div>
+                    <div class="revision-brief-instruction"><strong>Required fix:</strong> Reduce the charter lesson scope: focus on filling in 2&ndash;3 key sections of a charter (scope statement, stakeholders, constraints). Remove the persuasiveness evaluation outcome.</div>
+                  </div>
+                  <div class="revision-brief-item">
+                    <div class="revision-brief-title"><span class="severity moderate">MODERATE</span> &mdash; Difficulty Load Validator</div>
+                    <div class="revision-brief-issue">"Running agile in practice: sprints, standups, and retros" introduces three new ceremonies/artifacts in a single lesson.</div>
+                    <div class="revision-brief-instruction"><strong>Required fix:</strong> Simplify to focus on the sprint cycle as the single concept, with standups and retros as parts of that cycle rather than three separate new items.</div>
+                  </div>
+                  <div class="revision-brief-item">
+                    <div class="revision-brief-title"><span class="severity moderate">MODERATE</span> &mdash; Difficulty Load Validator</div>
+                    <div class="revision-brief-issue">"Reading the warning signs: variance analysis" builds on earned value and adds SV/CV interpretation plus root cause diagnosis, assuming mastery from a single prior lesson.</div>
+                    <div class="revision-brief-instruction"><strong>Required fix:</strong> Focus variance analysis on interpreting SV and CV from provided data only. Move root cause diagnosis to the corrective action lesson.</div>
+                  </div>
+                  <div class="revision-brief-item">
+                    <div class="revision-brief-title"><span class="severity moderate">MODERATE</span> &mdash; Engagement Validator</div>
+                    <div class="revision-brief-issue">Unit 2 has five consecutive procedural planning lessons without human tension, risking engagement fatigue.</div>
+                    <div class="revision-brief-instruction"><strong>Required fix:</strong> Reframe the resource allocation lesson to emphasize the human tradeoff of assigning real people with competing availability.</div>
+                  </div>
+                  <div class="revision-brief-item">
+                    <div class="revision-brief-title"><span class="severity moderate">MODERATE</span> &mdash; Engagement Validator</div>
+                    <div class="revision-brief-issue">"Communicating your project to different audiences" sits after the charter capstone in Unit 1, creating an anticlimactic ending.</div>
+                    <div class="revision-brief-instruction"><strong>Required fix:</strong> Move this lesson before the charter lesson so the unit builds toward the charter as its natural capstone.</div>
+                  </div>
+                </div>
+              </div>
+            </details>
+          </div>
+        </div>
+      </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== REVISION 1 ========== -->
+  <section class="landing-section revision">
+    <div class="section-inner">
+      <h2 class="section-heading" id="revision-1">&#x1F504; Revision 1</h2>
+      <p class="muted-override" style="margin: -1rem 0 1.5rem; font-size: 0.9rem;">Revised draft produced after the Lead sent feedback from Validation 1</p>
+      <div class="journey-path">
+      <article class="stop role-generator pillar-revision">
+        <div class="stop-node" aria-hidden="true">v2</div>
+        <div class="stop-card">
+          <div class="stage-label">Stage &mdash; Revision 1</div>
+          <div class="stop-meta">
+            <span class="stop-who">&#x270F;&#xFE0F; Agent: Generator</span>
+          </div>
+          <div class="stop-body">
+            <div class="info-block">
+              <span class="info-icon" aria-hidden="true">i</span>
+              <div class="info-content">
+                <p><strong>What this stage does:</strong> Receives a revision brief from the Lead Orchestrator (all validator findings that blocked approval) and produces a revised syllabus. Every listed issue must be addressed.</p>
+              </div>
+            </div>
+
+            <details class="revision-brief-details" style="margin-top: 1rem;">
+              <summary>&#x1F4CC; Revision brief &mdash; instructions from Validation 1 (6 items)</summary>
+              <div class="content" style="margin-top: 0.75rem;">
+                <p class="muted-override" style="font-size: 0.8125rem; margin-bottom: 1rem;">What the Lead sent to the Generator. Each item: validator, issue, and required change.</p>
+                <div class="revision-brief-list">
+                  <div class="revision-brief-item">
+                    <div class="revision-brief-title"><span class="severity critical">CRITICAL</span> &mdash; Earned value cold start</div>
+                    <div class="revision-brief-issue">Earned value introduces three formulas with no prior-knowledge anchor.</div>
+                    <div class="revision-brief-instruction">Split into two lessons: a bridge lesson (simple metrics/dashboards) + earned value formulas with guided practice.</div>
+                  </div>
+                  <div class="revision-brief-item">
+                    <div class="revision-brief-title"><span class="severity critical">CRITICAL</span> &mdash; Charter overload</div>
+                    <div class="revision-brief-issue">Charter lesson synthesizes five concepts + persuasiveness evaluation in one session.</div>
+                    <div class="revision-brief-instruction">Reduce to 2&ndash;3 charter sections (scope, stakeholders, constraints). Drop persuasiveness outcome.</div>
+                  </div>
+                  <div class="revision-brief-item">
+                    <div class="revision-brief-title"><span class="severity moderate">MODERATE</span> &mdash; Agile ceremony overload</div>
+                    <div class="revision-brief-issue">Three separate ceremonies crammed into one lesson.</div>
+                    <div class="revision-brief-instruction">Unify as "the sprint cycle" with standups and retros as components.</div>
+                  </div>
+                  <div class="revision-brief-item">
+                    <div class="revision-brief-title"><span class="severity moderate">MODERATE</span> &mdash; Variance analysis overload</div>
+                    <div class="revision-brief-issue">Variance interpretation + root cause diagnosis in a single lesson.</div>
+                    <div class="revision-brief-instruction">Focus on SV/CV interpretation only. Move root cause to corrective action lesson.</div>
+                  </div>
+                  <div class="revision-brief-item">
+                    <div class="revision-brief-title"><span class="severity moderate">MODERATE</span> &mdash; Unit 2 engagement sag</div>
+                    <div class="revision-brief-issue">Five procedural planning lessons without human tension.</div>
+                    <div class="revision-brief-instruction">Reframe resource allocation around assigning real people with competing availability.</div>
+                  </div>
+                  <div class="revision-brief-item">
+                    <div class="revision-brief-title"><span class="severity moderate">MODERATE</span> &mdash; Unit 1 anticlimactic ending</div>
+                    <div class="revision-brief-issue">Communication lesson sits after charter capstone.</div>
+                    <div class="revision-brief-instruction">Move communication before charter so the unit builds toward the charter as capstone.</div>
+                  </div>
+                </div>
+              </div>
+            </details>
+
+            <p style="margin-top: 1.25rem;"><strong>Revised draft output:</strong> 4 units, 39 lessons (9 + 10 + 9 + 11). All 6 revision brief items addressed. One lesson added to Unit 4 (bridge lesson), one reordering in Unit 1.</p>
+            <ul style="margin: 0.35rem 0 0 1.25rem; padding-left: 0.25rem;">
+              <li>Added "Tracking progress with simple metrics and dashboards" as bridge lesson before earned value in Unit 4 (resolves cold start)</li>
+              <li>Reduced charter scope to 2&ndash;3 sections (scope statement, stakeholders, constraints); dropped persuasiveness evaluation</li>
+              <li>Simplified agile lesson to "the sprint cycle" as one organizing concept with standups and retros as components</li>
+              <li>Moved root cause diagnosis from variance analysis to corrective action lesson; variance now focuses on SV/CV interpretation only</li>
+              <li>Reframed resource allocation around human tension ("assigning real people with real limits"); moved communication before charter in Unit 1</li>
+              </ul>
+
+            <details style="margin-top: 1.25rem;">
+              <summary>TABLE 1 &mdash; Changes made (v1 &rarr; v2)</summary>
+              <div class="content" style="margin-top: 0.5rem;">
+                <p style="font-size: 0.8125rem; color: var(--muted); margin-bottom: 0.5rem;">Structural changes the designer made in response to reviewer feedback. Each row is traceable to a specific reviewer finding.</p>
+                <div class="table-wrap">
+                <table class="plain-table">
+                  <tr><th>Blocker</th><th>What changed</th><th>Effect</th></tr>
+                  <tr><td>Earned value cold start</td><td>New bridge lesson "Tracking progress with simple metrics and dashboards" added before earned value</td><td>Unit 4 grows from 10 to 11 lessons; students build intuitive tracking habits before formulas</td></tr>
+                  <tr><td>Charter overload</td><td>Charter scope reduced to 2&ndash;3 sections; persuasiveness outcome removed</td><td>Integration stays meaningful but within cognitive load bounds for novices</td></tr>
+                  <tr><td>Agile ceremony overload</td><td>Title changed to "the sprint cycle"; standups and retros framed as parts of one rhythm</td><td>Single organizing concept replaces three independent ceremonies</td></tr>
+                  <tr><td>Variance analysis overload</td><td>Root cause diagnosis moved to corrective action lesson</td><td>Variance analysis focuses on interpretation; corrective action pairs diagnosis with response</td></tr>
+                  <tr><td>Unit 2 engagement sag</td><td>Resource allocation reframed around human tension</td><td>Mini emotional peak breaks procedural stretch in Unit 2</td></tr>
+                  <tr><td>Unit 1 anticlimactic ending</td><td>Communication lesson moved before charter (now lesson 8); charter becomes lesson 9 (capstone)</td><td>Unit 1 builds toward charter as satisfying capstone</td></tr>
+                </table>
+                </div>
+              </div>
+            </details>
+
+            <details>
+              <summary>&#x1F4CB; Full lesson list &mdash; v2 / final (39 lessons)</summary>
+              <div class="content">
+<details>
+  <summary>Unit 1: Defining the project (9 lessons)</summary>
+  <div class="content">
+    <table class="lesson-list">
+      <tr><th>#</th><th>Title</th><th>Key outcome</th></tr>
+      <tr><td>1</td><td>What makes something a project</td><td>Distinguish projects from ongoing operations</td></tr>
+      <tr><td>2</td><td>Spotting the real problem before you start</td><td>Create a clear problem statement</td></tr>
+      <tr><td>3</td><td>Drawing the line: what's in and what's out</td><td>Create a scope statement with exclusions</td></tr>
+      <tr><td>4</td><td>Who cares about your project (and why it matters)</td><td>Classify stakeholders using power-interest grid</td></tr>
+      <tr><td>5</td><td>The triple constraint: scope, time, and cost</td><td>Predict constraint impacts</td></tr>
+      <tr><td>6</td><td>Picking your approach: waterfall vs. agile</td><td>Select methodology for scenario</td></tr>
+      <tr><td>7</td><td>Spotting risks before they find you</td><td>Identify realistic risks</td></tr>
+      <tr><td>8</td><td>Communicating your project to different audiences</td><td>Create stakeholder communication plan</td></tr>
+      <tr><td>9</td><td>Writing a project charter that gets approval</td><td>Complete 2&ndash;3 charter sections (scope, stakeholders, constraints)</td></tr>
+    </table>
+  </div>
+</details>
+<details>
+  <summary>Unit 2: Planning the work (10 lessons)</summary>
+  <div class="content">
+    <table class="lesson-list">
+      <tr><th>#</th><th>Title</th><th>Key outcome</th></tr>
+      <tr><td>1</td><td>Breaking work into pieces: building a WBS</td><td>Create a two-level WBS</td></tr>
+      <tr><td>2</td><td>Estimating how long things actually take</td><td>Apply estimation techniques</td></tr>
+      <tr><td>3</td><td>Putting tasks in order: dependencies and sequencing</td><td>Create task sequence respecting dependencies</td></tr>
+      <tr><td>4</td><td>Building a schedule that works</td><td>Build schedule with milestones and critical path</td></tr>
+      <tr><td>5</td><td>Who does what: assigning real people with real limits</td><td>Create resource assignment matrix; handle competing availability</td></tr>
+      <tr><td>6</td><td>Building a project budget from the ground up</td><td>Build bottom-up budget</td></tr>
+      <tr><td>7</td><td>Planning for what could go wrong</td><td>Create risk mitigation plan</td></tr>
+      <tr><td>8</td><td>Setting baselines you can measure against</td><td>Identify baselines</td></tr>
+      <tr><td>9</td><td>Choosing the right tools for your project</td><td>Set up tracking board or Gantt chart</td></tr>
+      <tr><td>10</td><td>Putting the whole plan together</td><td>Assemble complete project plan</td></tr>
+    </table>
+  </div>
+</details>
+<details>
+  <summary>Unit 3: Leading the execution (9 lessons)</summary>
+  <div class="content">
+    <table class="lesson-list">
+      <tr><th>#</th><th>Title</th><th>Key outcome</th></tr>
+      <tr><td>1</td><td>Kicking off the project with your team</td><td>Create kickoff meeting agenda</td></tr>
+      <tr><td>2</td><td>Building a team that actually works together</td><td>Identify team stages and motivation techniques</td></tr>
+      <tr><td>3</td><td>When team members disagree: managing conflict</td><td>Select conflict resolution approach</td></tr>
+      <tr><td>4</td><td>Keeping stakeholders in the loop during execution</td><td>Create tailored status updates</td></tr>
+      <tr><td>5</td><td>Managing risks as they happen</td><td>Update risk register during execution</td></tr>
+      <tr><td>6</td><td>Tracking progress without micromanaging</td><td>Identify key progress metrics</td></tr>
+      <tr><td>7</td><td>Dealing with scope creep in the middle of the project</td><td>Apply change control process</td></tr>
+      <tr><td>8</td><td>Making tradeoff decisions under pressure</td><td>Evaluate tradeoffs using triple constraint</td></tr>
+      <tr><td>9</td><td>Running agile in practice: the sprint cycle</td><td>Describe how the sprint cycle organizes work</td></tr>
+    </table>
+  </div>
+</details>
+<details>
+  <summary>Unit 4: Controlling and closing (11 lessons)</summary>
+  <div class="content">
+    <table class="lesson-list">
+      <tr><th>#</th><th>Title</th><th>Key outcome</th></tr>
+      <tr><td>1</td><td>Tracking progress with simple metrics and dashboards</td><td>Read a project dashboard to identify status</td></tr>
+      <tr><td>2</td><td>Measuring project performance with earned value</td><td>Calculate PV, EV, AC</td></tr>
+      <tr><td>3</td><td>Reading the warning signs: variance analysis</td><td>Interpret SV and CV values</td></tr>
+      <tr><td>4</td><td>Getting back on track: corrective action</td><td>Diagnose root causes; recommend corrective actions</td></tr>
+      <tr><td>5</td><td>Keeping costs under control</td><td>Apply cost control techniques</td></tr>
+      <tr><td>6</td><td>Is the work good enough? Evaluating quality</td><td>Create acceptance criteria</td></tr>
+      <tr><td>7</td><td>Handling change requests without losing control</td><td>Evaluate change requests via impact analysis</td></tr>
+      <tr><td>8</td><td>Negotiating with stakeholders when things go wrong</td><td>Propose resolution for conflicting stakeholders</td></tr>
+      <tr><td>9</td><td>Closing the project: deliverables, sign-offs, and handoffs</td><td>Create closure checklist</td></tr>
+      <tr><td>10</td><td>What went right, what went wrong: lessons learned</td><td>Conduct lessons-learned review</td></tr>
+      <tr><td>11</td><td>Running a project from start to finish</td><td>Apply full lifecycle; diagnose which phase to revisit</td></tr>
+    </table>
+  </div>
+</details>
+              </div>
+            </details>
+          </div>
+        </div>
+      </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== VALIDATION 2 ========== -->
+  <section class="landing-section validation" aria-label="Validation 2">
+    <div class="section-inner">
+      <h2 class="section-heading" id="validation-2">&#x2705; Validation 2</h2>
+      <p class="muted-override" style="margin: -1rem 0 1.5rem; font-size: 0.9rem;">Validators re-score the revised draft</p>
+      <div class="journey-path">
+      <div class="journey-divider">
+        <span class="label">Validation 2</span>
+        <span class="line"></span>
+      </div>
+      <article class="stop role-validator pillar-validation">
+        <div class="stop-node" aria-hidden="true">2</div>
+        <div class="stop-card">
+          <div class="stage-label">Stage &mdash; Validation 2</div>
+          <div class="stop-meta">
+            <span class="stop-who">&#x1F50D; Agent: Eight validators (parallel)</span>
+          </div>
+          <div class="stop-body">
+            <div class="info-block">
+              <span class="info-icon" aria-hidden="true">i</span>
+              <div class="info-content">
+                <p><strong>What this stage does:</strong> The same eight validators score the revised syllabus. All must score &ge; 8/10 for the Lead to approve.</p>
+              </div>
+            </div>
+            <p><strong>All 8 validators passed.</strong> The v2 revisions resolved every critical and important concern from v1. Scores improved across the board, with Learning Theory rising to 10/10 and Difficulty Load rising from 7 to 9.</p>
+            <details>
+              <summary>&#x1F4CA; Validator score table &mdash; Round 2</summary>
+              <div class="content">
+                <table class="plain-table">
+                  <tr><th>Validator</th><th>v1 Score</th><th>v2 Score</th><th>Change</th><th>Pass/Fail</th></tr>
+                  <tr><td>Learning Arc Validator</td><td>9</td><td class="score-pass">9 / 10</td><td>&mdash;</td><td class="score-pass">PASS</td></tr>
+                  <tr><td>Core Concept Validator</td><td>9</td><td class="score-pass">9 / 10</td><td>&mdash;</td><td class="score-pass">PASS</td></tr>
+                  <tr><td>Mastery Progression Validator</td><td>9</td><td class="score-pass">9 / 10</td><td>&mdash;</td><td class="score-pass">PASS</td></tr>
+                  <tr><td>Learning Theory Validator</td><td>9</td><td class="score-pass">10 / 10</td><td>+1</td><td class="score-pass">PASS</td></tr>
+                  <tr><td>Outcome Alignment Validator</td><td>9</td><td class="score-pass">9 / 10</td><td>&mdash;</td><td class="score-pass">PASS</td></tr>
+                  <tr><td>Engagement Validator</td><td>8</td><td class="score-pass">9 / 10</td><td>+1</td><td class="score-pass">PASS</td></tr>
+                  <tr><td>Naming Validator</td><td>8</td><td class="score-pass">9 / 10</td><td>+1</td><td class="score-pass">PASS</td></tr>
+                  <tr><td>Difficulty Load Validator</td><td class="score-fail">7</td><td class="score-pass">9 / 10</td><td>+2</td><td class="score-pass">PASS</td></tr>
+                </table>
+              </div>
+            </details>
+            <details class="validator-summaries" style="margin-top: 0.75rem;">
+              <summary>&#x1F4CB; Short summary per validator &mdash; Round 2</summary>
+              <div class="content" style="margin-top: 0.5rem;">
+                <div class="validator-summary-list">
+                  <div class="validator-summary-item">
+                    <span class="validator-summary-name">Learning Arc Validator (9/10 &mdash; PASS)</span>
+                    <div class="validator-works"><strong>What works:</strong><p>Communication-before-charter reordering makes Unit 1 build toward capstone. New bridge lesson gives Unit 4 a smooth on-ramp. Earned-value-to-variance-to-corrective-action is now a clean four-step measurement cycle.</p></div>
+                    <div class="validator-improve"><strong>Minor note:</strong><p>Unit 4 now has 11 lessons, exceeding the 8&ndash;10 design constraint. Educationally justified but formally out of bounds.</p></div>
+                  </div>
+                  <div class="validator-summary-item">
+                    <span class="validator-summary-name">Core Concept Validator (9/10 &mdash; PASS)</span>
+                    <div class="validator-works"><strong>What works:</strong><p>All nine concepts in 7+ lessons across 3+ units. Threshold concepts follow clear scaffolding arcs. No forward-reference violations.</p></div>
+                  </div>
+                  <div class="validator-summary-item">
+                    <span class="validator-summary-name">Mastery Progression Validator (9/10 &mdash; PASS)</span>
+                    <div class="validator-works"><strong>What works:</strong><p>v2 revisions resolved all critical and moderate issues. The earned value scaffolding sequence is the standout improvement. Capstone exceeds all six outcome benchmarks.</p></div>
+                    <div class="validator-improve"><strong>Minor note:</strong><p>Baselines lesson still has an "Understand" level outcome where Apply would be better.</p></div>
+                  </div>
+                  <div class="validator-summary-item">
+                    <span class="validator-summary-name">Learning Theory Validator (10/10 &mdash; PASS)</span>
+                    <div class="validator-works"><strong>What works:</strong><p>The earned value scaffolding is a textbook application of Vygotsky's ZPD. Charter scope reduction respects element interactivity limits. Agile chunking is effective. Team leadership now gets early exposure in resource allocation. Every v1 concern resolved with theory-grounded interventions.</p></div>
+                  </div>
+                  <div class="validator-summary-item">
+                    <span class="validator-summary-name">Outcome Alignment Validator (9/10 &mdash; PASS)</span>
+                    <div class="validator-works"><strong>What works:</strong><p>All six outcomes demonstrably achieved. New bridge lesson strengthens measurement trajectory. Outcome 5 is the most thoroughly served with six Unit 4 lessons.</p></div>
+                  </div>
+                  <div class="validator-summary-item">
+                    <span class="validator-summary-name">Engagement Validator (9/10 &mdash; PASS)</span>
+                    <div class="validator-works"><strong>What works:</strong><p>Unit 1 reordering is a significant upgrade. Bridge lesson eliminates the most jarring moment. Resource allocation reframe adds emotional texture to Unit 2. Simplified agile lesson avoids ceremony overload.</p></div>
+                    <div class="validator-improve"><strong>Minor note:</strong><p>Unit 2 estimation-through-budgeting stretch still the weakest engagement segment, though improved.</p></div>
+                  </div>
+                  <div class="validator-summary-item">
+                    <span class="validator-summary-name">Naming Validator (9/10 &mdash; PASS)</span>
+                    <div class="validator-works"><strong>What works:</strong><p>40 titles tell a clear narrative. Agile title streamlined to "the sprint cycle." New bridge lesson well-named. PM vocabulary naturally embedded throughout.</p></div>
+                    <div class="validator-improve"><strong>Minor note:</strong><p>Colon pattern still appears in ~28% of titles. Two "Tracking progress" titles could be differentiated.</p></div>
+                  </div>
+                  <div class="validator-summary-item">
+                    <span class="validator-summary-name">Difficulty Load Validator (9/10 &mdash; PASS)</span>
+                    <div class="validator-works"><strong>What works:</strong><p>All four v1 overload issues resolved. Dashboard bridge anchors quantitative metrics in intuitive tools. Most lessons (35 of 39) focus on one concept. Threshold concepts introduced with low-stakes first exposures.</p></div>
+                    <div class="validator-improve"><strong>Minor note:</strong><p>"Building a schedule that works" still combines construction with critical path identification. Corrective action lesson has 3 mastery outcomes (upper boundary).</p></div>
+                  </div>
+                </div>
+              </div>
+            </details>
+          </div>
+        </div>
+      </article>
+      <article class="stop role-orchestrator decision-approve pillar-validation">
+        <div class="stop-node" aria-hidden="true">&#x1F3C6;</div>
+        <div class="stop-card">
+          <div class="stop-meta">
+            <span class="stop-who">&#x1F3C6; Agent: Lead Orchestrator</span>
+          </div>
+          <div class="stop-body">
+            <div class="info-block">
+              <span class="info-icon" aria-hidden="true">i</span>
+              <div class="info-content">
+                <p><strong>What the Lead does:</strong> When all validators score &ge; 8, the Lead approves. They write the final syllabus and pipeline report. Open issues (if any) are documented for future iteration or implementation; none are blockers.</p>
+              </div>
+            </div>
+            <p><span class="decision-badge decision-approve">&#x2705; APPROVE</span> All 8 validators scored 9 or 10. The revised syllabus addresses every blocker from v1 while preserving the strong arc, concept integrity, and mastery progression that scored well in the first round. The curriculum is approved for production.</p>
+            <details>
+              <summary>&#x1F4DC; Final curriculum summary</summary>
+              <div class="content">
+                <table class="plain-table">
+                  <tr><th>Attribute</th><th>Value</th></tr>
+                  <tr><td>Course</td><td>PMGT170 &mdash; Project Management</td></tr>
+                  <tr><td>Learning arc</td><td>The project lifecycle arc</td></tr>
+                  <tr><td>Core concepts</td><td>9 (3 threshold)</td></tr>
+                  <tr><td>Units</td><td>4</td></tr>
+                  <tr><td>Total lessons</td><td>39 (9 + 10 + 9 + 11)</td></tr>
+                  <tr><td>Iterations</td><td>2 (v1 generated, validated, revised; v2 validated, approved)</td></tr>
+                  <tr><td>Final min score</td><td>9/10</td></tr>
+                  <tr><td>Final max score</td><td>10/10 (Learning Theory)</td></tr>
+                </table>
+              </div>
+            </details>
+          </div>
+        </div>
+      </article>
+
+      <article class="stop role-validator">
+        <div class="stop-node" aria-hidden="true">&#x1F4CE;</div>
+        <div class="stop-card">
+          <div class="stop-meta">
+            <span class="stop-who">&#x1F4CE; Agent: Residual open issues</span>
+          </div>
+          <div class="stop-body">
+            <p><strong>Non-blocking issues</strong> for future iteration or implementation:</p>
+            <ul style="margin: 0.35rem 0 0 1.25rem; padding-left: 0.25rem;">
+              <li>Unit 4 has 11 lessons (design constraint says 8&ndash;10). Educationally justified but formally out of bounds &mdash; consider updating the constraint.</li>
+              <li>Baselines lesson still has an "Understand" level mastery outcome where "Apply" would maintain the cognitive demand ramp.</li>
+              <li>"Building a schedule that works" combines schedule construction with critical path identification &mdash; manageable but at the upper boundary.</li>
+              <li>Corrective action lesson has 3 mastery outcomes (all other lessons have 2) &mdash; viable because they form one decision loop, but dense.</li>
+            </ul>
+            <details>
+              <summary>&#x1F4CC; Full list (11 non-blocking issues)</summary>
+              <div class="content">
+                <ol style="font-size: 0.8125rem; line-height: 1.5; padding-left: 1.25rem;">
+                  <li>Unit 4 has 11 lessons, exceeding the 8&ndash;10 design constraint.</li>
+                  <li>Baselines lesson mastery outcome at "Understand" level instead of "Apply."</li>
+                  <li>Schedule lesson combines construction with critical path identification.</li>
+                  <li>Corrective action lesson has 3 mastery outcomes.</li>
+                  <li>Stakeholders absent from Unit 2 planning lessons.</li>
+                  <li>PM methodology has thinnest reinforcement (7 lessons vs. 14+ for scope).</li>
+                  <li>Two "Tracking progress" titles could be better differentiated.</li>
+                  <li>Colon pattern in ~28% of lesson titles.</li>
+                  <li>Unit 2 estimation-through-budgeting stretch remains the weakest engagement segment.</li>
+                  <li>Conflict management as dedicated skill still rests primarily on one lesson.</li>
+                  <li>Negotiation skill verb concentrated in a single lesson ("Negotiating with stakeholders when things go wrong").</li>
+                </ol>
+              </div>
+            </details>
+          </div>
+        </div>
+      </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== FINAL SYLLABUS ========== -->
+  <section class="landing-section final-syllabus">
+    <div class="section-inner">
+      <h2 class="section-heading" id="final-syllabus">&#x1F4DC; Final syllabus</h2>
+      <p class="muted-override" style="margin: -1rem 0 1.5rem; font-size: 0.9rem;">Approved curriculum with course mastery outcomes and per-lesson outcomes (from syllabus_final)</p>
+
+      <h3 style="font-size: 1rem; margin: 1.25rem 0 0.5rem;">Course mastery outcomes (graduate skills)</h3>
+      <p style="font-size: 0.875rem; color: var(--muted); margin-bottom: 0.75rem;">These are the human-defined outcomes the pipeline was given; the syllabus must cover all six.</p>
+      <table class="lesson-list">
+        <tr><th>#</th><th>Outcome</th></tr>
+        <tr><td>1</td><td>Develop and execute project plans across the project lifecycle by defining scope, breaking work into tasks/WBS, and creating schedules/timelines with needed resources.</td></tr>
+        <tr><td>2</td><td>Identify appropriate PM methodologies and use project tools to design and track project workflow.</td></tr>
+        <tr><td>3</td><td>Identify project risks and constraints and apply mitigation strategies to manage them.</td></tr>
+        <tr><td>4</td><td>Lead and manage project teams, with strong emphasis on conflict management and team collaboration.</td></tr>
+        <tr><td>5</td><td>Create measurement systems with deadlines/benchmarks, evaluate deliverable quality, and manage budgets/costs while allocating resources.</td></tr>
+        <tr><td>6</td><td>Negotiate and manage stakeholder relations.</td></tr>
+      </table>
+
+      <h3 style="font-size: 1rem; margin: 1.5rem 0 0.5rem;">Chosen learning arc</h3>
+      <p style="font-size: 0.875rem; margin-bottom: 0.75rem;"><strong>The project lifecycle arc</strong> &mdash; Project management is a lifecycle discipline &mdash; practitioners define, plan, execute, and close projects in sequence. Organizing the course this way gives career-switching adults a reusable mental model they can apply on day one of any PM role.</p>
+
+      <h3 style="font-size: 1rem; margin: 1.5rem 0 0.5rem;">Core concepts (9, including 3 threshold)</h3>
+      <p style="font-size: 0.8125rem; color: var(--muted); margin-bottom: 0.5rem;">Scope (threshold) &bull; Work breakdown structure / WBS (threshold) &bull; Project constraints and tradeoffs / triple constraint (threshold) &bull; Risk &bull; Stakeholders &bull; Scheduling and dependencies &bull; PM methodology (waterfall vs. agile) &bull; Monitoring and control &bull; Team leadership and conflict resolution</p>
+
+      <h3 style="font-size: 1rem; margin: 1.5rem 0 0.5rem;">Units and lessons with mastery outcomes</h3>
+      <p style="font-size: 0.8125rem; color: var(--muted); margin-bottom: 1rem;">Each lesson lists the specific outcomes learners must achieve (from syllabus_final.json).</p>
+      <details>
+        <summary>Unit 1: Defining the project (9 lessons)</summary>
+        <div class="content">
+          <p style="font-size: 0.8125rem; color: var(--muted); margin-bottom: 0.5rem;">Establishes what projects are, how to scope them, who the stakeholders are, and which methodology fits &mdash; giving students the foundation to make informed planning decisions.</p>
+          <table class="lesson-list">
+            <tr><th>#</th><th>Title</th><th>Mastery outcomes</th></tr>
+            <tr><td>1</td><td>What makes something a project</td><td>Distinguish projects from ongoing operations using specific criteria; Identify the lifecycle phases every project moves through</td></tr>
+            <tr><td>2</td><td>Spotting the real problem before you start</td><td>Create a clear problem statement from a vague business situation; Distinguish symptoms from root causes in a project scenario</td></tr>
+            <tr><td>3</td><td>Drawing the line: what's in and what's out</td><td>Create a scope statement with deliverables, exclusions, and boundaries; Identify scope creep risks in a project description</td></tr>
+            <tr><td>4</td><td>Who cares about your project (and why it matters)</td><td>Identify all relevant stakeholders for a given project scenario; Classify stakeholders by influence and interest using a power-interest grid</td></tr>
+            <tr><td>5</td><td>The triple constraint: scope, time, and cost</td><td>Identify the three constraints and how they interact; Predict which constraint will be affected when another changes</td></tr>
+            <tr><td>6</td><td>Picking your approach: waterfall vs. agile</td><td>Distinguish waterfall and agile approaches by their structures and assumptions; Select the appropriate methodology for a given project scenario and justify the choice</td></tr>
+            <tr><td>7</td><td>Spotting risks before they find you</td><td>Identify at least three realistic risks for a given project scenario; Distinguish risks from issues and constraints</td></tr>
+            <tr><td>8</td><td>Communicating your project to different audiences</td><td>Create a basic stakeholder communication plan for a project; Adapt project messaging for different stakeholder groups</td></tr>
+            <tr><td>9</td><td>Writing a project charter that gets approval</td><td>Complete the scope statement, stakeholder, and constraints sections of a project charter template; Identify how each charter section connects to concepts learned in this unit</td></tr>
+          </table>
+        </div>
+      </details>
+      <details>
+        <summary>Unit 2: Planning the work (10 lessons)</summary>
+        <div class="content">
+          <p style="font-size: 0.8125rem; color: var(--muted); margin-bottom: 0.5rem;">Builds the core planning toolkit: WBS, scheduling, resource allocation, and budgeting &mdash; so students can produce a workable project plan.</p>
+          <table class="lesson-list">
+            <tr><th>#</th><th>Title</th><th>Mastery outcomes</th></tr>
+            <tr><td>1</td><td>Breaking work into pieces: building a WBS</td><td>Create a two-level WBS from a scope statement; Verify that a WBS is complete and mutually exclusive</td></tr>
+            <tr><td>2</td><td>Estimating how long things actually take</td><td>Apply at least two estimation techniques to project tasks; Identify common estimation biases and how to counter them</td></tr>
+            <tr><td>3</td><td>Putting tasks in order: dependencies and sequencing</td><td>Identify dependency types between project tasks; Create a task sequence that respects dependencies</td></tr>
+            <tr><td>4</td><td>Building a schedule that works</td><td>Build a simple project schedule with milestones and dependencies; Identify the critical path in a project schedule</td></tr>
+            <tr><td>5</td><td>Who does what: assigning real people with real limits</td><td>Create a resource assignment matrix for a project; Identify resource conflicts and propose solutions that account for competing availability</td></tr>
+            <tr><td>6</td><td>Building a project budget from the ground up</td><td>Build a bottom-up budget from WBS tasks and resource assignments; Distinguish between direct costs, indirect costs, and contingency reserves</td></tr>
+            <tr><td>7</td><td>Planning for what could go wrong</td><td>Rate risks by likelihood and impact using a risk matrix; Create a mitigation plan for the top risks in a project</td></tr>
+            <tr><td>8</td><td>Setting baselines you can measure against</td><td>Identify the scope, schedule, and cost baselines for a project plan; Understand why baselines are necessary for measuring project performance</td></tr>
+            <tr><td>9</td><td>Choosing the right tools for your project</td><td>Select appropriate PM tools for different project needs; Set up a basic tracking board or Gantt chart for a project</td></tr>
+            <tr><td>10</td><td>Putting the whole plan together</td><td>Assemble a complete project plan from scope, WBS, schedule, budget, and risk components; Identify gaps or inconsistencies in a project plan</td></tr>
+          </table>
+        </div>
+      </details>
+      <details>
+        <summary>Unit 3: Leading the execution (9 lessons)</summary>
+        <div class="content">
+          <p style="font-size: 0.8125rem; color: var(--muted); margin-bottom: 0.5rem;">Shifts from planning to doing: managing teams, handling conflict, identifying and mitigating risks in real time, communicating with stakeholders, and tracking progress with PM tools.</p>
+          <table class="lesson-list">
+            <tr><th>#</th><th>Title</th><th>Mastery outcomes</th></tr>
+            <tr><td>1</td><td>Kicking off the project with your team</td><td>Create a kickoff meeting agenda that aligns the team on scope, roles, and timeline; Identify the elements that make a kickoff effective</td></tr>
+            <tr><td>2</td><td>Building a team that actually works together</td><td>Identify the stages of team development and what each requires from a PM; Apply at least two motivation techniques to a project team scenario</td></tr>
+            <tr><td>3</td><td>When team members disagree: managing conflict</td><td>Identify the type and source of a team conflict; Select and apply an appropriate conflict resolution approach for a given scenario</td></tr>
+            <tr><td>4</td><td>Keeping stakeholders in the loop during execution</td><td>Create a status update tailored to different stakeholder groups; Identify when stakeholder expectations need to be actively managed</td></tr>
+            <tr><td>5</td><td>Managing risks as they happen</td><td>Update a risk register based on new information during execution; Decide when to escalate a risk versus handle it at the team level</td></tr>
+            <tr><td>6</td><td>Tracking progress without micromanaging</td><td>Identify the key metrics for tracking project progress; Distinguish healthy progress tracking from micromanagement</td></tr>
+            <tr><td>7</td><td>Dealing with scope creep in the middle of the project</td><td>Identify scope creep in an active project scenario; Apply a change control process to evaluate a scope change request</td></tr>
+            <tr><td>8</td><td>Making tradeoff decisions under pressure</td><td>Evaluate a tradeoff decision using the triple constraint framework; Recommend a course of action when constraints conflict during execution</td></tr>
+            <tr><td>9</td><td>Running agile in practice: the sprint cycle</td><td>Describe how a sprint cycle organizes work into a repeatable rhythm of planning, executing, and reviewing; Identify where standups and retrospectives fit within a sprint and what each contributes</td></tr>
+          </table>
+        </div>
+      </details>
+      <details>
+        <summary>Unit 4: Controlling and closing (11 lessons)</summary>
+        <div class="content">
+          <p style="font-size: 0.8125rem; color: var(--muted); margin-bottom: 0.5rem;">Addresses performance measurement, quality evaluation, cost management, course-correction, and formal project closure with lessons learned.</p>
+          <table class="lesson-list">
+            <tr><th>#</th><th>Title</th><th>Mastery outcomes</th></tr>
+            <tr><td>1</td><td>Tracking progress with simple metrics and dashboards</td><td>Track project progress using percent-complete and milestone-based metrics; Read a project dashboard to identify tasks that are on track, behind, or at risk</td></tr>
+            <tr><td>2</td><td>Measuring project performance with earned value</td><td>Calculate planned value (PV), earned value (EV), and actual cost (AC) for a project scenario; Identify whether a project is ahead or behind schedule and over or under budget using EV data</td></tr>
+            <tr><td>3</td><td>Reading the warning signs: variance analysis</td><td>Interpret schedule variance (SV) and cost variance (CV) from provided earned value data; Explain what positive, negative, and zero variance values mean for a project's health</td></tr>
+            <tr><td>4</td><td>Getting back on track: corrective action</td><td>Identify root causes of project variances from performance data; Recommend specific corrective actions for common project variances; Distinguish corrective actions from preventive actions</td></tr>
+            <tr><td>5</td><td>Keeping costs under control</td><td>Identify the causes of budget overruns in a project scenario; Apply cost control techniques to bring a project back within budget</td></tr>
+            <tr><td>6</td><td>Is the work good enough? Evaluating quality</td><td>Create acceptance criteria for project deliverables; Identify quality issues before a deliverable reaches the stakeholder</td></tr>
+            <tr><td>7</td><td>Handling change requests without losing control</td><td>Evaluate a change request using impact analysis across scope, schedule, and cost; Apply a formal change control process to approve or reject a change</td></tr>
+            <tr><td>8</td><td>Negotiating with stakeholders when things go wrong</td><td>Propose a resolution when stakeholders want conflicting things; Negotiate a project adjustment that satisfies key stakeholder priorities</td></tr>
+            <tr><td>9</td><td>Closing the project: deliverables, sign-offs, and handoffs</td><td>Create a project closure checklist covering deliverables, sign-offs, and documentation; Identify what must happen before a project can be formally closed</td></tr>
+            <tr><td>10</td><td>What went right, what went wrong: lessons learned</td><td>Conduct a lessons-learned review for a completed project; Identify actionable improvements for future projects from retrospective data</td></tr>
+            <tr><td>11</td><td>Running a project from start to finish</td><td>Apply the full project lifecycle to a realistic scenario from definition through closure; Identify which phase a struggling project needs to revisit and why</td></tr>
+          </table>
+        </div>
+      </details>
+    </div>
+  </section>
+
+  <script>
+    const pageHeader = document.querySelector('.page-header');
+    const stageLinks = Array.from(document.querySelectorAll('.pillar-legend-item[href^="#"]'));
+
+    function updateHeaderOffset() {
+      if (!pageHeader) return;
+      const headerHeight = Math.ceil(pageHeader.getBoundingClientRect().height);
+      document.documentElement.style.setProperty('--header-offset', `${headerHeight}px`);
+    }
+
+    function setActiveStageLink() {
+      if (!pageHeader || !stageLinks.length) return;
+      const triggerY = pageHeader.getBoundingClientRect().height + 28;
+      let currentId = stageLinks[0].getAttribute('href').slice(1);
+
+      stageLinks.forEach(link => {
+        const targetId = link.getAttribute('href').slice(1);
+        const target = document.getElementById(targetId);
+        if (!target) return;
+        if (target.getBoundingClientRect().top <= triggerY) currentId = targetId;
+      });
+
+      stageLinks.forEach(link => {
+        link.classList.toggle('active', link.getAttribute('href') === `#${currentId}`);
+      });
+    }
+
+    function scrollToStage(targetId) {
+      const target = document.getElementById(targetId);
+      if (!target) return;
+      const headerHeight = pageHeader ? pageHeader.getBoundingClientRect().height : 0;
+      const top = target.getBoundingClientRect().top + window.scrollY - headerHeight - 12;
+      window.scrollTo({ top: Math.max(0, top), behavior: 'smooth' });
+    }
+
+    stageLinks.forEach(link => {
+      link.addEventListener('click', e => {
+        e.preventDefault();
+        const targetId = link.getAttribute('href').slice(1);
+        scrollToStage(targetId);
+      });
+    });
+
+    updateHeaderOffset();
+    setActiveStageLink();
+    window.addEventListener('resize', updateHeaderOffset);
+    window.addEventListener('scroll', setActiveStageLink, { passive: true });
+
+    document.querySelectorAll('details').forEach(d => {
+      d.addEventListener('toggle', function() {
+        if (this.open && this.querySelector('.content')) {
+          requestAnimationFrame(() => this.querySelector('.content').scrollIntoView({ behavior: 'smooth', block: 'nearest' }));
+        }
+      });
+    });
+  </script>
+</body>
+</html>
