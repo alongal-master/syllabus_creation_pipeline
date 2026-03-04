@@ -1,0 +1,1190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Syllabus Creation Pipeline — FE101 Visual</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,600;0,9..40,700;1,9..40,400&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg:#f6f8fa;--surface:#ffffff;--border:#d0d7de;--text:#1f2328;--muted:#656d76;
+      --pass:#1a7f37;--fail:#cf222e;--font-sans:"DM Sans",ui-sans-serif,system-ui,sans-serif;
+      --radius:14px;--shadow:0 2px 12px rgba(31,35,40,.08);
+      --pillar-arc-bg:#eef5ff;--pillar-arc-border:#9ec8ff;
+      --pillar-generation-bg:#e6ffec;--pillar-generation-border:#7ee787;
+      --pillar-validation-bg:#fff0f6;--pillar-validation-border:#ff9ecd;
+      --header-offset:180px;
+    }
+    *{box-sizing:border-box;}
+    html{scroll-behavior:smooth;scroll-padding-top:calc(var(--header-offset) + 0.75rem);}
+    body{margin:0;font-family:var(--font-sans);background:var(--bg);color:var(--text);line-height:1.55;min-height:100vh;}
+    .landing-section{width:100%;padding:3rem 1.25rem 4rem;}
+    .landing-section .section-inner{max-width:680px;margin:0 auto;}
+    .landing-section .section-heading{margin:0 0 2rem;font-size:1.35rem;font-weight:700;letter-spacing:-.02em;display:flex;align-items:center;gap:.5rem;scroll-margin-top:calc(var(--header-offset) + 0.75rem);}
+    .landing-section.arc{background:linear-gradient(180deg,#eef5ff 0%,#dbeafe 50%,#eef5ff 100%);color:#1e3a5f;}
+    .landing-section.arc .section-heading{color:#1e40af;}
+    .landing-section.arc .muted-override{color:#3b5998;}
+    .landing-section.generation{background:linear-gradient(180deg,#ecfdf5 0%,#d1fae5 50%,#ecfdf5 100%);color:#14532d;}
+    .landing-section.generation .section-heading{color:#047857;}
+    .landing-section.generation .muted-override{color:#065f46;}
+    .landing-section.validation{background:linear-gradient(180deg,#fdf2f8 0%,#fce7f3 50%,#fdf2f8 100%);color:#831843;}
+    .landing-section.validation .section-heading{color:#9d174d;}
+    .landing-section.validation .muted-override{color:#831843;}
+    .landing-section.revision{background:linear-gradient(180deg,#fffbeb 0%,#fef3c7 50%,#fffbeb 100%);color:#78350f;}
+    .landing-section.revision .section-heading{color:#b45309;}
+    .landing-section.revision .muted-override{color:#92400e;}
+    .landing-section.revision .info-block{background:rgba(180,83,9,.08);border-color:rgba(180,83,9,.2);}
+    .landing-section.revision .info-block .info-icon{background:rgba(180,83,9,.2);color:#b45309;}
+    .landing-section.revision .stop-card{border-color:rgba(180,83,9,.25);}
+    .landing-section.revision table,.landing-section.revision .content,.landing-section.revision .info-content{color:var(--text);}
+    .landing-section.final-syllabus{background:linear-gradient(180deg,#f0fdf4 0%,#dcfce7 50%,#f0fdf4 100%);color:#14532d;}
+    .landing-section.final-syllabus .section-heading{color:#15803d;}
+    .landing-section.final-syllabus .muted-override{color:#166534;}
+    .landing-section.final-syllabus .info-block{background:rgba(21,128,61,.08);border-color:rgba(21,128,61,.2);}
+    .landing-section.final-syllabus .info-block .info-icon{background:rgba(21,128,61,.2);color:#15803d;}
+    .landing-section.final-syllabus table,.landing-section.final-syllabus .content,.landing-section.final-syllabus .info-content{color:var(--text);}
+    .page-header{position:sticky;top:0;z-index:1000;background:rgba(255,255,255,.82);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-bottom:1px solid var(--border);padding:1rem 1.25rem .8rem;text-align:center;box-shadow:0 6px 18px rgba(31,35,40,.08);}
+    .page-header h1{margin:0;font-size:1.35rem;font-weight:700;letter-spacing:-.03em;display:flex;align-items:center;justify-content:center;gap:.35rem;}
+    .page-header .sub{margin:.25rem 0 0;color:var(--muted);font-size:.84rem;font-weight:600;}
+    .process-nav-wrap{display:flex;align-items:center;justify-content:center;margin-top:.7rem;padding-top:.75rem;border-top:1px solid rgba(208,215,222,.26);}
+    .pillar-legend{display:flex;flex-wrap:nowrap;align-items:center;justify-content:center;gap:1.35rem;width:min(100%,1250px);overflow-x:auto;scrollbar-width:thin;scroll-behavior:smooth;padding:.15rem .35rem .3rem;}
+    .pillar-legend-item{position:relative;flex:0 0 auto;font-size:.93rem;color:var(--muted);display:inline-flex;align-items:center;gap:.45rem;text-decoration:none;padding:.45rem .35rem;font-weight:700;letter-spacing:.01em;border-radius:999px;transition:color .2s,background .2s;}
+    .pillar-legend-item:hover{color:var(--text);background:rgba(255,255,255,.72);}
+    .pillar-legend-item.active{color:#0969da;}
+    .pillar-legend-item.active::before{content:"";position:absolute;left:50%;transform:translateX(-50%);bottom:.12rem;width:68%;height:1px;border-radius:2px;background:rgba(9,105,218,.3);}
+    .pillar-legend-item i{width:11px;height:11px;border-radius:4px;}
+    .pillar-legend-item::after{content:"→";position:absolute;right:-.92rem;top:50%;transform:translateY(-50%);color:#98a2ad;font-size:.88rem;font-weight:700;pointer-events:none;}
+    .pillar-legend-item:last-child::after{display:none;}
+    .pillar-legend-item.arc i{background:var(--pillar-arc-bg);border:1px solid var(--pillar-arc-border);}
+    .pillar-legend-item.generation i{background:var(--pillar-generation-bg);border:1px solid var(--pillar-generation-border);}
+    .pillar-legend-item.validation i{background:var(--pillar-validation-bg);border:1px solid var(--pillar-validation-border);}
+    .pillar-legend-item.revision i{background:#fef3c7;border:1px solid #fcd34d;}
+    .pillar-legend-item.final i{background:#dcfce7;border:1px solid #86efac;}
+    .journey-path{position:relative;padding-left:2.5rem;}
+    .landing-section.arc .journey-path::before,.landing-section.generation .journey-path::before,.landing-section.validation .journey-path::before,.landing-section.revision .journey-path::before{content:"";position:absolute;left:.6rem;top:1.5rem;bottom:1.5rem;width:2px;border-radius:2px;}
+    .landing-section.arc .journey-path::before{background:linear-gradient(180deg,#bfdbfe,#93c5fd);}
+    .landing-section.generation .journey-path::before{background:linear-gradient(180deg,#6ee7b7,#34d399);}
+    .landing-section.validation .journey-path::before{background:linear-gradient(180deg,#f9a8d4,#ec4899);}
+    .landing-section.revision .journey-path::before{background:linear-gradient(180deg,#fcd34d,#f59e0b);}
+    .stop{position:relative;display:grid;grid-template-columns:2rem 1fr;gap:0 1rem;margin-bottom:2.5rem;}
+    .stop:last-child{margin-bottom:0;}
+    .stop-node{width:2rem;height:2rem;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.78rem;font-weight:700;flex-shrink:0;position:relative;z-index:1;margin-top:.1rem;}
+    .role-setup .stop-node{background:#dbeafe;color:#1e40af;border:2px solid #93c5fd;}
+    .role-agent1 .stop-node{background:#dbeafe;color:#1e40af;border:2px solid #60a5fa;}
+    .role-agent2 .stop-node{background:#ede9fe;color:#5b21b6;border:2px solid #a78bfa;}
+    .role-generator .stop-node{background:#d1fae5;color:#065f46;border:2px solid #6ee7b7;}
+    .role-validator .stop-node{background:#fce7f3;color:#9d174d;border:2px solid #f9a8d4;}
+    .role-orchestrator .stop-node{background:#fef3c7;color:#92400e;border:2px solid #fcd34d;}
+    .stop-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:1rem 1.1rem;box-shadow:var(--shadow);}
+    .pillar-arc .stop-card{border-color:#bfdbfe;}
+    .pillar-generation .stop-card{border-color:#6ee7b7;}
+    .pillar-validation .stop-card{border-color:#f9a8d4;}
+    .stop-meta{display:flex;align-items:center;gap:.5rem;margin-bottom:.6rem;}
+    .stop-who{font-size:.8rem;font-weight:700;color:var(--muted);}
+    .stage-label{font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:.35rem;}
+    .stop-body{font-size:.875rem;line-height:1.55;}
+    .stop-body p{margin:.5rem 0;}
+    .stop-body p:first-child{margin-top:0;}
+    .stop-body ul{margin:.4rem 0;padding-left:1.25rem;}
+    .stop-body li{margin-bottom:.25rem;}
+    .info-block{display:flex;gap:.65rem;padding:.65rem .85rem;background:rgba(9,105,218,.06);border:1px solid rgba(9,105,218,.15);border-radius:10px;margin-bottom:.85rem;font-size:.8125rem;line-height:1.5;}
+    .info-icon{flex-shrink:0;width:1.4rem;height:1.4rem;border-radius:50%;background:rgba(9,105,218,.15);color:#0969da;display:flex;align-items:center;justify-content:center;font-size:.75rem;font-weight:700;margin-top:.05rem;}
+    .info-content{flex:1;}
+    .info-content p{margin:.2rem 0;}
+    .info-content p:first-child{margin-top:0;}
+    .journey-divider{display:flex;align-items:center;gap:.75rem;margin-bottom:1.5rem;margin-left:-2.5rem;}
+    .journey-divider .label{font-size:.75rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);white-space:nowrap;}
+    .journey-divider .line{flex:1;height:1px;background:var(--border);}
+    .decision-badge{display:inline-flex;align-items:center;gap:.35rem;padding:.3rem .7rem;border-radius:999px;font-size:.8rem;font-weight:700;margin-right:.4rem;}
+    .decision-revise{background:#fff7ed;color:#9a3412;border:1px solid #fed7aa;}
+    .decision-approve{background:#f0fdf4;color:#14532d;border:1px solid #bbf7d0;}
+    details{margin:.75rem 0;}
+    details>summary{cursor:pointer;font-size:.8125rem;font-weight:600;color:var(--text);padding:.45rem .6rem;border-radius:8px;background:rgba(0,0,0,.04);border:1px solid var(--border);list-style:none;display:flex;align-items:center;justify-content:space-between;gap:.5rem;user-select:none;}
+    details>summary::-webkit-details-marker{display:none;}
+    details>summary::after{content:"▸";float:right;opacity:.5;font-size:.75rem;transition:transform 180ms ease;}
+    details[open]>summary::after{transform:rotate(90deg);}
+    details .content{padding:.75rem .6rem .25rem;font-size:.8125rem;line-height:1.55;}
+    table{width:100%;border-collapse:collapse;font-size:.8125rem;margin:.5rem 0;}
+    th,td{text-align:left;padding:.45rem .6rem;border:1px solid var(--border);vertical-align:top;}
+    th{background:rgba(0,0,0,.04);font-weight:600;}
+    tbody tr:nth-child(even){background:rgba(0,0,0,.02);}
+    .score-pass{color:var(--pass);font-weight:700;}
+    .score-fail{color:var(--fail);font-weight:700;}
+    .validator-stack{display:flex;flex-direction:column;gap:.75rem;margin:1rem 0;}
+    .validator-info{flex-direction:column;gap:.4rem;padding:.65rem .85rem;}
+    .validator-info .info-icon{font-size:1rem;width:1.6rem;height:1.6rem;}
+    .validator-what{font-size:.78rem;color:var(--muted);margin:.2rem 0 0;}
+    details.speech-toggle>summary{font-size:.78rem;font-weight:600;color:var(--text);padding:.5rem .65rem;border-radius:12px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);}
+    details.speech-toggle>summary::-webkit-details-marker{display:none;}
+    details.speech-toggle>summary::after{content:"▸";float:right;opacity:.9;transform:rotate(0deg);transition:transform 180ms ease;}
+    details.speech-toggle[open]>summary::after{transform:rotate(90deg);}
+    .speech-bubble{position:relative;margin-top:.45rem;padding:.7rem .8rem;border-radius:16px;background:rgba(255,255,255,.92);color:rgba(15,23,42,.95);font-size:.82rem;line-height:1.4;box-shadow:0 10px 22px rgba(0,0,0,.25);}
+    .speech-bubble::before{content:"";position:absolute;top:-8px;left:18px;width:16px;height:16px;background:rgba(255,255,255,.92);transform:rotate(45deg);border-radius:3px;box-shadow:-2px -2px 6px rgba(0,0,0,.06);}
+    .revision-brief-list{display:flex;flex-direction:column;gap:1rem;}
+    .revision-brief-item{padding:.85rem 1rem;background:rgba(255,255,255,.6);border:1px solid rgba(180,83,9,.2);border-radius:var(--radius);border-left:4px solid #b45309;}
+    .revision-brief-title{font-size:.8125rem;font-weight:700;color:var(--text);margin-bottom:.35rem;}
+    .revision-brief-title .severity{font-weight:600;font-size:.7rem;text-transform:uppercase;letter-spacing:.03em;}
+    .revision-brief-title .severity.critical{color:var(--fail);}
+    .revision-brief-title .severity.important{color:#9d174d;}
+    .revision-brief-title .severity.moderate{color:var(--muted);}
+    .revision-brief-issue{font-size:.8rem;color:var(--muted);line-height:1.4;margin-bottom:.5rem;}
+    .revision-brief-instruction{font-size:.8125rem;line-height:1.5;color:var(--text);}
+    .validator-summary-list{display:flex;flex-direction:column;gap:1.25rem;}
+    .validator-summary-item{font-size:.8125rem;line-height:1.5;padding:.75rem 1rem;background:rgba(255,255,255,.5);border-radius:var(--radius);border-left:4px solid var(--border);}
+    .validator-summary-name{font-weight:700;font-size:.875rem;color:var(--text);margin-bottom:.5rem;display:block;}
+    .validator-works,.validator-improve{margin-top:.5rem;color:var(--text);}
+    .validator-works strong,.validator-improve strong{display:block;font-size:.75rem;text-transform:uppercase;letter-spacing:.03em;color:var(--muted);margin-bottom:.25rem;}
+    .validator-improve strong{color:#9d174d;}
+    .validator-works p,.validator-improve p{margin:0;font-size:.8125rem;line-height:1.5;}
+  </style>
+</head>
+<body>
+  <header class="page-header">
+    <h1>Syllabus Creation Pipeline</h1>
+    <p class="sub">FE101 — Introduction to Modern JavaScript &amp; TypeScript</p>
+    <div class="process-nav-wrap">
+      <nav class="pillar-legend" aria-label="Jump to section">
+        <a href="#arc" class="pillar-legend-item arc"><i></i> Learning Arc Design</a>
+        <a href="#generation" class="pillar-legend-item generation"><i></i> Generation</a>
+        <a href="#validation-1" class="pillar-legend-item validation"><i></i> Validation 1</a>
+        <a href="#revision-1" class="pillar-legend-item revision"><i></i> Revision 1</a>
+        <a href="#validation-2" class="pillar-legend-item validation"><i></i> Validation 2</a>
+        <a href="#revision-2" class="pillar-legend-item revision"><i></i> Revision 2</a>
+        <a href="#validation-3" class="pillar-legend-item validation"><i></i> Validation 3</a>
+        <a href="#final-syllabus" class="pillar-legend-item final"><i></i> Final syllabus</a>
+      </nav>
+    </div>
+  </header>
+
+  <!-- ARC -->
+  <section class="landing-section arc">
+    <div class="section-inner">
+      <h2 class="section-heading" id="arc">🧭 Learning Arc Design</h2>
+      <p class="muted-override" style="margin:-1rem 0 1.5rem;font-size:.9rem;">This stage defines the course flow and the core concepts that drive progression</p>
+      <div class="journey-path">
+
+        <article class="stop role-setup pillar-arc">
+          <div class="stop-node" aria-hidden="true">📍</div>
+          <div class="stop-card">
+            <div class="stop-meta"><span class="stop-who">📍 Context</span></div>
+            <div class="stop-body">
+              <div class="info-block">
+                <span class="info-icon" aria-hidden="true">i</span>
+                <div class="info-content">
+                  <p><strong>This is the only input we give to the pipeline.</strong> Everything else (arc, concepts, lessons) is designed by the system from this. We define the course name, context, a few constraints, and the graduate skills. Those outcomes are <strong>collected by industry professionals (humans)</strong> — they describe what learners must be able to do by the end.</p>
+                </div>
+              </div>
+              <p>Here: <strong>FE101 — Introduction to Modern JavaScript &amp; TypeScript</strong>, a bridge course for Python programmers entering frontend and full-stack engineering. AI-tutor delivered, 1-on-1, self-paced.</p>
+              <details>
+                <summary>🎯 Six Course Mastery Outcomes (graduate skills)</summary>
+                <div class="content">
+                  <table>
+                    <tr><th>#</th><th>Outcome</th></tr>
+                    <tr><td>LO1</td><td>Transition algorithmic problem-solving skills from Python to JavaScript: given a short algorithmic problem already solved in Python (e.g., filter a list, count items by condition), rewrite it in JavaScript without syntax errors and identify two key differences in how JS and Python handle the same logic.</td></tr>
+                    <tr><td>LO2</td><td>Understand and apply core JavaScript syntax and language fundamentals: write a 20–40 line JS program from scratch using variables (let/const), conditionals, loops, and functions — with no Python syntax present — and correctly predict the output of a program that uses type coercion or loose equality.</td></tr>
+                    <tr><td>LO3</td><td>Work confidently with common data structures: transform an array of objects using map, filter, and reduce; add, access, update, and delete object properties; and destructure both arrays and objects in function parameters.</td></tr>
+                    <tr><td>LO4</td><td>Write short reusable functions including function expressions, arrow functions, and anonymous callbacks: rewrite a named function declaration as a function expression and as an arrow function; pass a callback to a higher-order function like forEach or setTimeout; and distinguish passing a function reference from calling a function.</td></tr>
+                    <tr><td>LO5</td><td>Understand the fundamentals of synchronous and asynchronous programming in JavaScript: correctly predict the console output order of a program that mixes synchronous code with a setTimeout callback; write a function that uses async/await to handle a Promise; and apply try/catch for async error handling.</td></tr>
+                    <tr><td>LO6</td><td>Read and interpret basic TypeScript type annotations and error messages on variables, arrays, and functions: given a TypeScript file with a type error, identify which line is wrong, explain why TypeScript is rejecting it, and fix it — for scenarios involving primitive types, typed arrays, and function parameter/return types.</td></tr>
+                  </table>
+                </div>
+              </details>
+              <details>
+                <summary>📄 Course context &amp; structural rules</summary>
+                <div class="content">
+                  <p>Target learner: adult Python programmer (bootcamp or self-taught) pivoting to web or AI engineering. No prior JS or TypeScript experience. Structural rules: every Unit 1–2 lesson must anchor JS syntax to Python equivalent; no lesson may introduce more than two new concepts simultaneously; async scaffolded over at least three sequential lessons (call stack → event loop → callbacks → Promises → async/await); TypeScript introduced only after all JS patterns are in place; lesson titles 2–6 words, sentence case, no "Introduction to" patterns; course must include a motivation statement for career-switching adults.</p>
+                </div>
+              </details>
+            </div>
+          </div>
+        </article>
+
+        <article class="stop role-agent1 pillar-arc">
+          <div class="stop-node" aria-hidden="true">🧭</div>
+          <div class="stop-card">
+            <div class="stop-meta"><span class="stop-who">🧭 Agent: Learning Arc Designer</span></div>
+            <div class="stop-body">
+              <div class="info-block">
+                <span class="info-icon" aria-hidden="true">i</span>
+                <div class="info-content">
+                  <p><strong>What it is:</strong> The learning arc is the course's <strong>identity and learning flow</strong> — what changes from lesson to lesson and unit to unit, why it changes, and how the course systematically builds toward mastery.</p>
+                </div>
+              </div>
+              <p style="margin-bottom:.5rem;font-size:.9rem;font-weight:700;">Learning arc: <em>The Language Translator</em></p>
+              <p style="margin-top:0;">Every lesson in Units 1 and 2 anchors new JavaScript syntax and behavior directly to its Python equivalent — naming what maps across, what changes shape, and what is genuinely new — so students spend zero time feeling like beginners and maximum time building fluency. From that foundation, Unit 3 introduces JavaScript's most distinctive concept: single-threaded asynchronous execution, which Python largely conceals and which must be scaffolded step by step. Unit 4 completes the arc by adding TypeScript's type layer on top of JS patterns students have already mastered, connecting back to the type coercion surprises of Unit 1 and showing why static types matter.</p>
+              <ul style="margin:.5rem 0 0 1.25rem;padding-left:.25rem;">
+                <li><strong>JS foundations</strong>: Rapid Python-to-JS orientation using Python as a scaffold — every new concept explicitly anchored to its Python equivalent or flagged as genuinely new.</li>
+                <li><strong>Arrays, objects, and functions</strong>: JS data layer deepened with destructuring, spread/rest, and higher-order array methods, grounded in Python parallels. Functions graduate to first-class values, callbacks, and closures.</li>
+                <li><strong>Async JavaScript</strong>: The course's hardest conceptual shift — from synchronous top-to-bottom execution to JS's single-threaded non-blocking model. Scaffolded: call stack → event loop → callback hell → Promises → async/await → error handling → parallelism.</li>
+                <li><strong>TypeScript types</strong>: TypeScript's type annotation layer added on top of mastered JS patterns. Every concept connects back to a specific JS behavior — especially type coercion — to show why static types exist.</li>
+              </ul>
+              <p style="margin:.75rem 0 0;"><strong>Organizing principle:</strong> Use Python as a scaffold — explicitly name what translates, what changes shape, and what is genuinely new — so learners spend zero time feeling like beginners and maximum time building real fluency.</p>
+            </div>
+          </div>
+        </article>
+
+        <article class="stop role-agent2 pillar-arc">
+          <div class="stop-node" aria-hidden="true">🧩</div>
+          <div class="stop-card">
+            <div class="stop-meta"><span class="stop-who">🧩 Agent: Core Concepts Planner</span></div>
+            <div class="stop-body">
+              <div class="info-block">
+                <span class="info-icon" aria-hidden="true">i</span>
+                <div class="info-content">
+                  <p><strong>Role:</strong> Defines the 6–12 irreducible core concepts learners must internalize — with definitions, which are threshold concepts, and when they are staged across the course. The Generator uses this so every lesson deepens or integrates these concepts.</p>
+                </div>
+              </div>
+              <details>
+                <summary>📚 8 Core Concepts — Descriptions</summary>
+                <div class="content">
+                  <table>
+                    <tr><th>ID</th><th>Concept</th><th>Description / role in course</th></tr>
+                    <tr><td>cc1 ⚠️</td><td>JS type system &amp; coercion</td><td>JavaScript performs implicit type coercion when operators are applied to mismatched types — producing results like '3'+3='33' that Python would never allow silently. Primary "this language works differently" moment; underpins equality behavior, common bugs, and the entire rationale for TypeScript. <em>Threshold.</em></td></tr>
+                    <tr><td>cc2</td><td>Equality: == vs ===</td><td>JS's == coerces types before comparing; === compares value and type without coercion. Practical rule: always use ===. Direct, testable consequence of cc1.</td></tr>
+                    <tr><td>cc3 ⚠️</td><td>Scope and closures</td><td>Scope determines which variables are accessible at any point. A closure retains access to variables from its enclosing scope after that scope has returned. Prerequisite to reasoning about callbacks and async state. <em>Threshold.</em></td></tr>
+                    <tr><td>cc4 ⚠️</td><td>Functions as first-class values</td><td>In JS, functions are values — assignable to variables, passable as arguments, returnable from other functions. This mental model shift enables callbacks, higher-order functions, and the entire async pattern. <em>Threshold.</em></td></tr>
+                    <tr><td>cc5</td><td>Callbacks and higher-order functions</td><td>A callback is a function passed as an argument to be called later. A higher-order function takes a function as input or returns one. Powers map/filter/reduce and async result delivery.</td></tr>
+                    <tr><td>cc6 ⚠️</td><td>The event loop and async execution</td><td>JavaScript runs on a single thread. The event loop enables non-blocking execution by deferring callbacks to a queue that runs after the call stack empties. No direct Python equivalent — requires rebuilding the mental model of how code runs. <em>Threshold.</em></td></tr>
+                    <tr><td>cc7</td><td>Promises and async/await</td><td>A Promise represents a value available in the future (or an error). async/await is syntactic sugar over Promises letting async code read like sequential code. Both built on the event loop.</td></tr>
+                    <tr><td>cc8</td><td>TypeScript static types and annotations</td><td>TypeScript adds a compile-time type layer to JavaScript. Type annotations declare what type a variable/parameter/return value must hold; the compiler flags violations before code runs. Direct solution to JS type coercion bugs.</td></tr>
+                  </table>
+                </div>
+              </details>
+            </div>
+          </div>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- GENERATION V1 -->
+  <section class="landing-section generation">
+    <div class="section-inner">
+      <h2 class="section-heading" id="generation">✏️ Generation</h2>
+      <p class="muted-override" style="margin:-1rem 0 1.5rem;font-size:.9rem;">The Generator turns the arc and concepts into the first full lesson syllabus</p>
+      <div class="journey-path">
+        <article class="stop role-generator pillar-generation">
+          <div class="stop-node" aria-hidden="true">v1</div>
+          <div class="stop-card">
+            <div class="stage-label">Stage — Generation v1</div>
+            <div class="stop-meta"><span class="stop-who">✏️ Agent: Generator</span></div>
+            <div class="stop-body">
+              <div class="info-block">
+                <span class="info-icon" aria-hidden="true">i</span>
+                <div class="info-content">
+                  <p><strong>What this stage does:</strong> Builds the full syllabus from the selected arc and core concepts. Each lesson must advance the learner's progression, deepen or integrate concepts, and increase realism or independence. Lesson titles are short, natural, and practical.</p>
+                </div>
+              </div>
+              <p><strong>v1 output:</strong> 4 units, 31 lessons. Strong scaffolding in Units 1 and 3; however u2l5 attempted to teach two threshold concepts simultaneously (cc4 + cc3), and Unit 4 had only 4 lessons with no integration challenge. Five validators scored below the 8/10 pass threshold.</p>
+              <details>
+                <summary>📋 Full lesson list — v1 (31 lessons)</summary>
+                <div class="content">
+                  <p style="font-size:.8125rem;color:var(--muted);margin-bottom:1rem;">v1 draft before any revisions. Note key differences from the final syllabus: u1l6 included arrow functions (later removed), u2l5 combined first-class functions + closures (later split into u2l5 + u2l6), u2l6 was "Arrow functions" (shifted to u2l7), no u4l5 challenge lesson, unit 4 was titled "TypeScript basics".</p>
+                  <details>
+                    <summary>JS foundations (v1) — 9 lessons</summary>
+                    <div class="content">
+                      <table>
+                        <tr><th>ID</th><th>Title (v1)</th><th>Topic</th></tr>
+                        <tr><td>u1l1</td><td>Why JavaScript, why now</td><td>Course motivation and the Python-to-JS transition</td></tr>
+                        <tr><td>u1l2</td><td>Variables and constants</td><td>let, const, var — JS variable declaration vs Python</td></tr>
+                        <tr><td>u1l3</td><td>Types and type coercion</td><td>JS primitive types, dynamic typing, and implicit coercion</td></tr>
+                        <tr><td>u1l4</td><td>Equality and comparison operators</td><td>== vs ===, comparison operators, truthiness</td></tr>
+                        <tr><td>u1l5</td><td>Control flow in JS</td><td>if/else, for, while, for...of — JS vs Python syntax</td></tr>
+                        <tr><td>u1l6</td><td>Functions: declarations and expressions</td><td>Function declarations, function expressions, basic arrow functions [arrow functions later removed in v2]</td></tr>
+                        <tr><td>u1l7</td><td>Strings and template literals</td><td>String methods, template literals, vs Python f-strings</td></tr>
+                        <tr><td>u1l8</td><td>Scope and variable lifecycle</td><td>Block scope, function scope, closure preview</td></tr>
+                        <tr><td>u1l9</td><td>JS foundations challenge</td><td>Integration — variables, types, control flow, functions, strings [later renamed "JS syntax in practice"]</td></tr>
+                      </table>
+                    </div>
+                  </details>
+                  <details>
+                    <summary>Arrays, objects, and functions (v1) — 9 lessons</summary>
+                    <div class="content">
+                      <table>
+                        <tr><th>ID</th><th>Title (v1)</th><th>Topic</th></tr>
+                        <tr><td>u2l1</td><td>Arrays and array methods</td><td>JS arrays — push, pop, slice, splice vs Python lists</td></tr>
+                        <tr><td>u2l2</td><td>Objects vs Python dicts</td><td>Object literals, property access, mutation, methods [later renamed "Objects and properties"]</td></tr>
+                        <tr><td>u2l3</td><td>Array and object destructuring</td><td>Array destructuring, object destructuring, function parameter destructuring</td></tr>
+                        <tr><td>u2l4</td><td>Spread and rest operators</td><td>... operator — spread into arrays/objects, rest in function params</td></tr>
+                        <tr><td>u2l5</td><td>Functions as values</td><td>First-class functions, function references vs calls, closures [TWO threshold concepts: cc4 + cc3 — split in v2]</td></tr>
+                        <tr><td>u2l6</td><td>Arrow functions</td><td>Arrow function syntax — implicit return, this binding, idiomatic use [shifted to u2l7 in v2]</td></tr>
+                        <tr><td>u2l7</td><td>Higher-order array methods</td><td>map, filter, reduce — callbacks, method chaining, vs Python [renamed "map, filter, and reduce" in v2]</td></tr>
+                        <tr><td>u2l8</td><td>Callbacks and higher-order functions</td><td>Writing callback-receiving functions, forEach, sort comparators [renamed "Writing higher-order functions" in v2]</td></tr>
+                        <tr><td>u2l9</td><td>Arrays and objects challenge</td><td>Integration — arrays, objects, destructuring, map/filter/reduce, callbacks [renamed "Data pipeline in JS" and became u2l10 in v2]</td></tr>
+                      </table>
+                    </div>
+                  </details>
+                  <details>
+                    <summary>Async JavaScript (v1) — 9 lessons</summary>
+                    <div class="content">
+                      <table>
+                        <tr><th>ID</th><th>Title (v1)</th><th>Topic</th></tr>
+                        <tr><td>u3l1</td><td>Synchronous execution and the call stack</td><td>How JS executes synchronously — call stack, execution order [renamed "The call stack" in v2]</td></tr>
+                        <tr><td>u3l2</td><td>The event loop</td><td>Event loop, callback queue, non-blocking execution model</td></tr>
+                        <tr><td>u3l3</td><td>Callbacks and async timing</td><td>Async callbacks, setTimeout patterns, callback hell problem</td></tr>
+                        <tr><td>u3l4</td><td>Promises: resolve and reject</td><td>Creating Promises, resolve, reject, .then, .catch</td></tr>
+                        <tr><td>u3l5</td><td>Chaining promises</td><td>Promise chaining, .then chains, .finally, avoiding nesting</td></tr>
+                        <tr><td>u3l6</td><td>async and await</td><td>async functions, await keyword, rewriting Promise chains</td></tr>
+                        <tr><td>u3l7</td><td>Error handling in async code</td><td>try/catch with async/await, .catch on Promises, error propagation [renamed "try/catch and async errors" in v2]</td></tr>
+                        <tr><td>u3l8</td><td>Promise.all and parallel async</td><td>Promise.all, Promise.allSettled — running Promises in parallel</td></tr>
+                        <tr><td>u3l9</td><td>Async JavaScript challenge</td><td>Integration — event loop, Promises, async/await, error handling [renamed "Async execution: full picture" in v2]</td></tr>
+                      </table>
+                    </div>
+                  </details>
+                  <details>
+                    <summary>TypeScript basics (v1) — 4 lessons</summary>
+                    <div class="content">
+                      <table>
+                        <tr><th>ID</th><th>Title (v1)</th><th>Topic</th></tr>
+                        <tr><td>u4l1</td><td>What TypeScript adds</td><td>TypeScript as a JS superset — type annotations, compile-time checking [renamed "TypeScript as a JS superset" in v2]</td></tr>
+                        <tr><td>u4l2</td><td>Types in function signatures</td><td>Parameter type annotations, return type annotations, void</td></tr>
+                        <tr><td>u4l3</td><td>Typed arrays and union types</td><td>Typed arrays (string[], number[]), union types (string | number), type narrowing</td></tr>
+                        <tr><td>u4l4</td><td>Reading TypeScript errors</td><td>TypeScript error messages — reading, diagnosing, and fixing [no u4l5 challenge in v1]</td></tr>
+                      </table>
+                    </div>
+                  </details>
+                </div>
+              </details>
+            </div>
+          </div>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- VALIDATION 1 -->
+  <section class="landing-section validation">
+    <div class="section-inner">
+      <h2 class="section-heading" id="validation-1">✅ Validation 1</h2>
+      <p class="muted-override" style="margin:-1rem 0 1.5rem;font-size:.9rem;">Eight specialist validators score each draft; the Lead Orchestrator decides APPROVE or REVISE</p>
+      <div class="journey-path">
+        <div class="journey-divider"><span class="label">Validation round 1</span><span class="line"></span></div>
+        <article class="stop role-validator pillar-validation">
+          <div class="stop-node" aria-hidden="true">1</div>
+          <div class="stop-card">
+            <div class="stage-label">Stage — Validation round 1</div>
+            <div class="stop-meta"><span class="stop-who">🔍 Agent: Eight validators (parallel)</span></div>
+            <div class="stop-body">
+              <div class="info-block">
+                <span class="info-icon" aria-hidden="true">i</span>
+                <div class="info-content">
+                  <p><strong>What validation does:</strong> After each Generation run, eight validators run in parallel. Each has one dimension; passing score is 8/10. If any validator fails, the Lead sends a revision brief to the Generator.</p>
+                </div>
+              </div>
+              <p><strong>Introducing the eight validators:</strong></p>
+              <div class="validator-stack">
+                <div class="info-block validator-info">
+                  <span class="info-icon" aria-hidden="true">🧭</span>
+                  <div class="info-content">
+                    <p><strong>Learning Arc Validator</strong></p>
+                    <p class="validator-what"><strong>Core question:</strong> Is there a strong throughline that aligns with the chosen learning arc?</p>
+                    <details class="speech-toggle">
+                      <summary>What they said (v1)?</summary>
+                      <div class="speech-bubble"><strong>Summary:</strong> The 'Language Translator' arc is clearly visible throughout: Unit 1 and 2 consistently anchor JS concepts to Python equivalents, Unit 3 scaffolds async execution as a genuinely new mental model across nine tightly sequenced lessons, and Unit 4 opens by connecting back to type coercion from Unit 1. One gap tempers the score: the destructuring lesson drops the Python-comparison anchor, and Unit 4 contains only four lessons with no connection to async patterns. <span class="score-pass">Score: 8/10 ✅</span></div>
+                    </details>
+                  </div>
+                </div>
+                <div class="info-block validator-info">
+                  <span class="info-icon" aria-hidden="true">🧩</span>
+                  <div class="info-content">
+                    <p><strong>Core Concept Validator</strong></p>
+                    <p class="validator-what"><strong>Core question:</strong> Does this build structured, integrated understanding of the core concepts?</p>
+                    <details class="speech-toggle">
+                      <summary>What they said (v1)?</summary>
+                      <div class="speech-bubble"><strong>Summary:</strong> Strong scaffolding for three of four threshold concepts (cc1, cc4, cc6), but the fourth — scope and closures (cc3) — has a documented gap: the course design calls for closures to be revisited in the async unit when callbacks capture outer state, but no async lesson connects back to closures. Additionally, cc4 is tagged as introduced in u1l6 but none of the mastery outcomes test the first-class value mental model. <span class="score-fail">Score: 7/10 ❌</span></div>
+                    </details>
+                  </div>
+                </div>
+                <div class="info-block validator-info">
+                  <span class="info-icon" aria-hidden="true">📈</span>
+                  <div class="info-content">
+                    <p><strong>Mastery Progression Validator</strong></p>
+                    <p class="validator-what"><strong>Core question:</strong> Does competence genuinely build toward the performance levels defined in the graduate skills?</p>
+                    <details class="speech-toggle">
+                      <summary>What they said (v1)?</summary>
+                      <div class="speech-bubble"><strong>Summary:</strong> Mastery progression is structurally sound and largely genuine: skills compound well within each unit, Bloom's levels escalate appropriately, and Unit 4 arrives on schedule after full JS coverage. The one significant gap is that Unit 4 ends at four lessons with no synthesis challenge, leaving TypeScript mastery at the 'fix individual errors' level rather than the 'read and repair a TypeScript file' benchmark specified in the outcomes. <span class="score-pass">Score: 8/10 ✅</span></div>
+                    </details>
+                  </div>
+                </div>
+                <div class="info-block validator-info">
+                  <span class="info-icon" aria-hidden="true">🧠</span>
+                  <div class="info-content">
+                    <p><strong>Learning Theory Validator</strong></p>
+                    <p class="validator-what"><strong>Core question:</strong> Is this aligned with how humans actually learn?</p>
+                    <details class="speech-toggle">
+                      <summary>What they said (v1)?</summary>
+                      <div class="speech-bubble"><strong>Summary:</strong> Structurally sound with deliberate scaffolding and each unit ending with a meaningful integration challenge. Primary weaknesses: near-total absence of spaced retrieval across unit boundaries, cognitive load spike at u2l5 (two threshold concepts — cc4 + cc3 — in one lesson), and u1l6 overloaded with three function syntaxes plus hoisting plus an intro to cc4. <span class="score-fail">Score: 7/10 ❌</span></div>
+                    </details>
+                  </div>
+                </div>
+                <div class="info-block validator-info">
+                  <span class="info-icon" aria-hidden="true">🎯</span>
+                  <div class="info-content">
+                    <p><strong>Outcome Alignment Validator</strong></p>
+                    <p class="validator-what"><strong>Core question:</strong> Are all learning outcomes demonstrably achieved at the complexity level defined in the learning arc?</p>
+                    <details class="speech-toggle">
+                      <summary>What they said (v1)?</summary>
+                      <div class="speech-bubble"><strong>Summary:</strong> All six course outcomes are covered at the correct benchmark depth and at the right point in the sequence, with mastery outcomes that directly and explicitly address each benchmark criterion. The single notable weakness is that the algorithmic Python-to-JS rewrite benchmark (LO1) is distributed across Unit 1 rather than anchored in a single focal lesson. <span class="score-pass">Score: 9/10 ✅</span></div>
+                    </details>
+                  </div>
+                </div>
+                <div class="info-block validator-info">
+                  <span class="info-icon" aria-hidden="true">⚡</span>
+                  <div class="info-content">
+                    <p><strong>Engagement Validator</strong></p>
+                    <p class="validator-what"><strong>Core question:</strong> Would a real learner feel pulled forward?</p>
+                    <details class="speech-toggle">
+                      <summary>What they said (v1)?</summary>
+                      <div class="speech-bubble"><strong>Summary:</strong> The curriculum has a clear motivational spine: 'you already think like a programmer — now translate that into JavaScript.' The Python-comparison framing is genuinely empowering, and the async scaffolding is exemplary. However, the course lacks explicit curiosity loops or forward-referencing hooks between individual lessons, course motivation is front-loaded into a single lesson and never explicitly resurfaces, no recurring job-relevance touchpoints, and integration lessons are framed as assessment tasks rather than milestone moments. <span class="score-fail">Score: 6/10 ❌</span></div>
+                    </details>
+                  </div>
+                </div>
+                <div class="info-block validator-info">
+                  <span class="info-icon" aria-hidden="true">🏷️</span>
+                  <div class="info-content">
+                    <p><strong>Naming Validator</strong></p>
+                    <p class="validator-what"><strong>Core question:</strong> Do the titles alone communicate the shape and ambition of this course?</p>
+                    <details class="speech-toggle">
+                      <summary>What they said (v1)?</summary>
+                      <div class="speech-bubble"><strong>Summary:</strong> Reading the titles in sequence tells a coherent, progressive story. However: unit title "TypeScript basics" uses a minimizing qualifier; three lessons use 'challenge' suffix (repetitive pattern); two consecutive Unit 2 titles duplicate 'higher-order' vocabulary; and two titles use meta-framing rather than naming the concept directly ('Why JavaScript, why now'; 'What TypeScript adds'). <span class="score-fail">Score: 7/10 ❌</span></div>
+                    </details>
+                  </div>
+                </div>
+                <div class="info-block validator-info">
+                  <span class="info-icon" aria-hidden="true">🏋️</span>
+                  <div class="info-content">
+                    <p><strong>Difficulty Load Validator</strong></p>
+                    <p class="validator-what"><strong>Core question:</strong> Is pacing controlled and cognitive load appropriate per lesson and across the arc?</p>
+                    <details class="speech-toggle">
+                      <summary>What they said (v1)?</summary>
+                      <div class="speech-bubble"><strong>Summary:</strong> Well-scaffolded in Units 1, 3, and 4, but Unit 2 Lesson 5 ('Functions as values') attempts to fully introduce two separate threshold concepts (cc4 + cc3) in a single session — the most serious load violation in the arc. Secondary consistent issue: several lessons pack 3+ distinct syntax patterns into one session (u1l6: three function syntaxes + hoisting; u2l3: three destructuring patterns; u4l3: typed arrays + union types + type narrowing). <span class="score-fail">Score: 6/10 ❌</span></div>
+                    </details>
+                  </div>
+                </div>
+              </div>
+
+              <p><strong>Round 1 scores:</strong> Arc 8 ✅ · Concept 7 ❌ · Mastery 8 ✅ · LearningTheory 7 ❌ · Outcome 9 ✅ · Engagement 6 ❌ · Naming 7 ❌ · Difficulty 6 ❌ — <strong>3 pass, 5 fail</strong></p>
+              <details>
+                <summary>📊 Validator score table — Round 1</summary>
+                <div class="content">
+                  <table>
+                    <tr><th>Validator</th><th>Score</th><th>Pass?</th><th>Primary finding</th></tr>
+                    <tr><td>Learning Arc</td><td class="score-pass">8</td><td class="score-pass">✅</td><td>Arc visible throughout; gap in destructuring (no Python anchor) and Unit 4 has no async-TypeScript connection</td></tr>
+                    <tr><td>Core Concepts</td><td class="score-fail">7</td><td class="score-fail">❌</td><td>cc3 not revisited in Unit 3 async callbacks; cc4 not assessable at first introduction in u1l6</td></tr>
+                    <tr><td>Mastery Progression</td><td class="score-pass">8</td><td class="score-pass">✅</td><td>Solid progression; Unit 4 ends without synthesis challenge — TypeScript mastery short of benchmark</td></tr>
+                    <tr><td>Learning Theory</td><td class="score-fail">7</td><td class="score-fail">❌</td><td>u2l5 two threshold concepts simultaneously; u1l6 overloaded; spaced retrieval absent</td></tr>
+                    <tr><td>Outcome Alignment</td><td class="score-pass">9</td><td class="score-pass">✅</td><td>All 6 outcomes covered at correct benchmark depth</td></tr>
+                    <tr><td>Engagement</td><td class="score-fail">6</td><td class="score-fail">❌</td><td>Motivation front-loaded; no curiosity loops; no job-relevance touchpoints; milestones not framed</td></tr>
+                    <tr><td>Naming</td><td class="score-fail">7</td><td class="score-fail">❌</td><td>"TypeScript basics" minimizing; three 'challenge' patterns; meta-framing titles</td></tr>
+                    <tr><td>Difficulty Load</td><td class="score-fail">6</td><td class="score-fail">❌</td><td>u2l5 two threshold concepts; u1l6 overloaded with 4 distinct items</td></tr>
+                  </table>
+                </div>
+              </details>
+            </div>
+          </div>
+        </article>
+
+        <article class="stop role-orchestrator pillar-validation">
+          <div class="stop-node" aria-hidden="true">⚖️</div>
+          <div class="stop-card">
+            <div class="stop-meta"><span class="stop-who">⚖️ Agent: Lead Orchestrator</span></div>
+            <div class="stop-body">
+              <div class="info-block">
+                <span class="info-icon" aria-hidden="true">i</span>
+                <div class="info-content">
+                  <p><strong>What the Lead does:</strong> After validators report, the Lead decides APPROVE or REVISE. If any validator scores below 8, the Lead merges findings into a revision brief and sends the process back to Generation.</p>
+                </div>
+              </div>
+              <p><span class="decision-badge decision-revise">🔄 REVISE</span> Five validators scored below 8. The two highest-impact structural problems are (1) a single overloaded lesson that tries to teach two fundamentally new mental models simultaneously — first-class functions and closures — causing fragility across all downstream lessons, and (2) Unit 4 ending without any integration exercise, leaving TypeScript mastery short of its stated benchmark. Secondary issues: predictable lesson-title patterns, missing closure reinforcement in Unit 3, and engagement scaffolding that lives only in internal notes instead of learner-visible teaching instructions. Issuing revision brief with 8 items.</p>
+              <details>
+                <summary>📌 Revision brief — all 8 items sent to Generator</summary>
+                <div class="content" style="margin-top:.75rem;">
+                  <div class="revision-brief-list">
+                    <div class="revision-brief-item">
+                      <div class="revision-brief-title">rb1 — <span class="severity critical">CRITICAL</span> — Split u2l5: two threshold concepts in one lesson</div>
+                      <div class="revision-brief-issue">u2l5 'Functions as values' introduces both cc4 (functions as first-class values) and cc3 (closures) as full threshold concepts in one session. Multiple validators independently flagged this as the highest-risk structural problem.</div>
+                      <div class="revision-brief-instruction"><strong>Fix:</strong> Split u2l5 into two sequential lessons: (1) 'Functions as values' — cc4 only; (2) 'Closures' — cc3 only, with mastery outcomes requiring predicting closure values at call time.</div>
+                    </div>
+                    <div class="revision-brief-item">
+                      <div class="revision-brief-title">rb2 — <span class="severity critical">CRITICAL</span> — Remove arrow functions from u1l6</div>
+                      <div class="revision-brief-issue">u1l6 introduces three function syntaxes + hoisting + an intro to cc4. Arrow functions have a dedicated lesson in u2l6; their presence in u1l6 is premature and creates redundancy.</div>
+                      <div class="revision-brief-instruction"><strong>Fix:</strong> Remove all arrow function content from u1l6. The lesson covers: (1) function declaration syntax and (2) function expression syntax, plus hoisting.</div>
+                    </div>
+                    <div class="revision-brief-item">
+                      <div class="revision-brief-title">rb3 — <span class="severity critical">CRITICAL</span> — Add a Unit 4 integration/challenge lesson</div>
+                      <div class="revision-brief-issue">Units 1, 2, and 3 all end with an integration challenge. Unit 4 ends at four lessons with no synthesis task, leaving TypeScript mastery short of benchmark.</div>
+                      <div class="revision-brief-instruction"><strong>Fix:</strong> Add u4l5: a TypeScript challenge presenting a 30–50 line TypeScript file with errors spanning primitive type mismatches, typed array violations, function signature errors, and union type misuse. Include a closing teachingInstruction pointing to FE102.</div>
+                    </div>
+                    <div class="revision-brief-item">
+                      <div class="revision-brief-title">rb4 — <span class="severity moderate">MODERATE</span> — Reinstate closure reinforcement in Unit 3</div>
+                      <div class="revision-brief-issue">The core_concepts staging note explicitly says closures (cc3) should be reinforced in Unit 3 when async callbacks capture outer state. Zero Unit 3 lessons currently map to cc3.</div>
+                      <div class="revision-brief-instruction"><strong>Fix:</strong> Add a mastery outcome to u3l3 requiring the learner to identify which outer-scope variable an async callback closes over and predict its value when the callback fires.</div>
+                    </div>
+                    <div class="revision-brief-item">
+                      <div class="revision-brief-title">rb5 — <span class="severity moderate">MODERATE</span> — Make cc4 assessable at first introduction</div>
+                      <div class="revision-brief-issue">In u1l6, cc4 is tagged as introduced but none of the mastery outcomes test the first-class value mental model — they test syntax only.</div>
+                      <div class="revision-brief-instruction"><strong>Fix:</strong> Add one mastery outcome to u1l6 that tests cc4 directly: 'Assign a named function to a variable and pass it as an argument to another function without calling it (no parentheses).'</div>
+                    </div>
+                    <div class="revision-brief-item">
+                      <div class="revision-brief-title">rb6 — <span class="severity moderate">MODERATE</span> — Rename 11 lessons and 1 unit</div>
+                      <div class="revision-brief-issue">Seven lessons use repeated structural patterns; unit title "TypeScript basics" minimizes the capstone; two titles use meta-framing.</div>
+                      <div class="revision-brief-instruction"><strong>Fix:</strong> Apply these renames: unit "TypeScript basics" → "TypeScript types"; "Why JavaScript, why now" → "JS for Python developers"; "What TypeScript adds" → "TypeScript as a JS superset"; "JS foundations challenge" → "JS syntax in practice"; "Arrays and objects challenge" → "Data pipeline in JS"; "Async JavaScript challenge" → "Async execution: full picture"; "Higher-order array methods" → "map, filter, and reduce"; "Callbacks and higher-order functions" → "Writing higher-order functions"; "Synchronous execution and the call stack" → "The call stack"; "Objects vs Python dicts" → "Objects and properties"; "Error handling in async code" → "try/catch and async errors".</div>
+                    </div>
+                    <div class="revision-brief-item">
+                      <div class="revision-brief-title">rb7 — <span class="severity moderate">MODERATE</span> — Add teachingInstructions to key threshold-concept moments</div>
+                      <div class="revision-brief-issue">The event loop lesson (u3l2) lacks a teachingInstruction to surface and reject the Python top-to-bottom model. The callback hell lesson (u3l3) lacks a teachingInstruction validating learner frustration. u1l8 should name when closures will return.</div>
+                      <div class="revision-brief-instruction"><strong>Fix:</strong> Add teachingInstructions to u3l2 (show surprising output first, ask learner to predict using Python logic, then name the event loop); u3l3 (explicitly validate frustration: 'This code works but is genuinely hard to read — this feeling is the problem Promises were designed to solve'); u1l8 (closures are previewed here and will be fully taught in the upcoming Closures lesson in Unit 2).</div>
+                    </div>
+                    <div class="revision-brief-item">
+                      <div class="revision-brief-title">rb8 — <span class="severity moderate">MODERATE</span> — Split or restructure u4l3</div>
+                      <div class="revision-brief-issue">u4l3 combines typed arrays, union types, and type narrowing — three distinct TypeScript topics where type narrowing is significantly more abstract than annotation syntax, creating a load spike.</div>
+                      <div class="revision-brief-instruction"><strong>Fix:</strong> Either split into two lessons, or remove type narrowing and defer it to the challenge lesson (u4l5) where it can be encountered in context rather than isolation.</div>
+                    </div>
+                  </div>
+                </div>
+              </details>
+            </div>
+          </div>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- REVISION 1 -->
+  <section class="landing-section revision">
+    <div class="section-inner">
+      <h2 class="section-heading" id="revision-1">🔄 Revision 1</h2>
+      <p class="muted-override" style="margin:-1rem 0 1.5rem;font-size:.9rem;">Revised draft produced after the Lead sent feedback from Validation 1</p>
+      <div class="journey-path">
+        <article class="stop role-generator pillar-revision">
+          <div class="stop-node" aria-hidden="true">v2</div>
+          <div class="stop-card">
+            <div class="stage-label">Stage — Revision 1 (produces v2)</div>
+            <div class="stop-meta"><span class="stop-who">✏️ Agent: Generator</span></div>
+            <div class="stop-body">
+              <div class="info-block">
+                <span class="info-icon" aria-hidden="true">i</span>
+                <div class="info-content">
+                  <p><strong>What this stage does:</strong> Receives a revision brief from the Lead Orchestrator (all validator findings that blocked approval) and produces a revised syllabus. Every listed issue must be addressed.</p>
+                </div>
+              </div>
+
+              <details class="revision-brief-details" style="margin-top:1rem;">
+                <summary>📌 Revision brief — instructions from Validation 1 (8 items)</summary>
+                <div class="content" style="margin-top:.75rem;">
+                  <p class="muted-override" style="font-size:.8125rem;margin-bottom:1rem;">The 8-item brief from the Lead is shown in the Validation 1 section above. Key structural changes required: split u2l5, remove arrow functions from u1l6, add u4l5 challenge, reinstate cc3 in Unit 3, make cc4 assessable at u1l6, rename 11 lessons + 1 unit, add teachingInstructions, restructure u4l3.</p>
+                </div>
+              </details>
+
+              <p style="margin-top:1.25rem;"><strong>Revised draft output (v2):</strong> 4 units, 33 lessons (+2 from split of u2l5 and addition of u4l5). All 8 critical and moderate revision items addressed.</p>
+              <ul style="margin:.35rem 0 0 1.25rem;padding-left:.25rem;">
+                <li>u2l5 split into "Functions as values" (cc4 only) + new u2l6 "Closures" (cc3 only) — resolves rb1</li>
+                <li>Arrow functions removed from u1l6; lesson now covers declaration + expression + hoisting only — resolves rb2</li>
+                <li>u4l5 "TypeScript in practice" added: 30–50 line TypeScript challenge with closing teachingInstruction pointing to FE102 — resolves rb3</li>
+                <li>cc3 mastery outcome added to u3l3: learner must identify which outer-scope variable an async callback closes over — resolves rb4</li>
+                <li>cc4 mastery outcome added to u1l6: assign and pass function without calling it — resolves rb5</li>
+                <li>All 11 lesson renames + unit rename "TypeScript types" applied — resolves rb6</li>
+                <li>teachingInstructions added to u3l2, u3l3, u1l8 — resolves rb7</li>
+                <li>Type narrowing removed from u4l3 (deferred to u4l5 challenge context) — resolves rb8</li>
+              </ul>
+            </div>
+          </div>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- VALIDATION 2 -->
+  <section class="landing-section validation" aria-label="Validation 2">
+    <div class="section-inner">
+      <h2 class="section-heading" id="validation-2">✅ Validation 2</h2>
+      <p class="muted-override" style="margin:-1rem 0 1.5rem;font-size:.9rem;">Validators re-score the revised draft</p>
+      <div class="journey-path">
+        <div class="journey-divider"><span class="label">Validation 2</span><span class="line"></span></div>
+        <article class="stop role-validator pillar-validation">
+          <div class="stop-node" aria-hidden="true">2</div>
+          <div class="stop-card">
+            <div class="stage-label">Stage — Validation 2</div>
+            <div class="stop-meta"><span class="stop-who">🔍 Agent: Eight validators (parallel)</span></div>
+            <div class="stop-body">
+              <div class="info-block">
+                <span class="info-icon" aria-hidden="true">i</span>
+                <div class="info-content">
+                  <p><strong>What this stage does:</strong> The same eight validators score the revised syllabus. All must score ≥ 8/10 for the Lead to approve.</p>
+                </div>
+              </div>
+              <p><strong>Round 2 scores:</strong> Arc 8 ✅ · Concept 8 ✅ · Mastery 10 ✅ · LearningTheory 8 ✅ · Outcome 10 ✅ · Engagement 7 ❌ · Naming 9 ✅ · Difficulty 8 ✅ — <strong>7 pass, 1 fail</strong></p>
+              <details>
+                <summary>📊 Validator score table — Round 2</summary>
+                <div class="content">
+                  <table>
+                    <tr><th>Validator</th><th>v1</th><th>v2</th><th>Change</th><th>Primary v2 finding</th></tr>
+                    <tr><td>Learning Arc</td><td>8</td><td class="score-pass">8</td><td>→</td><td>Two persistent gaps: destructuring Python anchor still missing, no async-TypeScript connection</td></tr>
+                    <tr><td>Core Concepts</td><td>7</td><td class="score-pass">8</td><td class="score-pass">↑+1</td><td>Closures now have dedicated lesson (u2l6); cc4 assessable at first intro in u1l6</td></tr>
+                    <tr><td>Mastery Progression</td><td>8</td><td class="score-pass">10</td><td class="score-pass">↑+2</td><td>Unit 4 challenge (u4l5) added; all benchmarks now reachable</td></tr>
+                    <tr><td>Learning Theory</td><td>7</td><td class="score-pass">8</td><td class="score-pass">↑+1</td><td>All 5 critical v1 fixes resolved: threshold split, arrow functions removed, teachingInstructions added, Unit 4 challenge added</td></tr>
+                    <tr><td>Outcome Alignment</td><td>9</td><td class="score-pass">10</td><td class="score-pass">↑+1</td><td>All 6 benchmarks fully achieved; u4l5 closes the TypeScript synthesis gap</td></tr>
+                    <tr><td>Engagement</td><td>6</td><td class="score-fail">7</td><td>↑+1 (still fail)</td><td>Three v1 fixes resolved (teachingInstructions for event loop, callback hell, u4l5 closing beat), but u2l6 Closures has no forward hook to async, no job-relevance touchpoints in Units 2–3, integration lessons not framed as milestones</td></tr>
+                    <tr><td>Naming</td><td>7</td><td class="score-pass">9</td><td class="score-pass">↑+2</td><td>All 11 renames applied. Minor: "Closures" single word, "TypeScript in practice" weak qualifier — not blockers</td></tr>
+                    <tr><td>Difficulty Load</td><td>6</td><td class="score-pass">8</td><td class="score-pass">↑+2</td><td>All 4 critical v1 defects resolved; new gap: typeof narrowing required in u4l5 without prior introduction</td></tr>
+                  </table>
+                </div>
+              </details>
+            </div>
+          </div>
+        </article>
+
+        <article class="stop role-orchestrator pillar-validation">
+          <div class="stop-node" aria-hidden="true">⚖️</div>
+          <div class="stop-card">
+            <div class="stop-meta"><span class="stop-who">⚖️ Agent: Lead Orchestrator</span></div>
+            <div class="stop-body">
+              <div class="info-block">
+                <span class="info-icon" aria-hidden="true">i</span>
+                <div class="info-content">
+                  <p><strong>What the Lead does:</strong> After validators report, the Lead decides APPROVE or REVISE. If any validator scores below 8, the Lead merges findings into a revision brief and sends the process back to Generation.</p>
+                </div>
+              </div>
+              <p><span class="decision-badge decision-revise">🔄 REVISE</span> Engagement is the only failing dimension (7/10). All required changes are lightweight: adding teachingInstructions to existing lessons — no structural changes, no new lessons, no mastery outcome edits (except one). The four specific fixes: (1) connect the Closures lesson forward to async callbacks in Unit 3, (2) add one job-relevance sentence to at least one lesson per unit in Units 2 and 3, (3) add milestone-framing teachingInstructions to the three challenge lessons, (4) surface the course-closing beat structurally in u4l5. Plus one difficulty fix: typeof narrowing must be reintroduced to u4l3. Issuing revision brief with 4 items.</p>
+              <details>
+                <summary>📌 Revision brief — all 4 items sent to Generator</summary>
+                <div class="content" style="margin-top:.75rem;">
+                  <div class="revision-brief-list">
+                    <div class="revision-brief-item">
+                      <div class="revision-brief-title">rb9 — <span class="severity important">IMPORTANT</span> — Add forward pointer to u2l6 (Closures) connecting to Unit 3 async</div>
+                      <div class="revision-brief-issue">u2l6 'Closures' teaches the concept but leaves the learner with no idea why it mattered or where they'll see it again. The forward pointer to async callbacks is the highest-leverage engagement beat in Unit 2.</div>
+                      <div class="revision-brief-instruction"><strong>Fix:</strong> Add teachingInstructions to u2l6: 'After the learner can correctly predict closure variable values in a factory function, tell them: the closures they just learned are the exact mechanism that makes async callbacks work in Unit 3 — every time a callback function remembers the variable from the code around it, that is a closure at work.'</div>
+                    </div>
+                    <div class="revision-brief-item">
+                      <div class="revision-brief-title">rb10 — <span class="severity important">IMPORTANT</span> — Add job-relevance touchpoints to Units 2 and 3</div>
+                      <div class="revision-brief-issue">The only job-relevance moments are u1l1 and a single mention in u4l5's teachingInstruction. Units 2 and 3 — which cover the patterns most directly used in professional frontend work — pass entirely without connecting effort to the job the learner is studying for.</div>
+                      <div class="revision-brief-instruction"><strong>Fix:</strong> Add to u2l8 teachingInstructions: 'These three methods appear in virtually every React or frontend codebase — every list of products, search results, or user data is rendered using exactly these patterns.' Add to u3l6 teachingInstructions: 'Async/await is the pattern behind every API call in a web application — every time a frontend app fetches data from a server, it uses this syntax.'</div>
+                    </div>
+                    <div class="revision-brief-item">
+                      <div class="revision-brief-title">rb11 — <span class="severity moderate">MODERATE</span> — Add milestone framing to challenge lessons</div>
+                      <div class="revision-brief-issue">The three challenge lessons (u1l9, u2l10, u3l9) are currently framed as assessment tasks. Each should be a moment where the tutor names what the learner has just accomplished.</div>
+                      <div class="revision-brief-instruction"><strong>Fix:</strong> Add to u1l9: 'When the learner completes this challenge, name the milestone: they just wrote a complete JavaScript program from scratch — no Python, no hints.' Add to u2l10: 'When the learner finishes the data pipeline, note: they just used the same patterns that power every list, dashboard, and search result in modern web apps.' Add to u3l9: 'When the learner completes the async challenge, name it explicitly: async JavaScript is considered one of the hardest concepts in the language for experienced developers. They just worked through it systematically.'</div>
+                    </div>
+                    <div class="revision-brief-item">
+                      <div class="revision-brief-title">rb12 — <span class="severity moderate">MODERATE</span> — Surface course-closing beat in u4l5 structurally + add typeof narrowing to u4l3</div>
+                      <div class="revision-brief-issue">Two combined issues: (1) the graduation moment in u4l5 lives only in teachingInstructions — if the tutor omits it, the course ends on a debugging task; (2) u4l5's mastery outcome requires typeof type narrowing, but this technique was removed from u4l3 and never reinstated.</div>
+                      <div class="revision-brief-instruction"><strong>Fix:</strong> (1) Change the last mastery outcome of u4l5 to: 'Complete a TypeScript program spanning all four error categories, producing a compiling file — and name one skill gained in this course that you could not do when you started.' (2) Add typeof narrowing back to u4l3's third mastery outcome.</div>
+                    </div>
+                  </div>
+                </div>
+              </details>
+            </div>
+          </div>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- REVISION 2 -->
+  <section class="landing-section revision">
+    <div class="section-inner">
+      <h2 class="section-heading" id="revision-2">🔄 Revision 2</h2>
+      <p class="muted-override" style="margin:-1rem 0 1.5rem;font-size:.9rem;">Revised draft produced after the Lead sent feedback from Validation 2</p>
+      <div class="journey-path">
+        <article class="stop role-generator pillar-revision">
+          <div class="stop-node" aria-hidden="true">v3</div>
+          <div class="stop-card">
+            <div class="stage-label">Stage — Revision 2 (produces v3)</div>
+            <div class="stop-meta"><span class="stop-who">✏️ Agent: Generator</span></div>
+            <div class="stop-body">
+              <div class="info-block">
+                <span class="info-icon" aria-hidden="true">i</span>
+                <div class="info-content">
+                  <p><strong>What this stage does:</strong> Receives a revision brief from the Lead Orchestrator and produces a revised syllabus. Every listed issue must be addressed.</p>
+                </div>
+              </div>
+
+              <details class="revision-brief-details" style="margin-top:1rem;">
+                <summary>📌 Revision brief — instructions from Validation 2 (4 items: rb9–rb12)</summary>
+                <div class="content" style="margin-top:.75rem;">
+                  <p class="muted-override" style="font-size:.8125rem;margin-bottom:1rem;">The 4-item brief from the Lead is shown in the Validation 2 section above. All 4 items are teachingInstruction additions or minor mastery outcome edits — no structural changes required.</p>
+                </div>
+              </details>
+
+              <p style="margin-top:1.25rem;"><strong>Revised draft output (v3):</strong> 4 units, 33 lessons (unchanged count). All 4 revision items addressed via teachingInstruction additions and two mastery outcome edits.</p>
+              <ul style="margin:.35rem 0 0 1.25rem;padding-left:.25rem;">
+                <li>u2l6 "Closures" teachingInstructions added: forward pointer explicitly naming async callbacks in Unit 3 as the mechanism closures make possible — resolves rb9</li>
+                <li>u2l8 teachingInstructions: job-relevance anchor for map/filter/reduce in React codebases added — resolves rb10 (Unit 2)</li>
+                <li>u3l6 teachingInstructions: job-relevance anchor for async/await in every web API call added — resolves rb10 (Unit 3)</li>
+                <li>u1l9, u2l10, u3l9 teachingInstructions: milestone-framing language added to all three challenge lessons — resolves rb11</li>
+                <li>u4l5 third mastery outcome updated to include self-reflective closing statement ("name one skill gained") — resolves rb12 part 1</li>
+                <li>u4l3 third mastery outcome updated to include typeof narrowing — resolves rb12 part 2</li>
+              </ul>
+            </div>
+          </div>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- VALIDATION 3 -->
+  <section class="landing-section validation" aria-label="Validation 3">
+    <div class="section-inner">
+      <h2 class="section-heading" id="validation-3">✅ Validation 3</h2>
+      <p class="muted-override" style="margin:-1rem 0 1.5rem;font-size:.9rem;">Validators re-score the second revised draft</p>
+      <div class="journey-path">
+        <div class="journey-divider"><span class="label">Validation 3</span><span class="line"></span></div>
+        <article class="stop role-validator pillar-validation">
+          <div class="stop-node" aria-hidden="true">3</div>
+          <div class="stop-card">
+            <div class="stage-label">Stage — Validation 3</div>
+            <div class="stop-meta"><span class="stop-who">🔍 Agent: Eight validators (parallel)</span></div>
+            <div class="stop-body">
+              <div class="info-block">
+                <span class="info-icon" aria-hidden="true">i</span>
+                <div class="info-content">
+                  <p><strong>What this stage does:</strong> The same eight validators score the revised syllabus. All must score ≥ 8/10 for the Lead to approve.</p>
+                </div>
+              </div>
+              <p><strong>Round 3 scores:</strong> Arc 8 ✅ · Concept 8 ✅ · Mastery 10 ✅ · LearningTheory 9 ✅ · Outcome 10 ✅ · Engagement 8 ✅ · Naming 9 ✅ · Difficulty 9 ✅ — <strong>all 8 pass, avg 8.9</strong></p>
+              <details>
+                <summary>📊 Validator score table — Round 3</summary>
+                <div class="content">
+                  <table>
+                    <tr><th>Validator</th><th>v1</th><th>v2</th><th>v3</th><th>Primary v3 finding</th></tr>
+                    <tr><td>Learning Arc</td><td>8</td><td>8</td><td class="score-pass">8</td><td>No regressions. 3 persistent non-blocking gaps remain (destructuring Python anchor, async-TypeScript connection, spread-into-objects flagging)</td></tr>
+                    <tr><td>Core Concepts</td><td>7</td><td>8</td><td class="score-pass">8</td><td>u4l3 typeof narrowing addition improves cc8 coverage. No regressions</td></tr>
+                    <tr><td>Mastery Progression</td><td>8</td><td>10</td><td class="score-pass">10</td><td>No regressions; u4l3 typeof narrowing outcome improves Bloom's level from 2 to 3</td></tr>
+                    <tr><td>Learning Theory</td><td>7</td><td>8</td><td class="score-pass">9</td><td>2 of 5 v2 changes resolved: u3l9 teachingInstructions (milestone framing), u3l6 teachingInstructions (job relevance + partial)</td></tr>
+                    <tr><td>Outcome Alignment</td><td>9</td><td>10</td><td class="score-pass">10</td><td>All 6 benchmarks maintained. No regressions</td></tr>
+                    <tr><td>Engagement</td><td>6</td><td>7</td><td class="score-pass">8</td><td>All 4 v2 changes landed: u2l6 forward hook, job-relevance at u2l8 and u3l6, milestone framing at u1l9/u2l10/u3l9, self-reflective outcome in u4l5</td></tr>
+                    <tr><td>Naming</td><td>7</td><td>9</td><td class="score-pass">9</td><td>No regressions. 3 v2 naming findings carry forward as non-blockers</td></tr>
+                    <tr><td>Difficulty Load</td><td>6</td><td>8</td><td class="score-pass">9</td><td>typeof narrowing prerequisite gap resolved via u4l3 mastery outcome update. All prior defects remain resolved</td></tr>
+                  </table>
+                </div>
+              </details>
+            </div>
+          </div>
+        </article>
+
+        <article class="stop role-orchestrator pillar-validation">
+          <div class="stop-node" aria-hidden="true">🏆</div>
+          <div class="stop-card">
+            <div class="stop-meta"><span class="stop-who">🏆 Agent: Lead Orchestrator</span></div>
+            <div class="stop-body">
+              <div class="info-block">
+                <span class="info-icon" aria-hidden="true">i</span>
+                <div class="info-content">
+                  <p><strong>What the Lead does:</strong> When all validators score ≥ 8, the Lead approves. They write the final syllabus and pipeline report. Open issues (if any) are documented for future iteration or implementation; none are blockers.</p>
+                </div>
+              </div>
+              <p><span class="decision-badge decision-approve">✅ APPROVE</span> All eight validators scored ≥ 8/10 (average 8.9). The course now has a structurally complete engagement layer, properly isolated threshold concepts, a full integration challenge in every unit, correct Bloom's progression throughout, and all 6 graduate outcomes demonstrably achieved. Residual non-blocking gaps documented below for future iteration.</p>
+              <details>
+                <summary>📌 Non-blocking residual issues (for future iteration)</summary>
+                <div class="content">
+                  <ul style="margin:.35rem 0 0 1.25rem;padding-left:.25rem;font-size:.8125rem;">
+                    <li>Destructuring lesson (u2l3) still missing explicit Python-comparison anchor (tuple unpacking / dict unpacking parallel)</li>
+                    <li>Spread-into-objects pattern in u2l4 not flagged as having no Python equivalent</li>
+                    <li>No lesson connecting TypeScript to async patterns from Unit 3 (e.g., Promise&lt;string&gt; return type annotation)</li>
+                    <li>Spaced retrieval across unit boundaries largely absent — concepts introduced in one unit are not explicitly retrieved in later units</li>
+                    <li>u2l10 milestone framing uses "note" rather than direct achievement statement (weaker than u1l9 and u3l9)</li>
+                    <li>"Closures" (u2l6) is a single-word title — slightly below the 2–6 word guideline</li>
+                    <li>"TypeScript in practice" (u4l5) — "in practice" is a weak qualifier; could be more specific</li>
+                    <li>Engagement forward-hook gaps persist in Unit 1 — individual lessons do not create curiosity about the next lesson</li>
+                  </ul>
+                </div>
+              </details>
+            </div>
+          </div>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- FINAL SYLLABUS -->
+  <section class="landing-section final-syllabus">
+    <div class="section-inner">
+      <h2 class="section-heading" id="final-syllabus">📜 Final syllabus</h2>
+      <p class="muted-override" style="margin:-1rem 0 1.5rem;font-size:.9rem;">Approved curriculum with course mastery outcomes and per-lesson outcomes (from syllabus_final.json)</p>
+
+      <h3 style="font-size:1rem;margin:1.25rem 0 .5rem;">Course mastery outcomes (graduate skills)</h3>
+      <p style="font-size:.875rem;color:var(--muted);margin-bottom:.75rem;">These are the human-defined outcomes the pipeline was given; the syllabus must cover all six.</p>
+      <table>
+        <tr><th>#</th><th>Outcome</th></tr>
+        <tr><td>LO1</td><td>Transition algorithmic problem-solving skills from Python to JavaScript: given a short algorithmic problem already solved in Python (e.g., filter a list, count items by condition), rewrite it in JavaScript without syntax errors and identify two key differences in how JS and Python handle the same logic.</td></tr>
+        <tr><td>LO2</td><td>Understand and apply core JavaScript syntax and language fundamentals: write a 20–40 line JS program from scratch using variables (let/const), conditionals, loops, and functions — with no Python syntax present — and correctly predict the output of a program that uses type coercion or loose equality.</td></tr>
+        <tr><td>LO3</td><td>Work confidently with common data structures: transform an array of objects using map, filter, and reduce; add, access, update, and delete object properties; and destructure both arrays and objects in function parameters.</td></tr>
+        <tr><td>LO4</td><td>Write short reusable functions including function expressions, arrow functions, and anonymous callbacks: rewrite a named function declaration as a function expression and as an arrow function; pass a callback to a higher-order function like forEach or setTimeout; and distinguish passing a function reference from calling a function.</td></tr>
+        <tr><td>LO5</td><td>Understand the fundamentals of synchronous and asynchronous programming in JavaScript: correctly predict the console output order of a program that mixes synchronous code with a setTimeout callback; write a function that uses async/await to handle a Promise; and apply try/catch for async error handling.</td></tr>
+        <tr><td>LO6</td><td>Read and interpret basic TypeScript type annotations and error messages on variables, arrays, and functions: given a TypeScript file with a type error, identify which line is wrong, explain why TypeScript is rejecting it, and fix it — for scenarios involving primitive types, typed arrays, and function parameter/return types.</td></tr>
+      </table>
+
+      <h3 style="font-size:1rem;margin:1.5rem 0 .5rem;">Chosen learning arc</h3>
+      <p style="font-size:.875rem;margin-bottom:.75rem;"><strong>The Language Translator</strong> — Every lesson in Units 1 and 2 anchors new JavaScript syntax and behavior directly to its Python equivalent — naming what maps across, what changes shape, and what is genuinely new — so students spend zero time feeling like beginners and maximum time building fluency. From that foundation, Unit 3 introduces JavaScript's most distinctive concept: single-threaded asynchronous execution, which Python largely conceals and which must be scaffolded step by step. Unit 4 completes the arc by adding TypeScript's type layer on top of JS patterns students have already mastered, connecting back to the type coercion surprises of Unit 1 and showing why static types matter.</p>
+
+      <h3 style="font-size:1rem;margin:1.5rem 0 .5rem;">Core concepts (8)</h3>
+      <p style="font-size:.8125rem;color:var(--muted);margin-bottom:.5rem;">cc1 JS type system &amp; coercion ⚠️ · cc2 Equality: == vs === · cc3 Scope and closures ⚠️ · cc4 Functions as first-class values ⚠️ · cc5 Callbacks and higher-order functions · cc6 The event loop and async execution ⚠️ · cc7 Promises and async/await · cc8 TypeScript static types and annotations. (⚠️ = threshold concept)</p>
+
+      <h3 style="font-size:1rem;margin:1.5rem 0 .5rem;">Units and lessons with mastery outcomes</h3>
+      <p style="font-size:.8125rem;color:var(--muted);margin-bottom:1rem;">Each lesson lists the specific outcomes learners must achieve (from syllabus_final.json).</p>
+
+      <details>
+        <summary>Unit 1: JS foundations (9 lessons)</summary>
+        <div class="content">
+          <p style="font-size:.8125rem;color:var(--muted);margin-bottom:.5rem;">A rapid orientation to JavaScript using Python as a scaffold. Students who already think like programmers discover what maps directly from Python, what changes shape, and what is genuinely new — building fluency and confidence before any advanced patterns are introduced.</p>
+          <table>
+            <tr><th>ID</th><th>Title</th><th>Mastery outcomes</th></tr>
+            <tr>
+              <td>u1l1</td><td>JS for Python developers</td>
+              <td><ul style="margin:.2rem 0;padding-left:1.1rem;">
+                <li>Identify at least three categories of software engineering work where JavaScript is the required language and Python alone is insufficient.</li>
+                <li>Distinguish the role of FE101 in the overall learning path from Python programmer to web/AI software engineer.</li>
+                <li>Predict what a developer can build differently after completing this course versus before it.</li>
+              </ul></td>
+            </tr>
+            <tr>
+              <td>u1l2</td><td>Variables and constants</td>
+              <td><ul style="margin:.2rem 0;padding-left:1.1rem;">
+                <li>Write variable declarations using let and const and predict which will throw an error when reassigned.</li>
+                <li>Distinguish block scope (let/const) from function scope (var) and identify at least one bug var can cause that let prevents.</li>
+                <li>Compare JS variable declaration syntax to Python's assignment syntax and name the key structural difference.</li>
+              </ul></td>
+            </tr>
+            <tr>
+              <td>u1l3</td><td>Types and type coercion</td>
+              <td><ul style="margin:.2rem 0;padding-left:1.1rem;">
+                <li>Identify the six JS primitive types and distinguish them from Python equivalents.</li>
+                <li>Predict the output of coercion expressions such as '5' + 3, '5' - 3, 0 == false, and !!'' without running the code.</li>
+                <li>Apply typeof to inspect a value's type and interpret the result, including the typeof null quirk.</li>
+              </ul></td>
+            </tr>
+            <tr>
+              <td>u1l4</td><td>Equality and comparison operators</td>
+              <td><ul style="margin:.2rem 0;padding-left:1.1rem;">
+                <li>Distinguish == (loose equality with coercion) from === (strict equality without coercion) and apply the correct operator in a given context.</li>
+                <li>Predict the boolean result of expressions using ==, ===, &gt;, &lt;, &gt;=, and &lt;= including cases where types differ.</li>
+                <li>Identify which JS values are falsy (0, '', null, undefined, NaN, false) and apply this to reading conditional expressions.</li>
+              </ul></td>
+            </tr>
+            <tr>
+              <td>u1l5</td><td>Control flow in JS</td>
+              <td><ul style="margin:.2rem 0;padding-left:1.1rem;">
+                <li>Write if/else, for, while, and for...of loops in JS with correct syntax (curly braces, semicolons) without reverting to Python patterns.</li>
+                <li>Compare JS for...of to Python's for item in list and identify what is structurally equivalent and what differs.</li>
+                <li>Fix syntax errors in JS control flow code caused by missing braces, incorrect loop headers, or Python-style syntax.</li>
+              </ul></td>
+            </tr>
+            <tr>
+              <td>u1l6</td><td>Functions: declarations and expressions</td>
+              <td><ul style="margin:.2rem 0;padding-left:1.1rem;">
+                <li>Write a function using both declaration syntax and expression syntax and compare each to Python's def syntax.</li>
+                <li>Distinguish hoisting behavior: identify that function declarations are hoisted but function expressions are not.</li>
+                <li>Assign a named function to a variable and pass it as an argument to another function without calling it (no parentheses). [cc4 — first assessable outcome]</li>
+              </ul></td>
+            </tr>
+            <tr>
+              <td>u1l7</td><td>Strings and template literals</td>
+              <td><ul style="margin:.2rem 0;padding-left:1.1rem;">
+                <li>Apply common JS string methods (toUpperCase, toLowerCase, includes, slice, split, trim) to transform and inspect strings.</li>
+                <li>Write template literals using backtick syntax and $&#123; &#125; interpolation and compare them to Python f-strings.</li>
+                <li>Fix string concatenation bugs by replacing + concatenation with template literals where appropriate.</li>
+              </ul></td>
+            </tr>
+            <tr>
+              <td>u1l8</td><td>Scope and variable lifecycle</td>
+              <td><ul style="margin:.2rem 0;padding-left:1.1rem;">
+                <li>Predict whether a variable declared with let, const, or var is accessible at a given point in a program by tracing its scope.</li>
+                <li>Identify the difference between Python's function-level scope and JS's block-level scope and describe a case where this difference matters.</li>
+                <li>Distinguish a ReferenceError caused by accessing a variable outside its scope from a TypeError caused by incorrect usage.</li>
+              </ul></td>
+            </tr>
+            <tr>
+              <td>u1l9</td><td>JS syntax in practice</td>
+              <td><ul style="margin:.2rem 0;padding-left:1.1rem;">
+                <li>Write a complete JS program (20–40 lines) that uses variables, control flow, at least one function, and string manipulation to solve a given problem — without any Python syntax.</li>
+                <li>Identify and fix at least three distinct JS syntax or type-coercion bugs in a provided program.</li>
+                <li>Apply === instead of == throughout and use const/let appropriately, with no var usage.</li>
+              </ul></td>
+            </tr>
+          </table>
+        </div>
+      </details>
+
+      <details>
+        <summary>Unit 2: Arrays, objects, and functions (10 lessons)</summary>
+        <div class="content">
+          <p style="font-size:.8125rem;color:var(--muted);margin-bottom:.5rem;">The JS data layer: arrays, objects, and the function patterns that operate on them. Students learn destructuring, spread/rest, and higher-order array methods — grounded in Python list and dict parallels — and graduate from basic functions to first-class function values, callbacks, and closures.</p>
+          <table>
+            <tr><th>ID</th><th>Title</th><th>Mastery outcomes</th></tr>
+            <tr>
+              <td>u2l1</td><td>Arrays and array methods</td>
+              <td><ul style="margin:.2rem 0;padding-left:1.1rem;">
+                <li>Create and mutate JS arrays using push, pop, shift, unshift, splice, and slice and predict the return value of each operation.</li>
+                <li>Compare JS array mutation behavior to Python list methods and identify one key difference in how slice works across the two languages.</li>
+                <li>Distinguish methods that mutate the original array from those that return a new array and apply the correct method for a given task.</li>
+              </ul></td>
+            </tr>
+            <tr>
+              <td>u2l2</td><td>Objects and properties</td>
+              <td><ul style="margin:.2rem 0;padding-left:1.1rem;">
+                <li>Create JS objects using literal syntax and access properties using both dot notation and bracket notation.</li>
+                <li>Add, update, and delete properties on an existing object and predict the state of the object after each operation.</li>
+                <li>Compare JS objects to Python dictionaries: identify what is equivalent and what differs (dot notation, method syntax).</li>
+              </ul></td>
+            </tr>
+            <tr>
+              <td>u2l3</td><td>Array and object destructuring</td>
+              <td><ul style="margin:.2rem 0;padding-left:1.1rem;">
+                <li>Apply array destructuring to extract values from an array into named variables in a single statement.</li>
+                <li>Apply object destructuring to extract specific properties from an object, including with renamed variables.</li>
+                <li>Write a function that uses object destructuring in its parameter list to receive a configuration object cleanly.</li>
+              </ul></td>
+            </tr>
+            <tr>
+              <td>u2l4</td><td>Spread and rest operators</td>
+              <td><ul style="margin:.2rem 0;padding-left:1.1rem;">
+                <li>Use the spread operator (...) to copy arrays, merge arrays, and copy or merge objects without mutating the originals.</li>
+                <li>Write a function that uses rest parameters (...args) to accept a variable number of arguments and compare this to Python's *args.</li>
+                <li>Distinguish spread (expanding an iterable) from rest (collecting arguments) by identifying which role ... plays in a given code example.</li>
+              </ul></td>
+            </tr>
+            <tr>
+              <td>u2l5</td><td>Functions as values</td>
+              <td><ul style="margin:.2rem 0;padding-left:1.1rem;">
+                <li>Assign a function to a variable and pass that variable as an argument to another function without calling it (no parentheses), and contrast this with the bug that occurs when parentheses are added.</li>
+                <li>Distinguish a function reference (myFn) from a function call (myFn()) and identify which is required in a callback context.</li>
+                <li>Compare JS first-class functions to Python: note that Python functions are also first-class values, but that idiomatic JS relies on this pattern far more heavily throughout the language.</li>
+              </ul></td>
+            </tr>
+            <tr>
+              <td>u2l6</td><td>Closures</td>
+              <td><ul style="margin:.2rem 0;padding-left:1.1rem;">
+                <li>Write a factory function that returns another function, and call the returned function to demonstrate that it retains access to variables from its enclosing scope.</li>
+                <li>Identify which outer-scope variables a closure captures and predict their values when the closure is called, including cases where the outer scope has already returned.</li>
+                <li>Distinguish the mental model 'functions get a copy of outer variables at definition time' (incorrect) from 'functions retain a live reference to outer variables' (correct) by tracing a closure example step by step.</li>
+              </ul></td>
+            </tr>
+            <tr>
+              <td>u2l7</td><td>Arrow functions</td>
+              <td><ul style="margin:.2rem 0;padding-left:1.1rem;">
+                <li>Rewrite any function expression as an equivalent arrow function, including the implicit return shorthand for single-expression bodies.</li>
+                <li>Identify when implicit return applies and when curly braces and an explicit return statement are required.</li>
+                <li>Apply the correct arrow function syntax as an inline callback argument to a higher-order function.</li>
+              </ul></td>
+            </tr>
+            <tr>
+              <td>u2l8</td><td>map, filter, and reduce</td>
+              <td><ul style="margin:.2rem 0;padding-left:1.1rem;">
+                <li>Apply map, filter, and reduce to transform arrays using arrow function callbacks and predict the return value of each.</li>
+                <li>Chain map and filter together to solve a two-step array transformation problem.</li>
+                <li>Compare JS map/filter/reduce to Python's list comprehensions and map()/filter() and identify one structural advantage of each approach.</li>
+              </ul></td>
+            </tr>
+            <tr>
+              <td>u2l9</td><td>Writing higher-order functions</td>
+              <td><ul style="margin:.2rem 0;padding-left:1.1rem;">
+                <li>Write a function that accepts a callback parameter and calls it internally, using correct syntax (no extra parentheses on the parameter).</li>
+                <li>Apply forEach for side-effect iteration and distinguish it from map (which returns a new array).</li>
+                <li>Write a custom sort comparator as a callback to Array.prototype.sort and predict the sort order from the comparator's return value.</li>
+              </ul></td>
+            </tr>
+            <tr>
+              <td>u2l10</td><td>Data pipeline in JS</td>
+              <td><ul style="margin:.2rem 0;padding-left:1.1rem;">
+                <li>Solve a multi-step data transformation problem using a combination of map, filter, reduce, and destructuring on an array of objects.</li>
+                <li>Write a higher-order utility function (e.g., a custom groupBy or countBy) that accepts an array and a callback and returns a transformed result.</li>
+                <li>Fix a buggy program that misuses mutation, incorrect callback invocation, or missing return values in reduce.</li>
+              </ul></td>
+            </tr>
+          </table>
+        </div>
+      </details>
+
+      <details>
+        <summary>Unit 3: Async JavaScript (9 lessons)</summary>
+        <div class="content">
+          <p style="font-size:.8125rem;color:var(--muted);margin-bottom:.5rem;">The hardest conceptual shift in the course: from synchronous top-to-bottom execution to JavaScript's single-threaded, non-blocking execution model. Each lesson builds one layer of the mental model — call stack, event loop, callbacks, Promises, async/await — before the next is introduced.</p>
+          <table>
+            <tr><th>ID</th><th>Title</th><th>Mastery outcomes</th></tr>
+            <tr>
+              <td>u3l1</td><td>The call stack</td>
+              <td><ul style="margin:.2rem 0;padding-left:1.1rem;">
+                <li>Trace the execution order of a synchronous JS program by simulating the call stack state at each function call and return.</li>
+                <li>Predict the exact console output order of a synchronous program that uses nested function calls.</li>
+                <li>Identify what 'blocking' means in a synchronous context and why a long-running synchronous operation would freeze a web application.</li>
+              </ul></td>
+            </tr>
+            <tr>
+              <td>u3l2</td><td>The event loop</td>
+              <td><ul style="margin:.2rem 0;padding-left:1.1rem;">
+                <li>Predict the console output order of a program that mixes synchronous code with setTimeout callbacks, including setTimeout with delay 0.</li>
+                <li>Describe the event loop in plain terms: call stack empties, callback queue checked, callback moves to stack.</li>
+                <li>Distinguish 'non-blocking' from 'parallel': identify that JS does not run two things simultaneously but defers work to be done later.</li>
+              </ul></td>
+            </tr>
+            <tr>
+              <td>u3l3</td><td>Callbacks and async timing</td>
+              <td><ul style="margin:.2rem 0;padding-left:1.1rem;">
+                <li>Write an async operation using setTimeout that uses a callback to deliver its result, following the Node.js-style (error, result) callback convention.</li>
+                <li>Predict the execution order and output of nested setTimeout callbacks (callback inside a callback).</li>
+                <li>Identify why deeply nested async callbacks ('callback hell') become unmaintainable and describe what makes the pattern problematic.</li>
+                <li>Identify which outer-scope variable an async callback closes over and predict its value when the callback fires. [cc3 reinforcement]</li>
+              </ul></td>
+            </tr>
+            <tr>
+              <td>u3l4</td><td>Promises: resolve and reject</td>
+              <td><ul style="margin:.2rem 0;padding-left:1.1rem;">
+                <li>Create a Promise using new Promise((resolve, reject) =&gt; &#123;...&#125;) that resolves or rejects based on a condition.</li>
+                <li>Consume a Promise using .then for the resolved value and .catch for the rejected value.</li>
+                <li>Distinguish the three states of a Promise (pending, fulfilled, rejected) and predict which handler runs given a specific resolution.</li>
+              </ul></td>
+            </tr>
+            <tr>
+              <td>u3l5</td><td>Chaining promises</td>
+              <td><ul style="margin:.2rem 0;padding-left:1.1rem;">
+                <li>Write a Promise chain using multiple .then calls where each handler receives the return value of the previous one.</li>
+                <li>Apply .finally to run cleanup code regardless of whether a Promise resolved or rejected.</li>
+                <li>Rewrite nested Promise callbacks (a Promise inside a .then) as a flat Promise chain.</li>
+              </ul></td>
+            </tr>
+            <tr>
+              <td>u3l6</td><td>async and await</td>
+              <td><ul style="margin:.2rem 0;padding-left:1.1rem;">
+                <li>Write an async function using the async keyword and use await to pause execution until a Promise resolves.</li>
+                <li>Rewrite a .then/.catch Promise chain as an equivalent async/await function.</li>
+                <li>Predict what an async function returns (always a Promise) and identify what value a caller receives when it awaits an async function.</li>
+              </ul></td>
+            </tr>
+            <tr>
+              <td>u3l7</td><td>try/catch and async errors</td>
+              <td><ul style="margin:.2rem 0;padding-left:1.1rem;">
+                <li>Wrap an await expression in try/catch to handle a rejected Promise and distinguish this from unhandled rejection.</li>
+                <li>Apply .catch at the end of a Promise chain and predict which rejections it will catch.</li>
+                <li>Identify what happens when an async function throws an error without a try/catch — and how the caller receives the error.</li>
+              </ul></td>
+            </tr>
+            <tr>
+              <td>u3l8</td><td>Promise.all and parallel async</td>
+              <td><ul style="margin:.2rem 0;padding-left:1.1rem;">
+                <li>Write code using Promise.all to run multiple Promises in parallel and collect all results in a single await expression.</li>
+                <li>Distinguish Promise.all (fails fast on first rejection) from Promise.allSettled (waits for all, reports each outcome).</li>
+                <li>Predict the output and timing of a program that uses Promise.all vs sequential await calls for the same operations.</li>
+              </ul></td>
+            </tr>
+            <tr>
+              <td>u3l9</td><td>Async execution: full picture</td>
+              <td><ul style="margin:.2rem 0;padding-left:1.1rem;">
+                <li>Predict the exact console output order of a program that mixes synchronous code, setTimeout, and async/await.</li>
+                <li>Rewrite a callback-based async sequence as a clean async/await function with full error handling using try/catch.</li>
+                <li>Fix an async function that has at least two bugs: a missing await, and an unhandled rejection.</li>
+              </ul></td>
+            </tr>
+          </table>
+        </div>
+      </details>
+
+      <details>
+        <summary>Unit 4: TypeScript types (5 lessons)</summary>
+        <div class="content">
+          <p style="font-size:.8125rem;color:var(--muted);margin-bottom:.5rem;">A focused introduction to TypeScript's type annotation layer, built entirely on JS patterns students have already mastered. Every TypeScript concept is connected back to a specific JS behavior — especially type coercion — to show why static types exist and what problems they solve.</p>
+          <table>
+            <tr><th>ID</th><th>Title</th><th>Mastery outcomes</th></tr>
+            <tr>
+              <td>u4l1</td><td>TypeScript as a JS superset</td>
+              <td><ul style="margin:.2rem 0;padding-left:1.1rem;">
+                <li>Distinguish TypeScript from JavaScript: identify that TypeScript compiles to JS and that type annotations do not exist at runtime.</li>
+                <li>Identify a JS coercion bug (from Unit 1) that TypeScript would have caught at compile time, and explain why.</li>
+                <li>Predict which TypeScript annotations are correct and which will produce a compile error for a given set of variable declarations.</li>
+              </ul></td>
+            </tr>
+            <tr>
+              <td>u4l2</td><td>Types in function signatures</td>
+              <td><ul style="margin:.2rem 0;padding-left:1.1rem;">
+                <li>Add type annotations to function parameters and return types for functions that accept and return primitives.</li>
+                <li>Identify what TypeScript error is produced when a function is called with an argument of the wrong type, and fix it.</li>
+                <li>Apply the void return type to functions that produce side effects and have no return value.</li>
+              </ul></td>
+            </tr>
+            <tr>
+              <td>u4l3</td><td>Typed arrays and union types</td>
+              <td><ul style="margin:.2rem 0;padding-left:1.1rem;">
+                <li>Declare typed arrays using the T[] syntax and predict which array operations TypeScript will accept or reject based on the array's element type.</li>
+                <li>Write a union type annotation (string | number) for a variable that can hold more than one type and identify when this is appropriate.</li>
+                <li>Use typeof type narrowing to safely work with a union type variable inside a conditional block. [added in v3 per rb12]</li>
+              </ul></td>
+            </tr>
+            <tr>
+              <td>u4l4</td><td>Reading TypeScript errors</td>
+              <td><ul style="margin:.2rem 0;padding-left:1.1rem;">
+                <li>Read a TypeScript error message and identify the specific line, expected type, and received type from the error text.</li>
+                <li>Fix at least three categories of TypeScript errors: wrong argument type, missing return type, and assigning the wrong type to a typed variable.</li>
+                <li>Distinguish a TypeScript compile-time error from a JavaScript runtime error and explain why catching errors at compile time is preferable.</li>
+              </ul></td>
+            </tr>
+            <tr>
+              <td>u4l5</td><td>TypeScript in practice</td>
+              <td><ul style="margin:.2rem 0;padding-left:1.1rem;">
+                <li>Identify all TypeScript errors in a 30–50 line TypeScript program that contains primitive type mismatches, function signature errors, typed array violations, and union type misuse.</li>
+                <li>Fix every error in the file and produce a version that compiles without TypeScript errors, including applying typeof type narrowing where the union type misuse requires it.</li>
+                <li>Complete a TypeScript program spanning all four error categories — primitive type mismatches, function signature errors, typed array violations, and union type misuse — producing a compiling file, and name one skill gained in this course that you could not do when you started. [self-reflective course-closing outcome added in v3 per rb12]</li>
+              </ul></td>
+            </tr>
+          </table>
+        </div>
+      </details>
+    </div>
+  </section>
+
+  <script>
+    const pageHeader = document.querySelector('.page-header');
+    const stageLinks = Array.from(document.querySelectorAll('.pillar-legend-item[href^="#"]'));
+
+    function updateHeaderOffset() {
+      if (!pageHeader) return;
+      const headerHeight = Math.ceil(pageHeader.getBoundingClientRect().height);
+      document.documentElement.style.setProperty('--header-offset', `${headerHeight}px`);
+    }
+
+    function setActiveStageLink() {
+      if (!pageHeader || !stageLinks.length) return;
+      const triggerY = pageHeader.getBoundingClientRect().height + 28;
+      let currentId = stageLinks[0].getAttribute('href').slice(1);
+      stageLinks.forEach(link => {
+        const targetId = link.getAttribute('href').slice(1);
+        const target = document.getElementById(targetId);
+        if (!target) return;
+        if (target.getBoundingClientRect().top <= triggerY) currentId = targetId;
+      });
+      stageLinks.forEach(link => {
+        link.classList.toggle('active', link.getAttribute('href') === `#${currentId}`);
+      });
+    }
+
+    function scrollToStage(targetId) {
+      const target = document.getElementById(targetId);
+      if (!target) return;
+      const headerHeight = pageHeader ? pageHeader.getBoundingClientRect().height : 0;
+      const top = target.getBoundingClientRect().top + window.scrollY - headerHeight - 12;
+      window.scrollTo({ top: Math.max(0, top), behavior: 'smooth' });
+    }
+
+    stageLinks.forEach(link => {
+      link.addEventListener('click', e => {
+        e.preventDefault();
+        const targetId = link.getAttribute('href').slice(1);
+        scrollToStage(targetId);
+      });
+    });
+
+    updateHeaderOffset();
+    setActiveStageLink();
+    window.addEventListener('resize', updateHeaderOffset);
+    window.addEventListener('scroll', setActiveStageLink, { passive: true });
+
+    document.querySelectorAll('details').forEach(d => {
+      d.addEventListener('toggle', function() {
+        if (this.open && this.querySelector('.content')) {
+          requestAnimationFrame(() => this.querySelector('.content').scrollIntoView({ behavior: 'smooth', block: 'nearest' }));
+        }
+      });
+    });
+  </script>
+</body>
+</html>
