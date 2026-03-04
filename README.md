@@ -259,7 +259,7 @@ it must be included regardless of individual scores.
 
 # 🔹 EXECUTION FLOW
 
-```
+
 1.  SETUP         — All agents read course files, instructions, schemas
 2.  Agent 1       → output/arc_proposals.json, logs/agent1_log.json
 3.  HUMAN GATE    → output/selected_arc.json (system pauses)
@@ -270,7 +270,7 @@ it must be included regardless of individual scores.
 8.  Lead          → merges logs into logs/pipeline_log.json, then APPROVE or REVISE
 9.  If REVISE     → output/revision_brief.json → Agent 3 revises → repeat from step 7
 10. If APPROVE    → output/syllabus_final.json + output/pipeline_visual_report.html
-```
+
 
 ---
 
