@@ -1,0 +1,1135 @@
+<html lang="en"><head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Course JSON → Multiple Outputs</title>
+  <style>
+    :root { color-scheme: light; }
+
+    /* ✅ No page scrolling */
+    html, body { height: 100%; }
+    body{
+      margin:0;
+      overflow: hidden; /* no browser scroll */
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      background:#f7f8fb;
+      color:#0f172a;
+    }
+
+    /* Layout */
+    .page{
+      height: 100vh;
+      padding: 16px;
+      box-sizing: border-box;
+      display:flex;
+      flex-direction:column;
+      gap:12px;
+    }
+
+    h1 { margin: 0; font-size: 20px; letter-spacing: -0.01em; }
+    p  { margin: 0; color:#334155; }
+
+    /* ✅ Force everything on ONE LINE */
+    .row{
+      flex: 1;
+      display:flex;
+      gap:12px;
+      align-items:stretch;
+      flex-wrap: nowrap;     /* no wrapping */
+      min-width: 0;
+      min-height: 0;
+    }
+
+    .panel{
+      background:#ffffff;
+      border:1px solid #e5e7eb;
+      border-radius:14px;
+      box-shadow: 0 1px 0 rgba(15,23,42,0.03);
+      padding:12px;
+      box-sizing:border-box;
+      display:flex;
+      flex-direction:column;
+      min-width: 0;          /* important for flex children */
+      min-height: 0;
+    }
+
+    /* Columns sizing (you can tweak these) */
+    .col-left  { flex: 0 0 380px; min-width: 380px; }
+    .col-mid   { flex: 0 0 300px; min-width: 300px; }
+    .col-right { flex: 1 1 0; min-width: 0; min-height: 0; }
+
+    label{ display:block; font-weight:800; margin:0 0 8px; }
+
+    /* ✅ Textareas fit the viewport (no page scroll) */
+    textarea{
+      width:100%;
+      flex: 1;
+      min-height: 0;
+      resize:none;
+      overflow:auto;
+      padding:10px;
+      font-size:13px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono","Courier New", monospace;
+      border-radius:12px;
+      border:1px solid #d1d5db;
+      outline:none;
+      background:#fbfdff;
+      color:#0f172a;
+      box-sizing:border-box;
+    }
+    textarea:focus{
+      border-color: rgba(80,150,255,0.9);
+      box-shadow: 0 0 0 3px rgba(80,150,255,0.18);
+    }
+
+    .small{
+      margin-top:8px;
+      font-size:12px;
+      color:#64748b;
+      overflow-wrap:anywhere;
+    }
+
+    /* Middle controls */
+    .controls{
+      height: 100%;
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+    }
+
+    .stats, .status{
+      padding:10px 12px;
+      border-radius:12px;
+      border:1px solid #e5e7eb;
+      background:#ffffff;
+      font-weight:650;
+      overflow-wrap:anywhere;
+    }
+    .ok{ border-color: rgba(80, 200, 120, 0.6); }
+    .err{ border-color: rgba(255, 90, 90, 0.7); }
+
+    .group{
+      padding:10px;
+      border-radius:12px;
+      border:1px solid #eef2f7;
+      background:#fafbff;
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+    }
+
+    .group-title{
+      font-size:12px;
+      font-weight:900;
+      letter-spacing:.02em;
+      color:#475569;
+      text-transform:uppercase;
+      margin-bottom:2px;
+    }
+
+    button, select{
+      padding:10px 12px;
+      border-radius:12px;
+      border:1px solid #d1d5db;
+      background:#ffffff;
+      cursor:pointer;
+      font-weight:750;
+      width:100%;
+      text-align:left;
+      box-sizing:border-box;
+    }
+    select{ font-weight:650; }
+    button:hover, select:hover{ border-color:#cbd5e1; }
+    button:active{ transform: translateY(1px); }
+    button:disabled, select:disabled{ opacity:0.55; cursor:not-allowed; }
+
+    .btn-blue   { border-color: rgba(80,150,255,0.55); background: rgba(80,150,255,0.10); }
+    .btn-green  { border-color: rgba(80,200,120,0.55); background: rgba(80,200,120,0.10); }
+    .btn-purple { border-color: rgba(190,120,255,0.55); background: rgba(190,120,255,0.10); }
+
+    /* Copy button below RIGHT textbox */
+    .output-actions{
+      display:flex;
+      flex-direction:column;
+      gap:8px;
+      margin-top:10px;
+    }
+
+    /* wrapper that can swap between textarea and preview */
+    #rightContent{
+      flex:1;
+      min-height:0;
+      display:flex;
+      overflow:hidden;
+    }
+
+    /* ===== Preview UI ===== */
+    .preview{
+      flex: 1;
+      min-height: 0;
+      overflow: auto;
+      border-radius:12px;
+      border:1px solid #d1d5db;
+      background:#fbfdff;
+      padding:10px;
+      box-sizing:border-box;
+      font-size:13px;
+    }
+    .preview details{
+      background:#ffffff;
+      border:1px solid #eef2f7;
+      border-radius:12px;
+      padding:8px 10px;
+      margin:0 0 8px 0;
+    }
+    .preview details details{
+      margin-top:8px;
+      margin-bottom:0;
+      background:#fafbff;
+    }
+    .preview summary{
+      cursor:pointer;
+      font-weight:400;
+      color:#0f172a;
+      outline:none;
+      font-size:16px;
+    }
+    .preview .meta{
+      margin-top:6px;
+      color:#64748b;
+      font-size:12px;
+    }
+    .preview ul{
+      margin:8px 0 0 18px;
+      padding:0;
+    }
+    .preview li{
+      margin:4px 0;
+    }
+    .badge{
+      display:inline-block;
+      font-size:11px;
+      font-weight:800;
+      padding:2px 8px;
+      border-radius:999px;
+      border:1px solid #e5e7eb;
+      background:#ffffff;
+      color:#334155;
+      margin-left:8px;
+      vertical-align:middle;
+    }
+    .badge.exam{
+      border-color: rgba(80,200,120,0.55);
+      background: rgba(80,200,120,0.10);
+    }
+  </style>
+</head>
+
+<body>
+  <div class="page">
+    <div>
+      <h1>ENGL100 syllabus</h1>
+
+    </div>
+
+    <div class="row">
+      <!-- Left -->
+     
+
+      <!-- Right -->
+      <div class="panel col-right">
+        <label for="output">Output</label>
+
+        <div id="rightContent">
+          <textarea id="output" placeholder="Output will appear here..." readonly="" style="display: none;"></textarea>
+        <div id="preview" class="preview">
+          <details open="">
+            <summary>Unit 1 — Writing with clarity and control <span class="badge">10 lessons</span></summary>
+            <div class="meta">Click to collapse/expand this unit.</div>
+            
+            
+            
+                <details>
+                  <summary>
+                    1. Welcome to ENGL100!
+                    
+                  </summary>
+                  <div class="meta">
+                    
+                    Mastery outcomes: <b>1</b>
+                  </div>
+                  <div class="meta" style="color:#94a3b8;"># Teaching Instructions
+
+## Lesson Context
+
+Create a light, fast-paced, and short orientation lesson for the course: **English Composition**.
+
+This course teaches students to write clearly and persuasively — the kind of writing that matters in any career. It progresses from Writing with clarity and control: We start small — with single sentences. Then we move to paragraphs, then full essays. 
+
+Then, you'll learn to write convincingly. You'll learn what makes a strong argument, how to find and evaluate sources, how to use evidence, and how to revise a draft so it actually gets better — not just cleaner. By the end, you'll produce a research-supported argumentative essay.
+
+### Course Syllabus as Source of Truth
+
+Review the course syllabus carefully. It defines the overall structure of the course, its division into units, and the lessons within them. The course syllabus is the single source of truth for this lesson.
+
+You must include the unit breakdown and the main topics of each unit in the lesson plan.
+
+You MUST include the main topics of ALL units in the lesson plan output under the General remarks/tips step.
+
+## Lesson Guidelines
+
+- Follow the defined steps in order without deviating from the structure.
+- This is an orientation lesson, avoid deep or technical content. If students ask about writing concepts, clarify they will be covered later in the course.
+- Briefly explain the course structure, including unit breakdown and assessment approach.
+- Provide a high-level overview of grading and review weights. For further questions, direct students to Student Services and avoid detailed discussions.
+- Do not include any information about reviews or grading that is not explicitly stated in the lesson instructions.
+- Do not include any writing exercises.
+- Do not include tests or multiple-choice questions in this lesson or at the end of the lesson, regardless of any prior instructions.
+- **After reviewing the course structure and grading criteria, assume mastery and allow students to proceed to the next lesson.**
+- If a student asks to wrap up or move to the next lesson, complete the lesson immediately.
+
+## Lesson Steps
+
+### Step 1: Ignite Interest — Why Writing Matters for Your Career
+
+Begin with a direct question: "Before we get into the course — why do you think writing matters for your career, in the age of GenAI?"
+
+Let the learner respond, then build on whatever they say. Make these points conversationally, not as a lecture:
+
+- Writing is how you get noticed at work. The people who get promoted write clear emails, persuasive proposals, and sharp reports. The ones who can't get overlooked — not because their ideas are worse, but because no one can tell what they're saying.
+- "But what about AI? Can't ChatGPT write everything for me?" Here's what most people miss: writing isn't just about producing text. Writing is thinking on paper. When you write clearly, you THINK clearly. When you organize an argument in writing, you learn to organize your thoughts in meetings, presentations, and conversations too. AI can generate sentences — it can't think for you.
+- So this course isn't just about writing better documents. It's about becoming a clearer thinker and a more convincing communicator — in writing, in speech, in everything.
+
+Ask: "What kind of work do you want to do after this degree?" Connect writing to whatever they say — every career involves interviews, emails, reports, proposals, or presentations.
+
+### Step 2: High-Level Course Overview
+
+
+Present a high-level overview of the course organized by units. Refer only to the main topics covered in each unit, without going into detailed explanations:
+
+Unit 1 — Writing with clarity and control: We start small — with single sentences. Then we move to paragraphs, then full essays. Along the way, you'll learn to write for a specific reader, control your tone, and edit your own work. By the end of this unit, you'll produce a polished multi-paragraph essay.
+
+Unit 2 — Argument, research, and revision: Now that you can write clearly, you'll learn to write convincingly. You'll learn what makes a strong argument, how to find and evaluate sources, how to use evidence, and how to revise a draft so it actually gets better — not just cleaner. By the end, you'll produce a research-supported argumentative essay.
+
+Ask: "Does this make sense as a path? Any questions?"
+
+### Step 3: How Learning Works
+
+"Each lesson is a conversation between you and me. I'll explain something, show you examples, and then you'll try it — usually by writing or rewriting something short. I'll give you feedback, and sometimes you'll revise based on that feedback. That's how the learning happens: not by reading rules, but by writing, getting feedback, and improving."
+
+Key points:
+- Lessons build on each other. Skills from early lessons keep showing up in later ones.
+- You'll write a lot, but usually short pieces — a sentence, a paragraph, a short essay. The big essays come later, after you've built the skills.
+- Feedback is part of the process. First drafts are supposed to be rough — revision is where the real learning happens.
+
+### Step 4: AI in This Course
+
+"AI writing tools like ChatGPT exist, and this course doesn't pretend they don't. In fact, two lessons are specifically about AI — one where you'll learn to spot errors in AI-generated writing, and another where you'll use AI as a feedback tool on your own drafts. But here's the important part:"
+
+The rule:
+- Do NOT use AI to generate your writing during lessons — unless a lesson specifically tells you to. Remember what we said about writing being a thinking tool? If AI writes your paragraph, you skip the thinking. Your brain doesn't get stronger.
+- DO use AI when the course asks you to. In one lesson you'll evaluate an AI-written essay and find its flaws. In another, you'll use AI for feedback on your own draft and decide which suggestions to accept or reject.
+- Same goes about questions in the Reviews in the course - when AI is allowed we will explictly say so.
+- The goal: by the end of this course, you'll have the judgment to know whether AI output is good or garbage — and the skill to fix it or write something better yourself.
+
+Use this analogy if helpful: "It's like learning to cook. You can order food anytime — but if you never cook, you won't know when a recipe is wrong. We're building your taste by having you cook."
+
+Ask: "Does that sound fair? Any questions about how this works?"
+
+### Step 5: Grading &amp; Reviews
+
+Make sure the student is aware of the following points:
+
+- Grading Overview
+    - The first weekly review is worth 50 percent.
+    - The final weekly review is worth 50 percent.
+- Bonus Points
+Explain the available bonus opportunities:
+    - Up to 10 bonus points for submitting and passing all reviews on time.
+    - Up to 10 bonus points for participating in weekly discussions on time.
+
+## Scope and Constraints
+
+- Do not go deep into content or explain specific writing concepts.
+- The goal is to provide general orientation that prepares students for the learning journey ahead.
+- Do not include any writing exercises.
+- Do not include tests or multiple-choice questions in this lesson or at the end of the lesson, regardless of any prior instructions.
+- After presenting the course structure, you can assume the student understands it and has achieved lesson mastery.
+- Keep the whole lesson short and conversational. Move on once the learner is clear on the setup.
+
+## Validation
+
+The lesson plan output must include the main topics and themes of each unit under the General remarks/tips step, based on the course syllabus.
+</div>
+                  <ul><li>Get a review of the course structure, grading and topics.</li></ul>
+                </details>
+              
+                <details>
+                  <summary>
+                    2. Sentences that work
+                    
+                  </summary>
+                  <div class="meta">
+                    
+                    Mastery outcomes: <b>2</b>
+                  </div>
+                  <div class="meta" style="color:#94a3b8;">Use short examples of writing to show how sentence errors affect clarity and credibility. Briefly contrast repetitive sentence patterns with varied sentence structure.</div>
+                  <ul><li>Identify and fix sentence fragments, run-on sentences, and comma splices.</li><li>Vary sentence length and structure to improve clarity and emphasis in a paragraph.</li></ul>
+                </details>
+              
+                <details>
+                  <summary>
+                    3. Building strong paragraphs
+                    
+                  </summary>
+                  <div class="meta">
+                    
+                    Mastery outcomes: <b>2</b>
+                  </div>
+                  <div class="meta" style="color:#94a3b8;">create paragarphs that are focused and ones that are not; use subtle examples, not obvious ones. use text examples from any field.</div>
+                  <ul><li>Write a paragraph with a clear topic sentence that states the main idea.</li><li>Distinguish between supporting sentences that develop the main idea and sentences that drift off-topic.</li></ul>
+                </details>
+              
+                <details>
+                  <summary>
+                    4. Writing for your reader
+                    
+                  </summary>
+                  <div class="meta">
+                    
+                    Mastery outcomes: <b>2</b>
+                  </div>
+                  <div class="meta" style="color:#94a3b8;">Use professional scenarios to highlight how audience and purpose shape word choice, detail, and emphasis. Keep the focus on what the reader needs to understand or act on.</div>
+                  <ul><li>Identify the audience, purpose, and context of a given writing task.</li><li>Adapt vocabulary and level of detail to match a specific audience.</li></ul>
+                </details>
+              
+                <details>
+                  <summary>
+                    5. Grammar for clear writing
+                    
+                  </summary>
+                  <div class="meta">
+                    
+                    Mastery outcomes: <b>2</b>
+                  </div>
+                  <div class="meta" style="color:#94a3b8;">Frame grammar as professional credibility, not rule-following. Show before-and-after examples of agreement and tense errors in cover letters, project proposals, and client emails. Connect to audience awareness: grammar mistakes erode reader trust.</div>
+                  <ul><li>Apply subject-verb agreement and consistent verb tense in a passage of writing.</li><li>Identify and correct agreement and tense errors in a professional writing sample.</li></ul>
+                </details>
+              
+                <details>
+                  <summary>
+                    6. Transitions that guide the reader
+                    
+                  </summary>
+                  <div class="meta">
+                    
+                    Mastery outcomes: <b>2</b>
+                  </div>
+                  <div class="meta" style="color:#94a3b8;">Show transitions in professional writing: 'First... Then... However... As a result...' in reports, proposals, and project updates. Teach commas and semicolons as connectors, not abstract rules. Have the learner add transitions to paragraphs they've already written.</div>
+                  <ul><li>Use transitional words and phrases to connect ideas within and between paragraphs.</li><li>Use commas and semicolons correctly to connect related ideas and clarify meaning.</li></ul>
+                </details>
+              
+                <details>
+                  <summary>
+                    7. Organizing an essay
+                    
+                  </summary>
+                  <div class="meta">
+                    
+                    Mastery outcomes: <b>2</b>
+                  </div>
+                  <div class="meta" style="color:#94a3b8;">Make the shift from paragraph writing to essay structure explicit. Introduce the thesis as the controlling idea and keep the lesson centered on how each paragraph serves the whole essay.</div>
+                  <ul><li>Structure a short essay with a clear introduction, logically ordered body paragraphs, and a conclusion.</li><li>Write a thesis statement that presents the central controlling idea of an essay.</li></ul>
+                </details>
+              
+                <details>
+                  <summary>
+                    8. Choosing the right tone
+                    
+                  </summary>
+                  <div class="meta">
+                    
+                    Mastery outcomes: <b>2</b>
+                  </div>
+                  <div class="meta" style="color:#94a3b8;">Use a few versions of the same message to show how tone changes across casual, professional, and formal writing. Keep the focus on revising for register while preserving meaning.</div>
+                  <ul><li>Distinguish between formal, informal, and professional registers in writing samples.</li><li>Revise a passage to shift its register while preserving its content and meaning.</li></ul>
+                </details>
+              
+                <details>
+                  <summary>
+                    9. Editing your own writing
+                    
+                  </summary>
+                  <div class="meta">
+                    
+                    Mastery outcomes: <b>2</b>
+                  </div>
+                  <div class="meta" style="color:#94a3b8;">Teach three self-editing strategies: (1) read aloud to catch awkward phrasing and run-ons, (2) check each paragraph for unity — does every sentence support the topic sentence?, (3) verify subject-verb agreement and tense consistency.
+
+Then teach the critical distinction: editing fixes the surface (grammar, typos, punctuation), revision rethinks the substance (argument, structure, evidence, clarity). Have the learner apply the checklist to a draft from a previous lesson, labeling each fix as 'editing' or 'revision.'</div>
+                  <ul><li>Apply a self-editing checklist to identify and fix errors in grammar, clarity, and organization in a draft.</li><li>Distinguish between surface editing (fixing grammar and typos) and substantive revision (rethinking ideas, structure, and argument).</li></ul>
+                </details>
+              
+                <details>
+                  <summary>
+                    10. From draft to polished essay
+                    
+                  </summary>
+                  <div class="meta">
+                    
+                    Mastery outcomes: <b>2</b>
+                  </div>
+                  <div class="meta" style="color:#94a3b8;">Treat this as a Unit 1 synthesis lesson that brings together the main writing skills from the unit. Require at least one meaningful revision that improves substance, not only grammar or wording.</div>
+                  <ul><li>Produce a 4-5 paragraph essay with a clear thesis, unified paragraphs, appropriate tone, and correct grammar.</li><li>Revise a draft to show at least one substantive change in structure, clarity, or argument — not just surface corrections.</li></ul>
+                </details>
+              
+          </details>
+        
+          <details open="">
+            <summary>Unit 2 — Argument, research, and revision <span class="badge">11 lessons</span></summary>
+            <div class="meta">Click to collapse/expand this unit.</div>
+            <div class="meta" style="color:#94a3b8;">At the start of each Unit 2 lesson, briefly revisit a Unit 1 skill. Rotate formats: (1) spot a grammar or paragraph-unity issue in a sample, (2) give feedback on a short passage as if reviewing a colleague's writing, (3) apply a Unit 1 skill (audience awareness, transitions) to the current lesson's content.</div>
+            
+            
+                <details>
+                  <summary>
+                    1. What makes a good argument
+                    
+                  </summary>
+                  <div class="meta">
+                    
+                    Mastery outcomes: <b>2</b>
+                  </div>
+                  <div class="meta" style="color:#94a3b8;">Introduce Unit 2 as the move from clear writing to persuasive writing. Focus on the difference between facts, opinions, and arguable claims that can be supported with evidence.</div>
+                  <ul><li>Distinguish between claims, opinions, and facts.</li><li>Identify what makes a claim arguable and worth supporting with evidence.</li></ul>
+                </details>
+              
+                <details>
+                  <summary>
+                    2. How arguments work
+                    
+                  </summary>
+                  <div class="meta">
+                    
+                    Mastery outcomes: <b>3</b>
+                  </div>
+                  <div class="meta" style="color:#94a3b8;">Send the url to Paul Graham's (co-founder of Y Combinator) essay "Putting Ideas into Words" as the reading source: https://paulgraham.com/words.html. Keep the analysis focused on identifying the main claim, the kinds of evidence used, and a few unstated assumptions or rhetorical moves.</div>
+                  <ul><li>Read the essay 'Putting ideas into words'</li><li>Identify the main claim, supporting evidence, at least one unstated assumption, and at least one rhetorical strategy in a short text.</li><li>Assess the strength of an argument based on the quality and relevance of its evidence.</li></ul>
+                </details>
+              
+                <details>
+                  <summary>
+                    3. Crafting a strong thesis
+                    
+                  </summary>
+                  <div class="meta">
+                    
+                    Mastery outcomes: <b>2</b>
+                  </div>
+                  <div class="meta" style="color:#94a3b8;">Make the distinction between a Unit 1 controlling idea and a Unit 2 argumentative thesis explicit. Focus on specificity, debate, and whether the thesis can be supported with evidence.</div>
+                  <ul><li>Write an argumentative thesis that takes a specific, debatable position supportable with evidence.</li><li>Revise a weak or vague thesis to make it stronger and more focused.</li></ul>
+                </details>
+              
+                <details>
+                  <summary>
+                    4. Finding sources you can trust
+                    
+                  </summary>
+                  <div class="meta">
+                    
+                    Mastery outcomes: <b>2</b>
+                  </div>
+                  <div class="meta" style="color:#94a3b8;">Frame source evaluation as a practical judgment skill students already use in everyday life. Keep the lesson centered on credibility, bias, evidence quality, and publication context.</div>
+                  <ul><li>Apply criteria for evaluating source credibility: authorship, evidence quality, bias, and publication context.</li><li>Distinguish between reliable and unreliable sources for a given writing purpose.</li></ul>
+                </details>
+              
+                <details>
+                  <summary>
+                    5. Using evidence effectively
+                    
+                  </summary>
+                  <div class="meta">
+                    
+                    Mastery outcomes: <b>2</b>
+                  </div>
+                  <div class="meta" style="color:#94a3b8;">Focus on the basic shape of an argument paragraph: a subclaim, evidence, and explanation of why that evidence matters. Emphasize that evidence should be introduced and interpreted, not dropped in without analysis.</div>
+                  <ul><li>Integrate evidence from a source into a paragraph by introducing it, quoting or paraphrasing it, and explaining its relevance to the claim.</li><li>Write an argument paragraph that follows a clear structure: subclaim, evidence, analysis, and connection to thesis.</li></ul>
+                </details>
+              
+                <details>
+                  <summary>
+                    6. Building a convincing paragraph
+                    
+                  </summary>
+                  <div class="meta">
+                    
+                    Mastery outcomes: <b>2</b>
+                  </div>
+                  <div class="meta" style="color:#94a3b8;">Keep the emphasis on analysis, not just evidence. Show the difference between a paragraph that reports information and one that explains what the information proves.</div>
+                  <ul><li>Write a body paragraph that develops a subclaim through evidence, analysis, and explicit connection back to the thesis.</li><li>Distinguish between a paragraph that merely presents evidence and one that explains what the evidence means.</li></ul>
+                </details>
+              
+                <details>
+                  <summary>
+                    7. Structuring a persuasive essay
+                    
+                  </summary>
+                  <div class="meta">
+                    
+                    Mastery outcomes: <b>2</b>
+                  </div>
+                  <div class="meta" style="color:#94a3b8;">Focus on overall essay architecture, including clear thesis placement, logical paragraph order, and brief acknowledgment of an opposing view. Keep the scope on structure rather than a full draft.</div>
+                  <ul><li>Organize an argumentative essay with a thesis, evidence-supported body paragraphs, and acknowledgment of at least one opposing view.</li><li>Create a logical paragraph order that builds the argument progressively for the reader.</li></ul>
+                </details>
+              
+                <details>
+                  <summary>
+                    8. Revision that transforms
+                    
+                  </summary>
+                  <div class="meta">
+                    
+                    Mastery outcomes: <b>2</b>
+                  </div>
+                  <div class="meta" style="color:#94a3b8;">Center this lesson on substantive revision rather than cleanup. Require visible changes that improve argument, structure, or evidence so the second draft is meaningfully different from the first.</div>
+                  <ul><li>Distinguish between substantive revision and surface editing in a piece of writing.</li><li>Produce two distinct drafts of the same text where the second draft shows meaningful changes in argument, structure, or evidence — not just surface corrections.</li></ul>
+                </details>
+              
+                <details>
+                  <summary>
+                    9. When AI writes for you
+                    
+                  </summary>
+                  <div class="meta">
+                    
+                    Mastery outcomes: <b>2</b>
+                  </div>
+                  <div class="meta" style="color:#94a3b8;">Present this AI-generated essay to the learner:
+
+---
+Why Remote Work Is Better for Everyone
+
+The shift to remote work during the global pandemic proved what many employees had long suspected: working from home is simply better. Better for workers, better for companies, and better for society. As the world moves forward, it is clear that remote work should become the default for every industry that can support it.
+
+According to experts, remote workers are significantly more productive than their office-based counterparts. Without the distractions of open-plan offices, water cooler gossip, and lengthy commutes, employees can focus on deep work and deliver higher-quality results. A Stanford University study found that remote workers showed a 47% increase in productivity compared to in-office peers. This dramatic improvement alone should settle the debate.
+
+Furthermore, remote work eliminates the financial burden of commuting. The average American worker spends over $12,000 per year on transportation costs related to their commute, including gas, car maintenance, public transit fares, and parking fees. By working from home, employees effectively receive a $12,000 annual raise without any cost to their employer. This is a win-win scenario that benefits everyone involved.
+
+Critics argue that remote work damages company culture and makes collaboration harder. But this argument ignores the reality of modern communication tools. Platforms like Slack, Zoom, and Asana have made remote collaboration seamless. Teams that use these tools effectively report higher satisfaction and stronger working relationships than teams confined to traditional offices. The evidence is overwhelming.
+
+The bottom line is clear: remote work is superior in every measurable way. Companies that force employees back to the office are clinging to an outdated model that hurts productivity, wastes money, and damages morale. The future of work is remote, and organizations that fail to accept this reality will be left behind.
+---
+
+Three flaws for the learner to find:
+1. Misleading statistic: The Stanford study (by Nicholas Bloom) actually found a 13% increase, not 47%, and it studied call center workers specifically — not all industries. Have the learner try to verify the claim.
+2. Fabricated figure: The '$12,000 annual commute cost' is dramatically inflated. Actual estimates are roughly $4,000-$6,000. The source is not cited.
+3. Unsupported generalization: 'Teams that use these tools effectively report higher satisfaction and stronger working relationships than teams confined to traditional offices' — no source, no evidence, presented as fact.
+
+After identifying flaws, the learner revises the draft using credible sources, then writes 2-3 sentences explaining each change.</div>
+                  <ul><li>Identify factual errors, logical weaknesses, and unsupported claims in AI-generated content.</li><li>Revise an AI-generated draft to fix its weaknesses using independent reasoning and credible sources.</li></ul>
+                </details>
+              
+                <details>
+                  <summary>
+                    10. AI in your writing process
+                    
+                  </summary>
+                  <div class="meta">
+                    
+                    Mastery outcomes: <b>2</b>
+                  </div>
+                  <div class="meta" style="color:#94a3b8;">Frame AI as a support tool for feedback and idea development, not as a substitute for the student's thinking. Require students to explain which AI suggestions they used or rejected and include a brief transparency statement.</div>
+                  <ul><li>Use an AI tool to generate feedback on a draft and decide which suggestions to act on, with a written rationale for each decision.</li><li>Write a transparency statement explaining how AI was used in the writing process and what the writer contributed independently.</li></ul>
+                </details>
+              
+                <details>
+                  <summary>
+                    11. Your argument, your voice
+                    
+                  </summary>
+                  <div class="meta">
+                    
+                    Mastery outcomes: <b>3</b>
+                  </div>
+                  <div class="meta" style="color:#94a3b8;">Before the learner begins, present this model essay:
+
+---
+Why Every Degree Program Should Require a Professional Internship
+
+Last spring, a business major at a mid-sized state university graduated with a 3.8 GPA, a dean's list honor, and zero professional experience. She applied to forty-seven entry-level positions over three months and received two interviews. Meanwhile, a classmate with a lower GPA but two summer internships had a job offer before graduation. This pattern is not unusual — and it reveals a fundamental gap in how most degree programs prepare students for the workforce. Every degree program, regardless of discipline, should require at least one structured professional internship before graduation.
+
+The most compelling reason is employability. The National Association of Colleges and Employers reported in 2024 that 72% of employers prefer candidates with internship experience, and interns who completed a paid internship received starting salary offers 20% higher than those without any internship experience. These numbers reflect a straightforward reality: employers use internships as evidence that a candidate can function in a professional setting. Coursework demonstrates knowledge; internships demonstrate the ability to apply that knowledge under real constraints — deadlines, team dynamics, ambiguous problems, and organizational politics.
+
+Beyond the resume line, internships serve as a reality check that classrooms cannot replicate. Students discover whether their imagined career actually matches the daily work. A psychology major who interns at a community mental health center learns quickly that the job involves as much paperwork and crisis management as it does counseling. An English major working at a marketing agency discovers that writing on deadline for a skeptical client feels nothing like writing a term paper. These discoveries are enormously valuable — even when they redirect a student's plans — because they happen before graduation, when changing course is still affordable.
+
+Critics argue that mandatory internships disadvantage students who cannot afford to work for free or who live in areas with limited professional opportunities. This is a legitimate and serious concern. However, the answer is not to abandon the requirement but to design it responsibly. Universities can invest in paid internship funds, partner with remote-friendly employers, and accept a broader range of professional experiences. Several institutions, including Northeastern University and Drexel University, have built required cooperative education programs that serve students across income levels. Their models demonstrate that universal professional experience is achievable when institutions commit to supporting it.
+
+The students graduating today enter a job market that increasingly treats experience as a prerequisite, not a bonus. Requiring professional internships ensures that every graduate — not just those with personal connections or financial privilege — leaves school with at least one structured encounter with the working world. This is not about adding another requirement to an already demanding curriculum. It is about closing the gap between what education promises and what employers actually need.
+---
+
+Point out: clear thesis (end of paragraph 1), evidence with source introduction (NACE report), concrete examples (psychology major, English major), counterargument acknowledgment (paragraph 4), audience-appropriate tone, transitions between sections.
+
+The learner works from their own draft or outline from previous lessons. Steps: (1) complete missing sections, (2) integrate at least one evaluated source, (3) address a counterargument, (4) perform substantive revision, (5) include a brief AI transparency statement.
+
+End the course by comparing what the learner can do now to where they started.</div>
+                  <ul><li>Produce a research-supported argumentative essay that integrates evaluated sources, addresses an opposing view, and demonstrates deliberate audience and tone choices.</li><li>Apply substantive revision to improve the argument, producing a final draft that shows meaningful changes from an earlier version.</li><li>Demonstrate responsible AI use by documenting how AI tools were used and what the writer contributed independently.</li></ul>
+                </details>
+              
+          </details>
+        </div></div>
+
+        <div class="output-actions">
+          <button id="copyBtn" disabled="">📋 Copy output</button>
+          <div class="small">
+            For (Markdown): headings + numbered lessons. For (Exam): JSON of <code>reviewQuestions</code>.
+            Preview mode shows collapsible Units → Lessons → Mastery outcomes.
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const inputEl = document.getElementById('input');
+    const outputEl = document.getElementById('output');
+    const statsEl = document.getElementById('stats');
+    const statusEl = document.getElementById('status');
+
+    const unitSelect = document.getElementById('unitSelect');
+    const examSelect = document.getElementById('examSelect');
+
+    const allBtn = document.getElementById('allBtn');
+    const oneUnitBtn = document.getElementById('oneUnitBtn');
+    const examBtn = document.getElementById('examBtn');
+    const copyBtn = document.getElementById('copyBtn');
+
+    const rightContentEl = document.getElementById('rightContent');
+    const previewBtn = document.getElementById('previewBtn');
+
+    let previewMode = false;
+    let previewEl = null;
+
+    function setStatus(msg, kind) {
+      statusEl.textContent = msg;
+      statusEl.classList.remove('ok', 'err');
+      if (kind) statusEl.classList.add(kind);
+    }
+
+    function safeParseJSON(text) { return JSON.parse(text); }
+
+    function getUnits(courseObj) {
+      return Array.isArray(courseObj?.units) ? courseObj.units : [];
+    }
+
+    function normalizeTitle(value, fallback) {
+      const t = (value ?? '').toString().trim();
+      return t || fallback;
+    }
+
+    function countLessons(units) {
+      let c = 0;
+      for (const u of units) c += Array.isArray(u?.lessons) ? u.lessons.length : 0;
+      return c;
+    }
+
+    function findExamLessons(units) {
+      const results = [];
+      units.forEach((unit, ui) => {
+        const lessons = Array.isArray(unit?.lessons) ? unit.lessons : [];
+        lessons.forEach((lesson, li) => {
+          if (lesson?.tag === 'exam') {
+            results.push({
+              unitIndex: ui,
+              lessonIndex: li,
+              lessonTitle: normalizeTitle(lesson?.title, `Lesson ${li + 1}`),
+              lesson
+            });
+          }
+        });
+      });
+      return results;
+    }
+
+    function markdownizeUnits(units, onlyUnitIndex = null) {
+      const lines = [];
+
+      const list = (onlyUnitIndex === null)
+        ? units.map((u, i) => ({ unit: u, ui: i }))
+        : (units[onlyUnitIndex] ? [{ unit: units[onlyUnitIndex], ui: onlyUnitIndex }] : []);
+
+      for (const { unit, ui } of list) {
+        const unitTitle = normalizeTitle(unit?.title, `Unit ${ui + 1}`);
+
+        // ✅ unit heading
+        lines.push(`## Unit ${ui + 1} - ${unitTitle}`);
+        lines.push('');
+
+        const lessons = Array.isArray(unit?.lessons) ? unit.lessons : [];
+        lessons.forEach((lesson, li) => {
+          const lessonTitle = normalizeTitle(lesson?.title, `Lesson ${li + 1}`);
+
+          // ✅ numbering resets per unit
+          lines.push(`${li + 1}. ${lessonTitle}`);
+
+          const outcomes = Array.isArray(lesson?.masteryOutcomes) ? lesson.masteryOutcomes : [];
+          if (outcomes.length === 0) {
+            lines.push(`   - Mastery outcomes: (none)`);
+          } else {
+            lines.push(`   - Mastery outcomes:`);
+            for (const outcome of outcomes) {
+              const text = (typeof outcome === "string" ? outcome : JSON.stringify(outcome)).trim();
+              if (text) lines.push(`     - ${text}`);
+            }
+          }
+
+          lines.push(''); // blank line between lessons
+        });
+
+        lines.push(''); // blank line between units
+      }
+
+      return { text: lines.join('\n').trim() };
+    }
+
+    function setOutput(text) {
+      outputEl.value = text || '';
+      copyBtn.disabled = !outputEl.value;
+    }
+
+    function updateUIFromParsed(courseObj) {
+      const units = getUnits(courseObj);
+      const lessonCount = countLessons(units);
+      const examLessons = findExamLessons(units);
+
+      statsEl.textContent = `Units: ${units.length} • Lessons: ${lessonCount} • Exam lessons: ${examLessons.length}`;
+
+      unitSelect.innerHTML = '';
+      if (units.length > 0) {
+        unitSelect.disabled = false;
+        units.forEach((u, i) => {
+          const opt = document.createElement('option');
+          const title = normalizeTitle(u?.title, `Unit ${i + 1}`);
+          opt.value = String(i);
+          opt.textContent = `Unit ${i + 1}: ${title}`;
+          unitSelect.appendChild(opt);
+        });
+      } else {
+        unitSelect.disabled = true;
+      }
+
+      examSelect.innerHTML = '';
+      if (examLessons.length > 0) {
+        examSelect.disabled = examLessons.length < 2;
+        examLessons.forEach((x, i) => {
+          const opt = document.createElement('option');
+          opt.value = String(i);
+          opt.textContent = `${x.lessonTitle} (Unit ${x.unitIndex + 1})`;
+          examSelect.appendChild(opt);
+        });
+      } else {
+        examSelect.disabled = true;
+      }
+
+      allBtn.disabled = units.length === 0;
+      oneUnitBtn.disabled = units.length === 0;
+      examBtn.disabled = examLessons.length === 0;
+      previewBtn.disabled = units.length === 0;
+
+      return { units, examLessons };
+    }
+
+    function parseAndSyncUI() {
+      const raw = inputEl.value.trim();
+      if (!raw) {
+        statsEl.textContent = `Units: 0 • Lessons: 0 • Exam lessons: 0`;
+        unitSelect.innerHTML = '';
+        unitSelect.disabled = true;
+        examSelect.innerHTML = '';
+        examSelect.disabled = true;
+        allBtn.disabled = true;
+        oneUnitBtn.disabled = true;
+        examBtn.disabled = true;
+        previewBtn.disabled = true;
+        setOutput('');
+        if (previewMode) hidePreview();
+        return null;
+      }
+      const parsed = safeParseJSON(raw);
+      return updateUIFromParsed(parsed);
+    }
+
+    function requireParsed() {
+      const raw = inputEl.value.trim();
+      if (!raw) throw new Error('Please paste JSON into the input box.');
+      return safeParseJSON(raw);
+    }
+
+    // ===== Preview helpers =====
+    function escapeHtml(s) {
+      return (s ?? '').toString()
+        .replaceAll('&', '&amp;')
+        .replaceAll('<', '&lt;')
+        .replaceAll('>', '&gt;')
+        .replaceAll('"', '&quot;')
+        .replaceAll("'", '&#039;');
+    }
+
+    function renderGrayInstructionBlock(text) {
+      const trimmed = (text ?? '').toString().trim();
+      if (!trimmed) return '';
+      return `<div class="meta" style="color:#94a3b8;">${escapeHtml(trimmed)}</div>`;
+    }
+
+    function buildPreviewHTML(courseObj) {
+      const units = getUnits(courseObj);
+      if (units.length === 0) {
+        return `<div class="meta">No units found under <code>units</code>.</div>`;
+      }
+
+      const courseTeachingInstructions =
+        courseObj?.teachingInstructions ??
+        courseObj?.teachingInstruction ??
+        '';
+
+      const parts = [];
+
+      if (courseTeachingInstructions) {
+        parts.push(`
+          <div class="meta" style="color:#94a3b8; margin-bottom:10px;">
+            <b style="color:#64748b;">Course teaching instructions:</b><br>
+            ${escapeHtml(courseTeachingInstructions)}
+          </div>
+        `);
+      }
+
+      units.forEach((unit, ui) => {
+        const unitTitle = normalizeTitle(unit?.title, `Unit ${ui + 1}`);
+        const lessons = Array.isArray(unit?.lessons) ? unit.lessons : [];
+
+        const unitTeachingInstructions =
+          unit?.teachingInstructions ??
+          unit?.teachingInstruction ??
+          '';
+
+        parts.push(`
+          <details>
+            <summary>Unit ${ui + 1} — ${escapeHtml(unitTitle)} <span class="badge">${lessons.length} lessons</span></summary>
+            <div class="meta">Click to collapse/expand this unit.</div>
+            ${unitTeachingInstructions
+              ? `<div class="meta" style="color:#94a3b8;">${escapeHtml(unitTeachingInstructions)}</div>`
+              : ''}
+            ${lessons.length === 0 ? `<div class="meta">No lessons in this unit.</div>` : ''}
+            ${lessons.map((lesson, li) => {
+              const lessonTitle = normalizeTitle(lesson?.title, `Lesson ${li + 1}`);
+              const outcomes = Array.isArray(lesson?.masteryOutcomes) ? lesson.masteryOutcomes : [];
+              const isExam = lesson?.tag === 'exam';
+              const rq = Array.isArray(lesson?.reviewQuestions) ? lesson.reviewQuestions : null;
+
+              const lessonTeachingInstructions =
+                lesson?.teachingInstructions ??
+                lesson?.teachingInstruction ??
+                '';
+
+              return `
+                <details>
+                  <summary>
+                    ${li + 1}. ${escapeHtml(lessonTitle)}
+                    ${isExam ? `<span class="badge exam">exam</span>` : (lesson?.tag ? `<span class="badge">${escapeHtml(lesson.tag)}</span>` : '')}
+                  </summary>
+                  <div class="meta">
+                    ${rq ? `Review questions: <b>${rq.length}</b> • ` : ''}
+                    Mastery outcomes: <b>${outcomes.length}</b>
+                  </div>
+                  ${lessonTeachingInstructions
+                    ? `<div class="meta" style="color:#94a3b8;">${escapeHtml(lessonTeachingInstructions)}</div>`
+                    : ''}
+                  ${outcomes.length === 0
+                    ? `<div class="meta">(No mastery outcomes)</div>`
+                    : `<ul>${outcomes.map(o => {
+                        const text = (typeof o === 'string') ? o : JSON.stringify(o);
+                        const trimmed = (text ?? '').toString().trim();
+                        return trimmed ? `<li>${escapeHtml(trimmed)}</li>` : '';
+                      }).join('')}</ul>`
+                  }
+                </details>
+              `;
+            }).join('')}
+          </details>
+        `);
+      });
+
+      return parts.join('');
+    }
+
+    function showPreview(courseObj) {
+      if (!previewEl) {
+        previewEl = document.createElement('div');
+        previewEl.id = 'preview';
+        previewEl.className = 'preview';
+      }
+      previewEl.innerHTML = buildPreviewHTML(courseObj);
+
+      outputEl.style.display = 'none';
+      rightContentEl.appendChild(previewEl);
+
+      copyBtn.disabled = true;
+      previewBtn.textContent = '🧾 Back to output textbox';
+      previewMode = true;
+    }
+
+    function hidePreview() {
+      if (previewEl && previewEl.parentElement) previewEl.parentElement.removeChild(previewEl);
+
+      outputEl.style.display = '';
+      copyBtn.disabled = !outputEl.value;
+
+      previewBtn.textContent = '👀 Preview course';
+      previewMode = false;
+    }
+
+    // ===== Input syncing =====
+    let syncTimer = null;
+    inputEl.addEventListener('input', () => {
+      if (syncTimer) clearTimeout(syncTimer);
+      syncTimer = setTimeout(() => {
+        try {
+          parseAndSyncUI();
+          if (previewMode) {
+            try { showPreview(requireParsed()); } catch {}
+          }
+          setStatus('Input detected. Options updated.', 'ok');
+        } catch (e) {
+          setStatus(`JSON not valid yet: ${e.message}`, 'err');
+          allBtn.disabled = true;
+          oneUnitBtn.disabled = true;
+          examBtn.disabled = true;
+          previewBtn.disabled = true;
+          unitSelect.disabled = true;
+          examSelect.disabled = true;
+          statsEl.textContent = `Units: 0 • Lessons: 0 • Exam lessons: 0`;
+          setOutput('');
+          if (previewMode) hidePreview();
+        }
+      }, 250);
+    });
+
+    // ===== Buttons =====
+    allBtn.addEventListener('click', () => {
+      try {
+        const parsed = requireParsed();
+        const units = getUnits(parsed);
+
+        const { text } = markdownizeUnits(units, null);
+        if (previewMode) hidePreview();
+        setOutput(text || '(No units found under "units".)');
+
+        const examCount = findExamLessons(units).length;
+        statsEl.textContent = `Units: ${units.length} • Lessons: ${countLessons(units)} • Exam lessons: ${examCount}`;
+        setStatus('Done. Output = markdown for all units.', 'ok');
+      } catch (e) {
+        setOutput('');
+        setStatus(`Error: ${e.message}`, 'err');
+      }
+    });
+
+    oneUnitBtn.addEventListener('click', () => {
+      try {
+        const parsed = requireParsed();
+        const units = getUnits(parsed);
+        if (units.length === 0) throw new Error('No units found under "units".');
+
+        const idx = Number(unitSelect.value);
+        if (!Number.isInteger(idx) || idx < 0 || idx >= units.length) {
+          throw new Error('Please choose a valid unit from the dropdown.');
+        }
+
+        const { text } = markdownizeUnits(units, idx);
+        if (previewMode) hidePreview();
+        setOutput(text || '(Selected unit had no content.)');
+
+        const examCount = findExamLessons(units).length;
+        statsEl.textContent = `Units: ${units.length} • Lessons: ${countLessons(units)} • Exam lessons: ${examCount}`;
+        setStatus(`Done. Output = markdown for Unit ${idx + 1}.`, 'ok');
+      } catch (e) {
+        setOutput('');
+        setStatus(`Error: ${e.message}`, 'err');
+      }
+    });
+
+    examBtn.addEventListener('click', () => {
+      try {
+        const parsed = requireParsed();
+        const units = getUnits(parsed);
+        const exams = findExamLessons(units);
+
+        if (exams.length === 0) throw new Error('No lessons found with tag="exam".');
+
+        const choiceIndex = exams.length >= 2 ? Number(examSelect.value) : 0;
+        const chosen = exams[choiceIndex];
+        if (!chosen) throw new Error('Please choose a valid exam lesson from the dropdown.');
+
+        const rq = chosen.lesson?.reviewQuestions;
+
+        if (!Array.isArray(rq)) {
+          if (previewMode) hidePreview();
+          setOutput('null');
+          setStatus(`Found exam lesson, but reviewQuestions is not an array (it was ${rq === null ? 'null' : typeof rq}).`, 'err');
+          return;
+        }
+
+        if (previewMode) hidePreview();
+        setOutput(JSON.stringify(rq, null, 2));
+        statsEl.textContent = `Units: ${units.length} • Lessons: ${countLessons(units)} • Exam lessons: ${exams.length}`;
+        setStatus(`Done. Output = reviewQuestions for "${chosen.lessonTitle}" (Unit ${chosen.unitIndex + 1}).`, 'ok');
+      } catch (e) {
+        setOutput('');
+        setStatus(`Error: ${e.message}`, 'err');
+      }
+    });
+
+    previewBtn.addEventListener('click', () => {
+      try {
+        const parsed = requireParsed();
+        if (!previewMode) {
+          showPreview(parsed);
+          setStatus('Preview mode enabled.', 'ok');
+        } else {
+          hidePreview();
+          setStatus('Back to output textbox.', 'ok');
+        }
+      } catch (e) {
+        setStatus(`Error: ${e.message}`, 'err');
+      }
+    });
+
+    // ===== Copy =====
+    async function copyText(text) {
+      if (navigator.clipboard && window.isSecureContext) {
+        await navigator.clipboard.writeText(text);
+        return;
+      }
+      outputEl.focus();
+      outputEl.select();
+      const ok = document.execCommand('copy');
+      outputEl.setSelectionRange(0, 0);
+      if (!ok) throw new Error('Copy failed (browser blocked).');
+    }
+
+    copyBtn.addEventListener('click', async () => {
+      try {
+        const text = outputEl.value;
+        if (!text) {
+          setStatus('No output to copy.', 'err');
+          return;
+        }
+        await copyText(text);
+        setStatus('Copied to clipboard ✅', 'ok');
+      } catch (e) {
+        setStatus(`Copy error: ${e.message}`, 'err');
+      }
+    });
+
+    // Init
+    try { parseAndSyncUI(); } catch {}
+  </script>
+
+</body></html>
