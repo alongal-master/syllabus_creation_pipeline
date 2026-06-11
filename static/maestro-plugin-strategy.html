@@ -1,0 +1,936 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Maestro — edu-infra strategy</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;1,6..72,400&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --bg:        #f6f5f1;
+    --bg-2:      #efeee8;
+    --surface:   #ffffff;
+    --surface-2: #faf9f6;
+    --line:      #e3e1d8;
+    --line-soft: #ecebe3;
+    --ink:       #25241f;
+    --ink-soft:  #5c5a52;
+    --ink-faint: #918f86;
+    --controlled:    #2f6079;   /* Maestro-controlled */
+    --controlled-dim:#2f607912;
+    --real:          #b1683f;   /* real world */
+    --real-dim:      #b1683f12;
+    --c: var(--controlled);     /* current-context accent, set per branch */
+    --font: "Inter", system-ui, sans-serif;
+    --serif: "Newsreader", Georgia, serif;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  html, body { height:100%; background:var(--bg); color:var(--ink);
+    font-family:var(--font); -webkit-font-smoothing:antialiased; overflow:hidden; }
+
+  .deck { height:100vh; width:100vw; position:relative; }
+
+  section.slide {
+    position:absolute; inset:0; display:flex; flex-direction:column;
+    padding: clamp(34px, 4.4vw, 70px) max(clamp(40px,4vw,72px), calc((100vw - 1400px) / 2));
+    opacity:0; visibility:hidden; transform:translateY(8px);
+    transition: opacity .42s ease, transform .42s ease, visibility .42s;
+    pointer-events:none;
+  }
+  section.slide.active { opacity:1; visibility:visible; transform:none; pointer-events:auto; }
+  section[data-branch="controlled"] { --c: var(--controlled); }
+  section[data-branch="real"] { --c: var(--real); }
+
+  /* ---- shared type (restrained) ---- */
+  .kicker {
+    font-size:12px; letter-spacing:.16em; text-transform:uppercase;
+    color:var(--ink-faint); font-weight:600; display:flex; align-items:center; gap:11px;
+  }
+  .kicker::before { content:""; width:20px; height:2px; background:var(--c); border-radius:2px; }
+  h1.title {
+    font-weight:600; line-height:1.08; letter-spacing:-.018em;
+    font-size: clamp(26px, 2.9vw, 40px); max-width:22ch; color:var(--ink); margin-top:14px;
+  }
+  h1.title .em { color:var(--c); }
+  .lead { color:var(--ink-soft); font-size:clamp(14px,1.05vw,16.5px); line-height:1.55; max-width:48ch; }
+
+  /* ---- chrome ---- */
+  .brandmark { position:fixed; left:clamp(22px,2.6vw,42px); bottom:clamp(18px,2.2vw,30px);
+    font-size:11px; letter-spacing:.18em; color:var(--ink-faint); font-weight:700;
+    text-transform:uppercase; z-index:50; }
+  .brandmark span { color:var(--real); }
+  .ctx { position:fixed; right:clamp(22px,2.6vw,42px); bottom:clamp(18px,2.2vw,30px);
+    z-index:50; display:flex; align-items:center; gap:12px; font-size:12px; }
+  .ctx .lbl { letter-spacing:.1em; text-transform:uppercase; font-weight:600; color:var(--ink-faint); }
+  .ctx .dots { display:flex; gap:6px; }
+  .ctx .dots i { width:6px; height:6px; border-radius:50%; background:var(--line);
+    display:inline-block; transition:background .3s, transform .3s; }
+  .ctx .dots i.on { background:var(--c); transform:scale(1.15); }
+  .backbtn { position:fixed; right:clamp(22px,2.6vw,42px); top:clamp(18px,2.2vw,30px);
+    z-index:50; border:1px solid var(--line); background:var(--surface);
+    color:var(--ink-soft); border-radius:999px; padding:7px 15px 7px 12px; font-size:12.5px;
+    font-weight:500; cursor:pointer; display:none; align-items:center; gap:7px;
+    font-family:var(--font); transition:border-color .2s, color .2s; }
+  .backbtn:hover { border-color:var(--c); color:var(--ink); }
+  .backbtn.show { display:inline-flex; }
+  .navhint { position:fixed; left:50%; transform:translateX(-50%); bottom:clamp(16px,2vw,26px);
+    z-index:50; font-size:11px; color:var(--ink-faint); display:flex; gap:7px; align-items:center; }
+  .navhint kbd { border:1px solid var(--line); border-radius:5px; padding:1px 6px; font-family:var(--font);
+    font-size:11px; color:var(--ink-soft); background:var(--surface); }
+
+  /* ============ PROGRAMS ============ */
+  .programs { flex:1; display:grid; grid-template-columns:1fr 1fr;
+    gap:clamp(26px,3.5vw,64px); align-items:start; margin-top:clamp(14px,2vh,28px); position:relative; }
+  .divider-v { position:absolute; left:50%; top:4px; bottom:4px; width:1px; background:var(--line); }
+  .program .ptag { display:flex; align-items:baseline; gap:11px; margin-bottom:18px; }
+  .program .pno { font-family:var(--serif); font-style:italic; font-size:15px; color:var(--controlled); }
+  .program.alt .pno { color:var(--real); }
+  .program .deg { color:var(--ink-faint); font-size:11px; letter-spacing:.14em; text-transform:uppercase;
+    font-weight:600; display:block; margin-bottom:5px; }
+  .program h2 { font-weight:600; font-size:clamp(18px,1.7vw,25px); line-height:1.12; letter-spacing:-.01em; }
+  .pillars { list-style:none; border-top:1px solid var(--line); }
+  .pillars li { padding:clamp(6px,0.95vh,10px) 0; border-bottom:1px solid var(--line-soft);
+    display:flex; align-items:baseline; gap:14px; }
+  .pillars li .idx { font-size:11px; color:var(--ink-faint); min-width:20px; font-weight:600;
+    font-variant-numeric:tabular-nums; }
+  .program.alt .pillars li .idx { color:var(--real); opacity:.65; }
+  .program:not(.alt) .pillars li .idx { color:var(--controlled); opacity:.65; }
+  .pillars li .pname { font-size:clamp(13px,1.05vw,15.5px); font-weight:600; min-width:max-content; }
+  .pillars li .pdesc { font-size:clamp(11.5px,.9vw,13px); color:var(--ink-faint); line-height:1.4; }
+  .tracks { margin-top:clamp(9px,1.2vh,15px); }
+  .tracks .tlabel { font-size:11px; letter-spacing:.14em; text-transform:uppercase;
+    color:var(--ink-faint); font-weight:600; margin-bottom:9px; }
+  .tracks .trow { display:flex; flex-wrap:wrap; gap:8px; }
+  .track { font-size:12px; font-weight:600; padding:6px 12px; border-radius:999px; color:var(--tc);
+    border:1px solid color-mix(in srgb, var(--tc) 32%, transparent);
+    background:color-mix(in srgb, var(--tc) 8%, transparent); }
+
+  /* specialization cards (business) */
+  .spec-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:clamp(7px,.7vw,10px); }
+  .spec { border:1px solid var(--line-soft); border-radius:10px; background:var(--surface);
+    padding:clamp(8px,.85vw,11px) clamp(9px,.95vw,12px); }
+  .spec .st { font-size:clamp(11.5px,.95vw,13px); font-weight:600; display:flex; align-items:center;
+    gap:7px; margin-bottom:5px; line-height:1.15; }
+  .spec .st .dot { width:7px; height:7px; border-radius:50%; background:var(--sc); flex:none; }
+  .spec .sl { font-size:clamp(10px,.78vw,11.5px); color:var(--ink-faint); line-height:1.4; }
+
+  /* future degrees band */
+  .future { border-top:1px solid var(--line); margin-top:clamp(14px,2vh,24px);
+    padding-top:clamp(13px,1.7vh,20px); margin-bottom:clamp(28px,4vh,52px); }
+  .future .fhead { display:flex; align-items:baseline; gap:12px; margin-bottom:13px; flex-wrap:wrap; }
+  .future .fhead h3 { font-size:clamp(15px,1.45vw,21px); font-weight:600; letter-spacing:-.01em; }
+  .future .fhead .fsub { font-size:clamp(11.5px,.9vw,13px); color:var(--ink-faint); }
+  .future .frow { display:flex; flex-wrap:wrap; gap:8px; }
+  .future .fchip { font-size:clamp(12px,.95vw,13.5px); font-weight:500; color:var(--ink-soft);
+    border:1px dashed var(--line); border-radius:999px; padding:6px 14px; background:transparent; }
+
+  /* ============ HUB ============ */
+  .hub-cols { flex:1; display:grid; grid-template-columns:1fr 1fr; gap:clamp(16px,1.6vw,24px);
+    margin-top:clamp(12px,1.8vh,24px); }
+  .slide[data-id="hub"] { padding-top:clamp(26px,3vw,46px); padding-bottom:clamp(20px,2.4vw,38px); }
+  .hub-col { border:1px solid var(--line); border-radius:16px; background:var(--surface);
+    padding:clamp(22px,2.4vw,38px); cursor:pointer; display:flex; flex-direction:column;
+    transition:border-color .22s, box-shadow .22s, transform .22s, background .22s; position:relative; }
+  .hub-col:hover { border-color:var(--c); box-shadow:0 10px 34px -22px var(--c); transform:translateY(-2px); }
+  .hub-col[data-side="controlled"] { --c:var(--controlled); }
+  .hub-col[data-side="real"] { --c:var(--real); }
+  .hub-col .axis { font-size:12.5px; letter-spacing:.16em; text-transform:uppercase; font-weight:700;
+    color:var(--c); margin-bottom:11px; display:flex; align-items:center; gap:9px; }
+  .hub-col .axis .ar { font-size:15px; }
+  .hub-col h3 { font-weight:600; font-size:clamp(18px,1.75vw,25px); letter-spacing:-.012em; margin-bottom:9px; }
+  .hub-col .def { color:var(--ink-soft); font-size:clamp(12.5px,1vw,14.5px); line-height:1.42; margin-bottom:auto; }
+  .hub-col .def b { color:var(--ink); font-weight:600; }
+  .ex { display:flex; flex-direction:column; gap:clamp(6px,.7vw,9px); margin-top:clamp(13px,1.5vh,18px); }
+  .exlabel { font-size:11.5px; letter-spacing:.14em; text-transform:uppercase; font-weight:600;
+    color:var(--ink-faint); margin-bottom:4px; }
+  .exrow { display:flex; align-items:center; gap:clamp(9px,.9vw,12px);
+    padding:clamp(6px,.6vw,8px) clamp(11px,1.1vw,14px); border:1px solid var(--line);
+    border-radius:11px; background:var(--surface-2); transition:border-color .2s, background .2s, box-shadow .2s; }
+  .hub-col:hover .exrow { border-color:color-mix(in srgb, var(--c) 24%, var(--line));
+    box-shadow:0 5px 16px -14px var(--c); }
+  .exrow .exicon { color:var(--c); flex:none;
+    width:clamp(29px,2.5vw,35px); height:clamp(29px,2.5vw,35px); border-radius:9px;
+    display:flex; align-items:center; justify-content:center;
+    background:color-mix(in srgb, var(--c) 9%, transparent);
+    border:1px solid color-mix(in srgb, var(--c) 20%, transparent); }
+  .exrow .exicon svg { width:clamp(16px,1.4vw,19px); height:clamp(16px,1.4vw,19px); }
+  .exrow .extext { display:flex; flex-direction:column; gap:2px; min-width:0; }
+  .exrow .exname { font-size:clamp(13px,1.08vw,15px); font-weight:600; color:var(--ink); line-height:1.2; }
+  .exrow .excode { font-family:var(--serif); font-style:italic; font-weight:500; color:var(--c);
+    font-size:.88em; margin-right:6px; letter-spacing:.02em; }
+  .exrow .exdo { font-size:clamp(11px,.86vw,12.5px); color:var(--ink-faint); line-height:1.35; }
+  .hub-col .explore { margin-top:20px; font-size:13px; font-weight:600; color:var(--c);
+    display:flex; align-items:center; gap:8px; }
+  .hub-col .explore .a2 { transition:transform .22s; }
+  .hub-col:hover .explore .a2 { transform:translateX(5px); }
+  .hub-dash { margin-top:clamp(9px,1.1vw,15px); border:1px dashed var(--line); border-radius:12px;
+    background:transparent; padding:10px 18px; cursor:pointer; display:flex; align-items:center;
+    justify-content:space-between; color:var(--ink-faint); font-size:13px; font-weight:500;
+    transition:border-color .2s, color .2s; }
+  .hub-dash:hover { border-color:var(--ink-faint); color:var(--ink-soft); }
+  .hub-dash .pulse { width:7px; height:7px; border-radius:50%; background:var(--real);
+    display:inline-block; margin-right:9px; }
+
+  /* ============ GROWTH AXIS ============ */
+  .axis-cols { display:grid; grid-template-columns:1fr 1fr; gap:clamp(16px,1.6vw,24px);
+    margin-top:clamp(12px,1.8vh,22px); }
+  .axis-cols .hub-col { padding:clamp(14px,1.4vw,19px); cursor:pointer; }
+  .axis-cols .hub-col h3 { margin-bottom:8px; }
+  .axis-cols .hub-col h3 .role { color:var(--c); }
+  .axis-cols .hub-col .def { margin-bottom:0; }
+  .qa { list-style:none; display:flex; flex-direction:column; gap:clamp(8px,1.3vh,15px);
+    margin-top:clamp(4px,1vh,10px); }
+  .qa li { display:flex; flex-direction:column; gap:3px; }
+  .qa .q { font-size:10.5px; letter-spacing:.13em; text-transform:uppercase; font-weight:700; color:var(--c); }
+  .qa .a { font-size:clamp(12.5px,1.02vw,14.5px); color:var(--ink-soft); line-height:1.4; }
+  .qa .a b { color:var(--ink); font-weight:600; }
+  .axiswrap { width:100%; margin-top:clamp(10px,1.6vh,18px); }
+  .axiswrap svg { width:100%; height:auto; display:block; }
+
+  /* ============ generic content body ============ */
+  .body2 { flex:1; display:grid; gap:clamp(28px,3.6vw,64px); align-items:center; margin-top:clamp(16px,2.4vh,34px); }
+  .body2.v { grid-template-columns:0.92fr 1.08fr; }
+  .viz { display:flex; align-items:center; justify-content:center; min-height:0; }
+  .viz svg { width:100%; height:auto; }
+
+  /* plugin grid (controlled solution) */
+  .head-row { display:flex; justify-content:space-between; align-items:flex-end; gap:34px; margin-bottom:clamp(18px,2.4vh,32px); }
+  .head-row .lead { max-width:36ch; }
+  .plugin-grid { flex:1; display:grid; grid-template-columns:repeat(4,1fr); grid-auto-rows:1fr;
+    gap:clamp(9px,.9vw,14px); }
+  .pcard { border:1px solid var(--line); border-radius:13px; background:var(--surface);
+    padding:clamp(13px,1.3vw,18px); display:flex; flex-direction:column; gap:10px; min-height:0; }
+  .pcard.hero { grid-row:span 2; grid-column:span 2; background:var(--controlled-dim);
+    border-color:#cfddE3; justify-content:space-between; }
+  .pcard .picon { color:var(--controlled); }
+  .pcard .picon svg { width:28px; height:28px; }
+  .pcard.hero .picon svg { width:42px; height:42px; }
+  .pcard .pname { font-weight:600; font-size:clamp(12.5px,1vw,15px); }
+  .pcard.hero .pname { font-size:clamp(18px,1.8vw,25px); letter-spacing:-.01em; }
+  .pcard .pd { font-size:clamp(11px,.86vw,12.5px); color:var(--ink-faint); line-height:1.4; }
+  .pcard.hero .pd { font-size:clamp(12.5px,1vw,14.5px); color:var(--ink-soft); max-width:30ch; }
+  .pcard .reuse { font-size:10.5px; letter-spacing:.1em; text-transform:uppercase; color:var(--controlled); font-weight:600; }
+
+  /* plugin carousel */
+  .pcarousel { flex:1; min-height:0; display:flex; flex-direction:column;
+    margin-top:clamp(10px,1.6vh,20px); position:relative; }
+  .pcar-viewport { flex:1; min-height:0; overflow:hidden; }
+  .pcar-track { display:flex; height:100%; transition:transform .45s cubic-bezier(.4,0,.2,1); }
+  .pslide { flex:0 0 100%; height:100%; display:grid; grid-template-columns:0.82fr 1.18fr;
+    gap:clamp(20px,2.6vw,46px); align-items:center; }
+  .pslide-info { display:flex; flex-direction:column; }
+  .pslide-icon { width:clamp(46px,4vw,58px); height:clamp(46px,4vw,58px); border-radius:14px;
+    color:var(--controlled); display:flex; align-items:center; justify-content:center;
+    background:var(--controlled-dim); border:1px solid #cfddE3; margin-bottom:clamp(13px,1.8vh,20px); }
+  .pslide-icon svg { width:clamp(26px,2.4vw,32px); height:clamp(26px,2.4vw,32px); }
+  .pslide-info .reuse2 { font-size:11px; letter-spacing:.12em; text-transform:uppercase; font-weight:700;
+    color:var(--controlled); margin-bottom:9px; display:flex; align-items:center; gap:6px; }
+  .pslide-title { font-size:clamp(21px,2.3vw,33px); font-weight:600; letter-spacing:-.015em;
+    margin-bottom:clamp(9px,1.3vh,15px); line-height:1.1; }
+  .pslide-desc { font-size:clamp(13px,1.12vw,16px); color:var(--ink-soft); line-height:1.5; max-width:34ch; }
+  .pslide-shot { position:relative; height:100%; border:1px solid var(--line); border-radius:16px;
+    overflow:hidden; background:var(--surface-2); box-shadow:0 18px 50px -34px rgba(0,0,0,.5); }
+  .pslide-shot img { position:absolute; inset:0; width:100%; height:100%; object-fit:contain; background:#fff; }
+  .pslide-shot .shot-ph { position:absolute; inset:0; display:flex; flex-direction:column; align-items:center;
+    justify-content:center; gap:9px; color:var(--ink-faint); font-size:13px; text-align:center; padding:20px;
+    background:repeating-linear-gradient(135deg, transparent 0 22px, var(--line-soft) 22px 23px); }
+  .pslide-shot .shot-ph code { font-size:12px; color:var(--ink-soft); background:var(--surface);
+    border:1px solid var(--line); padding:3px 8px; border-radius:6px; }
+  .pcar-nav { display:flex; align-items:center; justify-content:center; gap:16px;
+    margin-top:clamp(9px,1.3vh,15px); }
+  .pcar-btn { width:34px; height:34px; border-radius:50%; border:1px solid var(--line); background:var(--surface);
+    color:var(--ink-soft); font-size:19px; line-height:1; cursor:pointer; display:flex; align-items:center;
+    justify-content:center; transition:border-color .2s,color .2s; }
+  .pcar-btn:hover { border-color:var(--controlled); color:var(--controlled); }
+  .pcar-dots { display:flex; gap:7px; justify-content:center; }
+  .pcar-dots i { width:7px; height:7px; border-radius:50%; background:var(--line); cursor:pointer;
+    transition:background .2s,transform .2s; }
+  .pcar-dots i.on { background:var(--controlled); transform:scale(1.25); }
+
+  /* advantages (controlled) */
+  .adv { display:grid; grid-template-columns:repeat(2,1fr); gap:clamp(11px,1.2vw,18px);
+    margin-top:clamp(14px,2vh,26px); }
+  .adv .a { display:flex; gap:14px; align-items:flex-start; padding:clamp(12px,1.3vw,17px);
+    border:1px solid var(--line); border-radius:13px; background:var(--surface); }
+  .adv .a .n { font-family:var(--serif); font-style:italic; color:var(--controlled); font-size:17px; line-height:1; padding-top:2px; }
+  .adv .a h4 { font-size:clamp(14px,1.12vw,16.5px); font-weight:600; margin-bottom:4px; }
+  .adv .a p { font-size:clamp(12px,.92vw,13.5px); color:var(--ink-soft); line-height:1.4; }
+  .bottomline { margin-top:clamp(16px,2.4vh,30px); padding:clamp(14px,1.6vw,20px) clamp(16px,1.9vw,24px);
+    border:1px solid color-mix(in srgb, var(--controlled) 26%, var(--line));
+    background:var(--controlled-dim); border-radius:14px;
+    display:flex; align-items:center; gap:clamp(13px,1.5vw,20px); }
+  .bottomline .bl-tag { flex:none; font-size:11px; letter-spacing:.13em; text-transform:uppercase;
+    font-weight:700; color:#fff; background:var(--controlled); padding:6px 13px; border-radius:999px; }
+  .bottomline p { font-size:clamp(13.5px,1.12vw,16px); color:var(--ink); line-height:1.5; }
+  .bottomline p b { font-weight:700; color:var(--controlled); }
+
+  /* contract list (controlled how-it-works) */
+  .iface { list-style:none; }
+  .iface li { padding:13px 0; border-top:1px solid var(--line-soft); display:flex; gap:15px; align-items:baseline; }
+  .iface li:last-child { border-bottom:1px solid var(--line-soft); }
+  .iface .fn { font-family:var(--serif); font-style:italic; color:var(--controlled);
+    font-size:clamp(15px,1.25vw,18px); min-width:104px; }
+  .iface .fd { font-size:clamp(12.5px,.98vw,14.5px); color:var(--ink-soft); line-height:1.45; }
+  .iface .fd b { color:var(--ink); font-weight:600; }
+
+  /* module strip (real solution) */
+  .mod-strip { flex:1; display:grid; grid-template-columns:repeat(3,1fr); gap:clamp(11px,1.1vw,16px);
+    margin-top:clamp(18px,2.4vh,34px); align-content:center; }
+  .mod { border:1px solid var(--line); border-radius:13px; background:var(--surface);
+    padding:clamp(15px,1.5vw,20px); display:flex; flex-direction:column; gap:11px; }
+  .mod.feat { background:var(--real-dim); border-color:#e6cdbe; }
+  .mod .micon { color:var(--real); }
+  .mod .micon svg { width:26px; height:26px; }
+  .mod .mname { font-weight:600; font-size:clamp(13px,1.05vw,15.5px); }
+  .mod .md { font-size:clamp(11.5px,.9vw,13px); color:var(--ink-faint); line-height:1.42; }
+  .mod .tag { font-size:10px; letter-spacing:.1em; text-transform:uppercase; color:var(--real); font-weight:600; }
+
+  /* challenge points (real) */
+  .points { list-style:none; }
+  .points li { display:flex; gap:13px; padding:11px 0; font-size:clamp(13px,1vw,15px);
+    color:var(--ink-soft); line-height:1.45; border-top:1px solid var(--line-soft); }
+  .points li:last-child { border-bottom:1px solid var(--line-soft); }
+  .points li .d { color:var(--real); font-weight:700; }
+  .recall { margin-top:22px; padding:15px 18px; border-left:2px solid var(--real); background:var(--real-dim);
+    border-radius:0 8px 8px 0; font-size:clamp(12.5px,.98vw,14.5px); color:var(--ink); line-height:1.5; }
+  .recall b { font-weight:600; }
+
+  /* dashboard */
+  .placeholder { flex:1; border:1.5px dashed var(--line); border-radius:18px; position:relative;
+    overflow:hidden; min-height:0; margin-top:clamp(16px,2.4vh,30px);
+    background:repeating-linear-gradient(135deg, transparent 0 22px, var(--line-soft) 22px 23px);
+    display:flex; align-items:center; justify-content:center; }
+  .placeholder::before { content:""; position:absolute; inset:0;
+    background:radial-gradient(120% 120% at 50% 42%, var(--bg) 32%, transparent 82%); }
+  .ph-inner { position:relative; text-align:center; z-index:1; }
+  .ph-skel { display:flex; gap:13px; justify-content:center; margin-bottom:24px; }
+  .ph-skel .sk { width:118px; height:74px; background:var(--surface); border:1px solid var(--line); border-radius:10px; }
+  .ph-bars { display:flex; flex-direction:column; gap:8px; align-items:center; margin-bottom:28px; }
+  .ph-bars .ln { height:9px; border-radius:5px; background:var(--surface); border:1px solid var(--line); }
+  .ph-badge { display:inline-flex; align-items:center; gap:10px; padding:9px 18px; border:1px solid var(--line);
+    border-radius:999px; background:var(--surface); font-size:13px; color:var(--ink-soft); }
+  .ph-badge .pulse { width:8px; height:8px; border-radius:50%; background:var(--real);
+    box-shadow:0 0 0 0 var(--real); animation:pulse 2.2s infinite; }
+  @keyframes pulse { 0%{box-shadow:0 0 0 0 #b1683f55;} 70%{box-shadow:0 0 0 9px #b1683f00;} 100%{box-shadow:0 0 0 0 #b1683f00;} }
+
+  /* ============ PRIORITIES ============ */
+  .prios { flex:1; display:grid; grid-template-columns:repeat(3,1fr); gap:clamp(16px,1.8vw,28px);
+    margin-top:clamp(20px,3vh,42px); align-content:center; }
+  .prio { border:1px solid var(--line); border-top:3px solid var(--pc); border-radius:16px;
+    background:var(--surface); padding:clamp(20px,2.2vw,34px); display:flex; flex-direction:column; }
+  .prio .picon2 { width:clamp(42px,3.6vw,54px); height:clamp(42px,3.6vw,54px); border-radius:13px;
+    display:flex; align-items:center; justify-content:center; color:var(--pc);
+    background:color-mix(in srgb,var(--pc) 9%,transparent);
+    border:1px solid color-mix(in srgb,var(--pc) 22%,transparent); margin-bottom:clamp(16px,2vh,24px); }
+  .prio .picon2 svg { width:clamp(24px,2.2vw,30px); height:clamp(24px,2.2vw,30px); }
+  .prio .plabel { font-size:11.5px; letter-spacing:.14em; text-transform:uppercase; font-weight:700;
+    color:var(--pc); margin-bottom:9px; }
+  .prio h3 { font-size:clamp(18px,1.7vw,24px); font-weight:600; letter-spacing:-.012em;
+    line-height:1.15; margin-bottom:10px; }
+  .prio p { font-size:clamp(13px,1.04vw,15.5px); color:var(--ink-soft); line-height:1.5; }
+  .prio p b { color:var(--ink); font-weight:600; }
+
+  @media (max-width:760px){
+    .programs,.hub-cols,.body2.v,.adv,.plugin-grid,.mod-strip,.prios{ grid-template-columns:1fr; }
+  }
+</style>
+</head>
+<body>
+<div class="deck" id="deck">
+
+  <!-- ============ PROGRAMS ============ -->
+  <section class="slide active" data-id="programs">
+    <div>
+      <div class="kicker">edu-infra · curriculum</div>
+      <h1 class="title">Our current degrees.</h1>
+    </div>
+    <div class="programs">
+      <div class="divider-v"></div>
+      <div class="program">
+        <div class="ptag"><span class="pno">A</span><div><span class="deg">AAS Degree</span><h2>AI Software Engineering</h2></div></div>
+        <ul class="pillars">
+          <li><span class="idx">01</span><span class="pname">Programming foundations</span><span class="pdesc">Python, JS/TS, software engineering principles</span></li>
+          <li><span class="idx">02</span><span class="pname">Web development</span><span class="pdesc">Frontend, backend, full-stack integration</span></li>
+          <li><span class="idx">03</span><span class="pname">Databases &amp; systems</span><span class="pdesc">SQL/NoSQL, microservices, auth</span></li>
+          <li><span class="idx">04</span><span class="pname">Applied AI &amp; ML</span><span class="pdesc">Math foundations, ML fundamentals, LLMs</span></li>
+          <li><span class="idx">05</span><span class="pname">Career &amp; portfolio</span><span class="pdesc">Capstone, portfolio, interview prep</span></li>
+        </ul>
+      </div>
+      <div class="program alt">
+        <div class="ptag"><span class="pno">B</span><div><span class="deg">AAS Degree</span><h2>AI&#8209;Enhanced Business</h2></div></div>
+        <ul class="pillars">
+          <li><span class="idx">01</span><span class="pname">Management &amp; operations</span><span class="pdesc">Org behavior, ops, project management</span></li>
+          <li><span class="idx">02</span><span class="pname">Marketing &amp; analytics</span><span class="pdesc">Digital, performance, consumer research</span></li>
+          <li><span class="idx">03</span><span class="pname">Finance &amp; accounting</span><span class="pdesc">Financial accounting, corporate finance, valuation</span></li>
+          <li><span class="idx">04</span><span class="pname">Strategy &amp; entrepreneurship</span><span class="pdesc">Lean startup, business models, innovation</span></li>
+          <li><span class="idx">05</span><span class="pname">Communication &amp; ethics</span><span class="pdesc">Business comm, ethics, AI governance</span></li>
+        </ul>
+        <div class="tracks">
+          <div class="tlabel">Six specialization tracks</div>
+          <div class="spec-grid">
+            <div class="spec"><div class="st"><span class="dot" style="--sc:#b1683f"></span>Marketing</div><div class="sl">SEO/SEM · Social &amp; CRM · ROI analytics</div></div>
+            <div class="spec"><div class="st"><span class="dot" style="--sc:#2f6079"></span>Data Analytics</div><div class="sl">Predictive models · Data engineering · Dashboards &amp; BI</div></div>
+            <div class="spec"><div class="st"><span class="dot" style="--sc:#4a7c59"></span>Healthcare</div><div class="sl">Clinical data · EHR &amp; HIPAA · Population health</div></div>
+            <div class="spec"><div class="st"><span class="dot" style="--sc:#8a6d3b"></span>Logistics</div><div class="sl">Demand forecasting · Supply chain · Risk &amp; trade</div></div>
+            <div class="spec"><div class="st"><span class="dot" style="--sc:#7a5c8e"></span>Entrepreneurship</div><div class="sl">Lean startup &amp; MVP · Venture finance · Growth &amp; scaling</div></div>
+            <div class="spec"><div class="st"><span class="dot" style="--sc:#b5546a"></span>E&#8209;commerce</div><div class="sl">Platform strategy · Cross-border trade · Multi-channel retail</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="future">
+      <div class="fhead"><h3>And new degrees to follow.</h3><span class="fsub">expanding into the most-studied fields in the US</span></div>
+      <div class="frow">
+        <span class="fchip">Education</span>
+        <span class="fchip">Psychology</span>
+        <span class="fchip">Health Sciences</span>
+        <span class="fchip">Nursing</span>
+        <span class="fchip">Data Science</span>
+        <span class="fchip">Cybersecurity</span>
+        <span class="fchip">Communications</span>
+        <span class="fchip">Criminal Justice</span>
+        <span class="fchip">Graphic &amp; UX Design</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ HUB ============ -->
+  <section class="slide" data-id="hub">
+    <div>
+      <div class="kicker">the core distinction</div>
+      <h1 class="title"><span class="em">Two kinds</span> of courses.</h1>
+      <p class="lead" style="margin-top:10px;">Two kinds of course, two infrastructure problems — pick a side.</p>
+    </div>
+    <div class="hub-cols">
+      <div class="hub-col" data-side="controlled" data-nav="branch:controlled">
+        <div class="axis"><span class="ar">◀</span> Maestro-controlled</div>
+        <h3>Foundational &amp; theoretical courses</h3>
+        <p class="def">Building the mental model of a field — concepts, intuition, mechanics. These <b>should</b> live inside Maestro, where emulated environments strip away real-world noise.</p>
+        <div class="ex">
+          <div class="exlabel">Real courses from the catalog</div>
+          <div class="exrow">
+            <div class="exicon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 8h8M8 12h8M8 16h5"/></svg></div>
+            <div class="extext"><div class="exname"><span class="excode">PY&nbsp;101</span>Introduction to Python</div><div class="exdo">Write &amp; run Python in a sandboxed notebook</div></div>
+          </div>
+          <div class="exrow">
+            <div class="exicon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><ellipse cx="12" cy="5" rx="8" ry="3"/><path d="M4 5v14c0 1.7 3.6 3 8 3s8-1.3 8-3V5M4 12c0 1.7 3.6 3 8 3s8-1.3 8-3"/></svg></div>
+            <div class="extext"><div class="exname"><span class="excode">BE&nbsp;103</span>Databases: SQL &amp; NoSQL Basics</div><div class="exdo">Query a sandboxed database, no setup</div></div>
+          </div>
+          <div class="exrow">
+            <div class="exicon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="9" y="3" width="6" height="5" rx="1"/><rect x="3" y="16" width="6" height="5" rx="1"/><rect x="15" y="16" width="6" height="5" rx="1"/><path d="M12 8v4M6 16v-2h12v2"/></svg></div>
+            <div class="extext"><div class="exname"><span class="excode">MGMT&nbsp;101</span>Management Fundamentals</div><div class="exdo">Model how an organization is structured</div></div>
+          </div>
+          <div class="exrow">
+            <div class="exicon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 3l7 3v5c0 4.5-3 7.5-7 9-4-1.5-7-4.5-7-9V6z"/><path d="M9 12l2 2 4-4"/></svg></div>
+            <div class="extext"><div class="exname"><span class="excode">HIPAA</span>Compliance &amp; Risk Management</div><div class="exdo">Reason through healthcare-data rules &amp; risk</div></div>
+          </div>
+        </div>
+      </div>
+      <div class="hub-col" data-side="real" data-nav="branch:real">
+        <div class="axis">Real world <span class="ar">▶</span></div>
+        <h3>Build&#8209;real&#8209;stuff courses</h3>
+        <p class="def">Integrative work producing <b>real artifacts</b> — a deployed app, an ad campaign, a trained model. Maestro guides; the work happens partly outside our walls.</p>
+        <div class="ex">
+          <div class="exlabel">Real courses from the catalog</div>
+          <div class="exrow">
+            <div class="exicon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="4" width="18" height="7" rx="2"/><rect x="3" y="13" width="18" height="7" rx="2"/><path d="M7 7.5h.01M7 16.5h.01"/></svg></div>
+            <div class="extext"><div class="exname"><span class="excode">BE&nbsp;106</span>Backend Project</div><div class="exdo">Ship a deployed backend with a live API</div></div>
+          </div>
+          <div class="exrow">
+            <div class="exicon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M5 19l4-7 4 4 6-10"/><circle cx="5" cy="19" r="1.4"/><circle cx="19" cy="6" r="1.4"/></svg></div>
+            <div class="extext"><div class="exname"><span class="excode">AI&nbsp;104</span>Applied AI Capstone Project</div><div class="exdo">Create an application with AI code assistants</div></div>
+          </div>
+          <div class="exrow">
+            <div class="exicon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="9" cy="20" r="1.4"/><circle cx="18" cy="20" r="1.4"/><path d="M2 3h3l2.4 12.4a1.5 1.5 0 0 0 1.5 1.2h8.2a1.5 1.5 0 0 0 1.5-1.2L21 7H6"/></svg></div>
+            <div class="extext"><div class="exname"><span class="excode">BUSN&nbsp;305</span>E-commerce &amp; Online Retail</div><div class="exdo">Set up &amp; run a real online store</div></div>
+          </div>
+          <div class="exrow">
+            <div class="exicon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="4" width="7" height="6" rx="1.5"/><rect x="14" y="14" width="7" height="6" rx="1.5"/><path d="M10 7h3.5a3.5 3.5 0 0 1 3.5 3.5V14"/></svg></div>
+            <div class="extext"><div class="exname"><span class="excode">T1-AUTO</span>Marketing Automation &amp; CRM</div><div class="exdo">Wire up a live automation &amp; CRM flow</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="hub-dash" data-nav="dash"><span><span class="pulse"></span>See plugins in production</span><span>→</span></div>
+  </section>
+
+  <!-- ============ GROWTH AXIS ============ -->
+  <section class="slide" data-id="axis">
+    <div>
+      <div class="kicker">the core distinction · another view</div>
+      <h1 class="title">It's also a <span class="em">growth axis.</span></h1>
+      <p class="lead" style="margin-top:12px;">The same spectrum, seen through Maestro's role — from holding your hand early on to checking in as you grow independent.</p>
+    </div>
+
+    <div class="axis-cols">
+      <div class="hub-col" data-side="controlled" data-nav="branch:controlled">
+        <div class="axis"><span class="ar">◀</span> First steps in a field</div>
+        <h3>Maestro is a <span class="role">1:1 tutor</span></h3>
+        <ul class="qa">
+          <li><span class="q">What you create</span><span class="a"><b>Small exercises</b> that unlock understanding</span></li>
+          <li><span class="q">Maestro's role</span><span class="a">A <b>1:1 tutor</b>, right beside you</span></li>
+          <li><span class="q">How close it stays</span><span class="a">Holds your hand — sees <b>every output</b> you create, up close</span></li>
+          <li><span class="q">Who drives the work</span><span class="a">You build the <b>mental map</b> together, step by step</span></li>
+        </ul>
+      </div>
+      <div class="hub-col" data-side="real" data-nav="branch:real">
+        <div class="axis">Deeper into the degree <span class="ar">▶</span></div>
+        <h3>Maestro becomes a <span class="role">mentor</span></h3>
+        <ul class="qa">
+          <li><span class="q">What you create</span><span class="a"><b>Real things</b>, out in the world</span></li>
+          <li><span class="q">Maestro's role</span><span class="a">More of a <b>mentor / team lead</b></span></li>
+          <li><span class="q">How close it stays</span><span class="a">Gives you <b>freedom</b> — checks in at <b>milestones</b> to keep you on track</span></li>
+          <li><span class="q">Who drives the work</span><span class="a">It defines the <b>steps &amp; process</b>; you own the execution</span></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="axiswrap">
+      <svg viewBox="0 0 1240 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <style>
+            .ax{stroke:#d8d6cc;stroke-width:1.3}
+            .arw{fill:#cbc9bf}
+            .axt{fill:#918f86;font:600 11px Inter,sans-serif;letter-spacing:.13em}
+            .area{fill:url(#axiArea)}
+            .line{stroke:url(#axiLine);stroke-width:2.4;fill:none;stroke-linecap:round}
+            .mi{font:700 13px Inter,sans-serif}
+            .ma{fill:#8c8a81;font:500 11.5px Inter,sans-serif}
+          </style>
+          <linearGradient id="axiArea" x1="0" y1="0" x2="1" y2="0">
+            <stop offset="0" stop-color="#2f6079" stop-opacity="0.15"/>
+            <stop offset="1" stop-color="#b1683f" stop-opacity="0.17"/>
+          </linearGradient>
+          <linearGradient id="axiLine" x1="0" y1="0" x2="1" y2="0">
+            <stop offset="0" stop-color="#2f6079"/>
+            <stop offset="1" stop-color="#b1683f"/>
+          </linearGradient>
+        </defs>
+
+        <!-- axes -->
+        <line class="ax" x1="92" y1="22" x2="92" y2="162"/>
+        <line class="ax" x1="92" y1="162" x2="1208" y2="162"/>
+        <path class="arw" d="M92 14 l-4.5 9 l9 0 z"/>
+        <path class="arw" d="M1216 162 l-9 -4.5 l0 9 z"/>
+
+        <!-- curve -->
+        <path class="area" d="M96 150 C 360 146, 560 122, 720 98 C 900 72, 1070 60, 1200 52 L1200 162 L96 162 Z"/>
+        <path class="line" d="M96 150 C 360 146, 560 122, 720 98 C 900 72, 1070 60, 1200 52"/>
+
+        <!-- markers: how independent + what they're doing -->
+        <text class="mi" x="250" y="118" text-anchor="middle" fill="#2f6079">Fully guided</text>
+        <text class="ma" x="250" y="133" text-anchor="middle">Small exercises, hand in hand</text>
+        <circle cx="250" cy="148" r="5.5" fill="#2f6079" stroke="#fff" stroke-width="1.6"/>
+
+        <text class="mi" x="660" y="76" text-anchor="middle" fill="#7a5c4e">Growing autonomy</text>
+        <text class="ma" x="660" y="91" text-anchor="middle">Building with guidance</text>
+        <circle cx="660" cy="106" r="5.5" fill="#7a5c4e" stroke="#fff" stroke-width="1.6"/>
+
+        <text class="mi" x="1088" y="30" text-anchor="middle" fill="#b1683f">Fully independent</text>
+        <text class="ma" x="1088" y="45" text-anchor="middle">Shipping real projects</text>
+        <circle cx="1088" cy="60" r="5.5" fill="#b1683f" stroke="#fff" stroke-width="1.6"/>
+
+        <!-- axis titles -->
+        <text class="axt" x="100" y="181" fill="#918f86">TERM 1</text>
+        <text class="axt" x="650" y="181" text-anchor="middle" fill="#918f86">PROGRESS THROUGH THE DEGREE →</text>
+        <text class="axt" x="1200" y="181" text-anchor="end" fill="#918f86">CAPSTONE</text>
+        <text class="axt" transform="rotate(-90 24 95)" x="24" y="95" text-anchor="middle" fill="#918f86">INDEPENDENCE →</text>
+      </svg>
+    </div>
+  </section>
+
+  <!-- ============ CONTROLLED · SOLUTION ============ -->
+  <section class="slide" data-id="c1" data-branch="controlled">
+    <div class="head-row">
+      <div>
+        <div class="kicker">Maestro-controlled · the answer</div>
+        <h1 class="title">For foundations, we build <span class="em">plugins.</span></h1>
+      </div>
+    </div>
+    <div class="pcarousel" id="pcar">
+      <div class="pcar-viewport">
+        <div class="pcar-track" id="pcarTrack">
+
+          <div class="pslide">
+            <div class="pslide-info">
+              <div class="pslide-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M3 15h18M9 3v18M15 3v18"/></svg></div>
+              <div class="reuse2">↻ Reused across the curriculum</div>
+              <h3 class="pslide-title">Spreadsheet</h3>
+              <p class="pslide-desc">Cells, formulas, and tables — for finance, marketing analytics, and accounting.</p>
+            </div>
+            <div class="pslide-shot"><div class="shot-ph"><span>Plugin screenshot</span><code>screenshots/sheets.png</code></div><img src="screenshots/sheets.png" alt="Spreadsheet plugin" onerror="this.remove()"></div>
+          </div>
+
+          <div class="pslide">
+            <div class="pslide-info">
+              <div class="pslide-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="5" cy="6" r="2.5"/><circle cx="19" cy="6" r="2.5"/><circle cx="12" cy="18" r="2.5"/><path d="M6.8 7.5 10.5 16M17.2 7.5 13.5 16M7.5 6h9"/></svg></div>
+              <h3 class="pslide-title">Node &amp; edge diagram</h3>
+              <p class="pslide-desc">Org charts, architecture, process flow, supply networks.</p>
+            </div>
+            <div class="pslide-shot"><div class="shot-ph"><span>Plugin screenshot</span><code>screenshots/diagram.png</code></div><img src="screenshots/diagram.png" alt="Node and edge diagram plugin" onerror="this.remove()"></div>
+          </div>
+
+          <div class="pslide">
+            <div class="pslide-info">
+              <div class="pslide-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M7 9h6M7 13h10M7 17h4"/></svg></div>
+              <h3 class="pslide-title">Templated canvas</h3>
+              <p class="pslide-desc">Structured layouts the learner fills in.</p>
+            </div>
+            <div class="pslide-shot"><div class="shot-ph"><span>Plugin screenshot</span><code>screenshots/canvas.png</code></div><img src="screenshots/canvas.png" alt="Templated canvas plugin" onerror="this.remove()"></div>
+          </div>
+
+          <div class="pslide">
+            <div class="pslide-info">
+              <div class="pslide-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M5 4v16M5 4h6a3 3 0 0 1 0 6H5M14 14l5 6M19 14l-5 6"/></svg></div>
+              <h3 class="pslide-title">Math editor</h3>
+              <p class="pslide-desc">Equations, derivations, notation.</p>
+            </div>
+            <div class="pslide-shot"><div class="shot-ph"><span>Plugin screenshot</span><code>screenshots/math.png</code></div><img src="screenshots/math.png" alt="Math editor plugin" onerror="this.remove()"></div>
+          </div>
+
+          <div class="pslide">
+            <div class="pslide-info">
+              <div class="pslide-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 9h18M7 14l2 2-2 2M12 18h4"/></svg></div>
+              <h3 class="pslide-title">SQL workspace</h3>
+              <p class="pslide-desc">Query a sandboxed database, no setup required.</p>
+            </div>
+            <div class="pslide-shot"><div class="shot-ph"><span>Plugin screenshot</span><code>screenshots/sql.png</code></div><img src="screenshots/sql.png" alt="SQL workspace plugin" onerror="this.remove()"></div>
+          </div>
+
+          <div class="pslide">
+            <div class="pslide-info">
+              <div class="pslide-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 8h8M8 12h8M8 16h5"/></svg></div>
+              <h3 class="pslide-title">Notebook</h3>
+              <p class="pslide-desc">Live code &amp; prose, cell by cell.</p>
+            </div>
+            <div class="pslide-shot"><div class="shot-ph"><span>Plugin screenshot</span><code>screenshots/notebook.png</code></div><img src="screenshots/notebook.png" alt="Notebook plugin" onerror="this.remove()"></div>
+          </div>
+
+          <div class="pslide">
+            <div class="pslide-info">
+              <div class="pslide-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="4" width="18" height="14" rx="2"/><path d="M3 8h18M6 6h0M9 6h0"/><path d="M9 21h6"/></svg></div>
+              <h3 class="pslide-title">Web preview</h3>
+              <p class="pslide-desc">Render &amp; inspect the learner's page.</p>
+            </div>
+            <div class="pslide-shot"><div class="shot-ph"><span>Plugin screenshot</span><code>screenshots/web-preview.png</code></div><img src="screenshots/web-preview.png" alt="Web preview plugin" onerror="this.remove()"></div>
+          </div>
+
+        </div>
+      </div>
+      <div class="pcar-nav">
+        <button class="pcar-btn" data-car="prev" aria-label="Previous">‹</button>
+        <div class="pcar-dots" id="pcarDots"></div>
+        <button class="pcar-btn" data-car="next" aria-label="Next">›</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ CONTROLLED · ADVANTAGES ============ -->
+  <section class="slide" data-id="c2" data-branch="controlled">
+    <div>
+      <div class="kicker">Maestro-controlled · why it works</div>
+      <h1 class="title">Why plugins are a <span class="em">major unlock?</span></h1>
+    </div>
+    <div class="adv">
+      <div class="a"><span class="n">01</span><div><h4>Plug &amp; play</h4><p>Agents build curriculum-fit plugins in minutes; a PM reviews them — no developer in the loop.</p></div></div>
+      <div class="a"><span class="n">02</span><div><h4>One environment, lessons → exams</h4><p>The same practice surface from the first lesson through the final exam.</p></div></div>
+      <div class="a"><span class="n">03</span><div><h4>Full control &amp; stable</h4><p>No outside connections that can break, and no codebase to maintain.</p></div></div>
+      <div class="a"><span class="n">04</span><div><h4>Visual &amp; interactive</h4><p>Learners <i>do</i>, not just read.</p></div></div>
+      <div class="a"><span class="n">05</span><div><h4>Reusable</h4><p>One plugin serves many courses — and many fields.</p></div></div>
+      <div class="a"><span class="n">06</span><div><h4>Fully visible to the tutor</h4><p>Maestro sees exactly what the learner did.</p></div></div>
+    </div>
+    <div class="bottomline"><span class="bl-tag">Bottom line</span><p>Plugins enrich foundational courses — and let us stand up a rich, whole experience for <b>new fields of study</b> in <b>minutes</b>. One agnostic solution to the entire foundational-courses problem, in one go.</p></div>
+  </section>
+
+  <!-- ============ CONTROLLED · HOW IT WORKS ============ -->
+  <section class="slide" data-id="c3" data-branch="controlled">
+    <div>
+      <div class="kicker">Maestro-controlled · the contract</div>
+      <h1 class="title">Every plugin speaks the <span class="em">same language.</span></h1>
+    </div>
+    <div class="body2 v">
+      <div>
+        <p class="lead" style="margin:14px 0 22px;">A shared interface is what makes it compose. Any new plugin built to this contract just slots in — the tutor already knows how to talk to it.</p>
+        <ul class="iface">
+          <li><span class="fn">manifest</span><span class="fd"><b>Identity.</b> Declares what the plugin is, the inputs it accepts, what it submits back.</span></li>
+          <li><span class="fn">mount</span><span class="fd"><b>Render.</b> The platform hands over a container; the plugin renders into it.</span></li>
+          <li><span class="fn">inputs</span><span class="fd"><b>Configure.</b> The lesson passes in plugin-specific data — cells for a spreadsheet, nodes for a diagram.</span></li>
+          <li><span class="fn">submit()</span><span class="fd"><b>Return.</b> The plugin returns the artifact the tutor needs. The button lives in Maestro's UI, not the plugin.</span></li>
+          <li><span class="fn">unmount</span><span class="fd"><b>Clean shutdown.</b></span></li>
+        </ul>
+      </div>
+      <div class="viz">
+        <svg viewBox="0 0 480 460" fill="none" xmlns="http://www.w3.org/2000/svg" style="max-height:64vh;">
+          <defs><style>
+            .box{fill:#ffffff;stroke:#e3e1d8;stroke-width:1.3}
+            .boxA{fill:#2f60790f;stroke:#2f6079;stroke-width:1.4}
+            .lbl{fill:#25241f;font:600 13px Inter,sans-serif}
+            .sub{fill:#918f86;font:500 11px Inter,sans-serif}
+            .fl{stroke:#2f6079;stroke-width:1.4;fill:none;marker-end:url(#ah)}
+            .fld{stroke:#d6d4cb;stroke-width:1.3;stroke-dasharray:4 4}
+            .tag{fill:#2f6079;font:italic 500 12px Newsreader,serif}
+          </style>
+          <marker id="ah" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0 L10 5 L0 10 z" fill="#2f6079"/></marker></defs>
+          <text class="sub" x="14" y="30" letter-spacing="1.4">PLATFORM · MAESTRO</text>
+          <text class="sub" x="300" y="30" letter-spacing="1.4">PLUGIN</text>
+          <line x1="268" y1="44" x2="268" y2="424" stroke="#e3e1d8" stroke-width="1" stroke-dasharray="3 5"/>
+          <rect class="box" x="14" y="54" width="200" height="54" rx="10"/>
+          <text class="lbl" x="34" y="80">Lesson config</text><text class="sub" x="34" y="97">declares available plugins</text>
+          <path class="fl" d="M150 108 C 150 134, 358 124, 358 148"/>
+          <text class="tag" x="222" y="132">mount + inputs</text>
+          <rect class="boxA" x="288" y="150" width="172" height="54" rx="10"/>
+          <text class="lbl" x="308" y="176">Plugin renders</text><text class="sub" x="308" y="193">into the container</text>
+          <rect class="box" x="288" y="234" width="172" height="54" rx="10"/>
+          <text class="lbl" x="308" y="260">Learner interacts</text><text class="sub" x="308" y="277">does, not just reads</text>
+          <line x1="374" y1="204" x2="374" y2="234" class="fld"/>
+          <path class="fl" d="M322 288 C 322 322, 114 312, 114 338"/>
+          <text class="tag" x="146" y="312">submit()</text>
+          <rect class="box" x="14" y="340" width="200" height="56" rx="10"/>
+          <text class="lbl" x="34" y="366">Tutor reads artifact</text><text class="sub" x="34" y="383">reviews &amp; responds</text>
+        </svg>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ REAL · SOLUTION ============ -->
+  <section class="slide" data-id="r1" data-branch="real">
+    <div class="head-row">
+      <div>
+        <div class="kicker">Real world · the answer</div>
+        <h1 class="title">Real work needs <span class="em">connectors.</span></h1>
+      </div>
+      <p class="lead">Not one generic tool — a small library of <b>integration modules</b>, each fitted to a real environment so the tutor can see and review the learner's actual work.</p>
+    </div>
+    <div class="mod-strip">
+      <div class="mod feat">
+        <div class="micon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M9 19c-4 1.5-4-2-6-2.5M15 21v-3.5c0-1 .1-1.4-.5-2 2.8-.3 5-1.4 5-5.5 0-1.2-.4-2.2-1.1-3 .1-.3.5-1.5-.1-3 0 0-1-.3-3.3 1.2a11 11 0 0 0-6 0C6.4 3.2 5.4 3.5 5.4 3.5c-.6 1.5-.2 2.7-.1 3-.7.8-1.1 1.8-1.1 3 0 4.1 2.2 5.2 5 5.5-.4.4-.5.9-.5 1.6V21"/></svg></div>
+        <div class="tag">example module</div>
+        <div class="mname">GitHub module</div>
+        <div class="md">Reads the learner's repo — code, structure, commit history — so the tutor can review what they actually built and how.</div>
+      </div>
+      <div class="mod"><div class="micon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="4" width="18" height="14" rx="2"/><path d="M3 8h18M9 21h6"/></svg></div><div class="mname">Web preview module</div><div class="md">Loads the learner's deployed site to inspect and critique.</div></div>
+      <div class="mod"><div class="micon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 15a4 4 0 0 1 1-7.5A5 5 0 0 1 19 8a3.5 3.5 0 0 1-1 7H6"/></svg></div><div class="mname">Cloud deploy module</div><div class="md">Confirms a real deployment is live and healthy.</div></div>
+      <div class="mod"><div class="micon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M5 19l4-7 4 4 6-10"/><circle cx="5" cy="19" r="1.4"/><circle cx="19" cy="6" r="1.4"/></svg></div><div class="mname">Ads / analytics module</div><div class="md">Pulls campaign performance from the real ad platform.</div></div>
+      <div class="mod"><div class="micon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 3v18"/></svg></div><div class="mname">Sheets / finance module</div><div class="md">Reads a real financial model built in an external sheet.</div></div>
+      <div class="mod"><div class="micon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="5" width="14" height="14" rx="2"/><path d="M17 9l4-2v10l-4-2"/></svg></div><div class="mname">Video / media module</div><div class="md">Receives an uploaded video artifact for review.</div></div>
+    </div>
+  </section>
+
+  <!-- ============ REAL · CHALLENGES ============ -->
+  <section class="slide" data-id="r2" data-branch="real">
+    <div>
+      <div class="kicker">Real world · the challenge</div>
+      <h1 class="title">It's <span class="em">messy</span> by nature — that's the cost.</h1>
+    </div>
+    <div class="body2 v">
+      <div>
+        <p class="lead" style="margin:14px 0 18px;">Connectors buy us reach into real tools, but each one is bespoke. That's the trade-off behind the build-real-stuff side.</p>
+        <ul class="points">
+          <li><span class="d">→</span><span>Artifacts are wildly different: a video, a website, a model, an ad campaign, a spreadsheet, a diagram.</span></li>
+          <li><span class="d">→</span><span>Environments differ: VS&nbsp;Code, a browser, Google&nbsp;Ads, QuickBooks, real cloud platforms.</span></li>
+          <li><span class="d">→</span><span>The tutor's visibility is limited — work happens in tools Maestro doesn't own.</span></li>
+          <li><span class="d">→</span><span>Each course needs its own connector to the learner's real work.</span></li>
+        </ul>
+        <div class="recall"><b>So we invest deliberately.</b> A module is built only where a course genuinely needs to touch the real world — everywhere else, plugins do the job.</div>
+      </div>
+      <div class="viz">
+        <svg viewBox="0 0 540 440" fill="none" xmlns="http://www.w3.org/2000/svg" style="max-height:62vh;">
+          <defs><style>
+            .nl{stroke:#e0ccc0;stroke-width:1.2}
+            .nb{fill:#ffffff;stroke:#e3e1d8;stroke-width:1.2}
+            .nt{fill:#5c5a52;font:600 12px Inter,sans-serif}
+            .ic{stroke:#b1683f;stroke-width:1.5;fill:none}
+          </style></defs>
+          <line class="nl" x1="270" y1="220" x2="108" y2="78"/><line class="nl" x1="270" y1="220" x2="452" y2="86"/>
+          <line class="nl" x1="270" y1="220" x2="66" y2="238"/><line class="nl" x1="270" y1="220" x2="484" y2="238"/>
+          <line class="nl" x1="270" y1="220" x2="128" y2="384"/><line class="nl" x1="270" y1="220" x2="426" y2="380"/>
+          <circle cx="270" cy="220" r="44" fill="#b1683f12" stroke="#b1683f" stroke-width="1.5"/>
+          <text x="270" y="217" text-anchor="middle" fill="#b1683f" style="font:600 12px Inter">AI</text>
+          <text x="270" y="233" text-anchor="middle" fill="#b1683f" style="font:600 12px Inter">TUTOR</text>
+          <g><rect class="nb" x="56" y="48" width="102" height="56" rx="9"/><rect class="ic" x="74" y="64" width="38" height="24" rx="3"/><path class="ic" d="M116 68 l14 -6 v30 l-14 -6"/></g>
+          <text class="nt" x="107" y="120" text-anchor="middle">Video</text>
+          <g><rect class="nb" x="400" y="56" width="102" height="56" rx="9"/><circle class="ic" cx="430" cy="84" r="13"/><path class="ic" d="M417 84 h26 M430 71 c7 6 7 20 0 26 c-7 -6 -7 -20 0 -26"/></g>
+          <text class="nt" x="451" y="128" text-anchor="middle">Deployed site</text>
+          <g><rect class="nb" x="16" y="210" width="102" height="56" rx="9"/><path class="ic" d="M38 250 v-18 M54 250 v-30 M70 250 v-12 M86 250 v-24 M98 250 v-8"/></g>
+          <text class="nt" x="67" y="282" text-anchor="middle">Stat model</text>
+          <g><rect class="nb" x="432" y="210" width="102" height="56" rx="9"/><path class="ic" d="M452 250 l16 -20 l12 13 l14 -20"/></g>
+          <text class="nt" x="483" y="282" text-anchor="middle">Ad campaign</text>
+          <g><rect class="nb" x="78" y="356" width="102" height="56" rx="9"/><rect class="ic" x="96" y="372" width="40" height="24" rx="2"/><path class="ic" d="M96 381 h40 M110 372 v24"/></g>
+          <text class="nt" x="129" y="428" text-anchor="middle">Financial model</text>
+          <g><rect class="nb" x="376" y="352" width="102" height="56" rx="9"/><rect class="ic" x="392" y="374" width="13" height="13"/><rect class="ic" x="448" y="374" width="13" height="13"/><path class="ic" d="M405 380 h43"/></g>
+          <text class="nt" x="427" y="424" text-anchor="middle">Architecture</text>
+        </svg>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ DASHBOARD ============ -->
+  <section class="slide" data-id="dashboard" data-branch="real">
+    <div>
+      <div class="kicker">in production</div>
+      <h1 class="title">Plugins &amp; modules, <span class="em">in the wild.</span></h1>
+      <p class="lead" style="margin-top:12px;">A live view of what runs where, how learners engage, and what the tutor sees.</p>
+    </div>
+    <div class="placeholder">
+      <div class="ph-inner">
+        <div class="ph-skel"><div class="sk"></div><div class="sk"></div><div class="sk"></div></div>
+        <div class="ph-bars"><div class="ln" style="width:280px"></div><div class="ln" style="width:220px"></div><div class="ln" style="width:250px"></div></div>
+        <div class="ph-badge"><span class="pulse"></span> Dashboard view — coming soon</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ PRIORITIES ============ -->
+  <section class="slide" data-id="priorities">
+    <div>
+      <div class="kicker">the roadmap</div>
+      <h1 class="title">Top priorities to <span class="em">develop.</span></h1>
+      <p class="lead" style="margin-top:12px;">Where we invest first — the foundations everything else builds on.</p>
+    </div>
+    <div class="prios">
+      <div class="prio" style="--pc:#2f6079">
+        <div class="picon2"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M3 15h18M9 3v18M15 3v18"/></svg></div>
+        <div class="plabel">Priority 01</div>
+        <h3>Plugins infrastructure</h3>
+        <p>The reusable, agnostic building blocks. Define the <b>plugin contract</b> and ship the first set — spreadsheet, notebook, SQL workspace, diagram — so any lesson can compose them.</p>
+      </div>
+      <div class="prio" style="--pc:#4a7c59">
+        <div class="picon2"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M22 10 12 5 2 10l10 5 10-5z"/><path d="M6 12v5c0 1 2.7 2.4 6 2.4s6-1.4 6-2.4v-5"/></svg></div>
+        <div class="plabel">Priority 02</div>
+        <h3>Project-based learning pedagogy</h3>
+        <p>How build-real-stuff courses actually teach: <b>scoping, milestones, and tutor review</b> of real artifacts. The method behind the projects, not just the tooling.</p>
+      </div>
+      <div class="prio" style="--pc:#b1683f">
+        <div class="picon2"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M9 19c-4 1.5-4-2-6-2.5M15 21v-3.5c0-1 .1-1.4-.5-2 2.8-.3 5-1.4 5-5.5 0-1.2-.4-2.2-1.1-3 .1-.3.5-1.5-.1-3 0 0-1-.3-3.3 1.2a11 11 0 0 0-6 0C6.4 3.2 5.4 3.5 5.4 3.5c-.6 1.5-.2 2.7-.1 3-.7.8-1.1 1.8-1.1 3 0 4.1 2.2 5.2 5 5.5-.4.4-.5.9-.5 1.6V21"/></svg></div>
+        <div class="plabel">Priority 03</div>
+        <h3>Connectors — start with GitHub</h3>
+        <p>The links into real tools. Begin with a <b>GitHub connector</b> so the tutor can read the learner's repo — then expand to the next environment from there.</p>
+      </div>
+    </div>
+  </section>
+
+</div>
+
+<!-- chrome -->
+<button class="backbtn" id="back" data-nav="hub">← Overview</button>
+<div class="brandmark">MAE<span>S</span>TRO · EDU-INFRA</div>
+<div class="ctx"><span class="lbl" id="ctxLabel">edu-infra strategy</span><span class="dots" id="ctxDots"></span></div>
+<div class="navhint"><kbd>←</kbd><kbd>→</kbd> &nbsp;navigate</div>
+
+<script>
+(function(){
+  const slides = Array.from(document.querySelectorAll('.slide'));
+  const byId = id => slides.find(s => s.dataset.id === id);
+  const branches = { controlled:['c1','c2','c3'], real:['r1','r2'] };
+  const labels = { controlled:'Maestro-controlled', real:'Real world' };
+  const back = document.getElementById('back');
+  const ctxLabel = document.getElementById('ctxLabel');
+  const ctxDots = document.getElementById('ctxDots');
+
+  let curId = 'programs';
+  let ctx = null; // 'controlled' | 'real' | null
+
+  function render(){
+    slides.forEach(s => s.classList.toggle('active', s.dataset.id === curId));
+    const inBranch = branches[ctx] && branches[ctx].includes(curId);
+    const onDash = curId === 'dashboard';
+    back.classList.toggle('show', inBranch || onDash);
+    // context label + dots
+    if(inBranch){
+      ctxLabel.textContent = labels[ctx];
+      const arr = branches[ctx], pos = arr.indexOf(curId);
+      ctxDots.innerHTML = arr.map((_,i)=>'<i class="'+(i===pos?'on':'')+'"></i>').join('');
+    } else if(onDash){
+      ctxLabel.textContent = 'In production'; ctxDots.innerHTML = '';
+    } else if(curId === 'hub'){
+      ctxLabel.textContent = 'Overview'; ctxDots.innerHTML = '';
+    } else if(curId === 'axis'){
+      ctxLabel.textContent = 'The growth axis'; ctxDots.innerHTML = '';
+    } else if(curId === 'priorities'){
+      ctxLabel.textContent = 'Roadmap'; ctxDots.innerHTML = '';
+    } else {
+      ctxLabel.textContent = 'edu-infra strategy'; ctxDots.innerHTML = '';
+    }
+  }
+  function go(id, context){ curId = id; if(context !== undefined) ctx = context; render(); }
+
+  function next(){
+    if(curId === 'programs') return go('hub', null);
+    if(curId === 'hub') return go('axis', null);
+    if(curId === 'axis') return go(branches.controlled[0], 'controlled');
+    if(curId === 'dashboard') return go('hub', null);
+    if(curId === 'priorities') return;
+    const arr = branches[ctx];
+    if(arr){ const i = arr.indexOf(curId);
+      if(i > -1 && i < arr.length-1) return go(arr[i+1], ctx);
+      return go(ctx === 'controlled' ? 'priorities' : 'hub', null); }
+  }
+  function prev(){
+    if(curId === 'programs') return;
+    if(curId === 'hub') return go('programs', null);
+    if(curId === 'axis') return go('hub', null);
+    if(curId === 'dashboard') return go('hub', null);
+    if(curId === 'priorities') return go(branches.controlled[branches.controlled.length-1], 'controlled');
+    const arr = branches[ctx];
+    if(arr){ const i = arr.indexOf(curId);
+      if(i > 0) return go(arr[i-1], ctx);
+      return go(ctx === 'controlled' ? 'axis' : 'hub', null); }
+  }
+
+  document.addEventListener('keydown', e=>{
+    if(['ArrowRight','PageDown',' '].includes(e.key)){ e.preventDefault(); next(); }
+    else if(['ArrowLeft','PageUp'].includes(e.key)){ e.preventDefault(); prev(); }
+    else if(e.key === 'Escape'){ if(curId!=='programs' && curId!=='hub') go('hub', null); }
+    else if(e.key === 'Home'){ go('programs', null); }
+  });
+
+  // explicit nav targets (hub columns, dashboard tile, back button)
+  document.querySelectorAll('[data-nav]').forEach(el=>{
+    el.addEventListener('click', e=>{
+      e.stopPropagation();
+      const v = el.getAttribute('data-nav');
+      if(v === 'hub') return go('hub', null);
+      if(v === 'dash') return go('dashboard', 'real');
+      if(v.startsWith('branch:')) return go(branches[v.split(':')[1]][0], v.split(':')[1]);
+    });
+  });
+
+  // click left/right half to navigate — but not on the hub (its columns are the targets)
+  document.getElementById('deck').addEventListener('click', e=>{
+    if(e.target.closest('[data-nav]')) return;
+    if(curId === 'hub') return;
+    (e.clientX > window.innerWidth/2 ? next : prev)();
+  });
+
+  render();
+
+  // ---- plugin carousel (self-contained; clicks don't bubble to deck nav) ----
+  (function(){
+    const car = document.getElementById('pcar');
+    const track = document.getElementById('pcarTrack');
+    if(!car || !track) return;
+    const items = Array.from(track.children);
+    const dots = document.getElementById('pcarDots');
+    let ci = 0;
+    items.forEach((_, i) => {
+      const d = document.createElement('i');
+      d.addEventListener('click', e => { e.stopPropagation(); ci = i; upd(); });
+      dots.appendChild(d);
+    });
+    function upd(){
+      track.style.transform = 'translateX(' + (-ci * 100) + '%)';
+      Array.from(dots.children).forEach((d, i) => d.classList.toggle('on', i === ci));
+    }
+    function move(dir){ ci = (ci + dir + items.length) % items.length; upd(); }
+    car.querySelectorAll('[data-car]').forEach(b =>
+      b.addEventListener('click', e => { e.stopPropagation(); move(b.getAttribute('data-car') === 'next' ? 1 : -1); }));
+    // keep carousel interactions from triggering deck navigation
+    car.addEventListener('click', e => e.stopPropagation());
+    upd();
+  })();
+})();
+</script>
+</body>
+</html>
