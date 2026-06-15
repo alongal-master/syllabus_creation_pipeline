@@ -1,0 +1,959 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Transfer Planner — AAS Business → Maestro University</title>
+<style>
+  :root {
+    --c-red:    #ae2012;
+    --c-green:  #cdeac0;
+    --c-cream:  #ffecd1;
+    --c-tan:    #efe9ae;
+    --c-brown:  #001219;
+    --c-blush:  #fec3a6;
+    --c-warmgray: #aaa57f;
+    --c-coral:  #ff928b;
+    --c-orange: #ffac81;
+    --c-deep-teal: #005f73;
+    --c-burnt:     #ca6702;
+
+    --transfer-fill:   #cdeac0;
+    --transfer-text:   #1f3d24;
+    --lost-fill:       #fec3a6;
+    --lost-border:     rgba(202, 103, 2, 0.45);
+    --lost-text:       #7a4626;
+    --uni-fill:        rgba(0, 95, 115, 0.08);
+    --uni-border:      rgba(0, 95, 115, 0.30);
+
+    --bg:        #ffecd1;
+    --surface:   #fff5e3;
+    --surface-2: #e9d8a6;
+    --card-bg:   #ffffff;
+    --row-alt:   rgba(0, 18, 25, 0.025);
+    --border:    rgba(0, 18, 25, 0.10);
+    --border-strong: rgba(0, 18, 25, 0.22);
+    --text:      #001219;
+    --muted:     rgba(0, 18, 25, 0.60);
+    --muted-2:   rgba(0, 18, 25, 0.42);
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui,
+                 "Helvetica Neue", Arial, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    font-size: 13px;
+    line-height: 1.45;
+  }
+  button { font-family: inherit; font-size: inherit; }
+  h1, h2, h3 { font-family: 'Avenir Next', 'Inter', 'SF Pro Display', system-ui, sans-serif; letter-spacing: -0.2px; font-weight: 600; }
+
+  .topbar {
+    display: flex; align-items: baseline; gap: 10px;
+    padding: 14px 24px;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    position: sticky; top: 0; z-index: 40;
+  }
+  .topbar .dot { width: 9px; height: 9px; border-radius: 50%; background: var(--c-red); box-shadow: 0 0 6px rgba(174,32,18,.35); align-self: center; }
+  .topbar h1 { font-size: 17px; font-weight: 600; margin: 0; }
+  .topbar .sub { color: var(--muted); font-size: 12px; }
+
+  .wrap { max-width: 1240px; margin: 0 auto; padding: 20px 24px 80px; }
+  section { margin-bottom: 22px; }
+
+  .panel { background: var(--card-bg); border: 1px solid var(--border); border-radius: 14px; padding: 18px 20px; }
+  .panel h2 { margin: 0 0 4px; font-size: 15px; font-weight: 600; }
+  .panel .lede { color: var(--muted); margin: 0 0 14px; max-width: 72ch; }
+
+  .rules { display: flex; flex-wrap: wrap; gap: 10px; }
+  .rule { flex: 1 1 180px; background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 10px 12px; }
+  .rule .k { font-size: 10px; text-transform: uppercase; letter-spacing: .5px; color: var(--muted); font-weight: 700; }
+  .rule .v { font-size: 15px; font-weight: 800; margin-top: 2px; }
+  .rule .d { font-size: 11px; color: var(--muted); margin-top: 2px; }
+
+  /* controls */
+  .controls { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; margin-bottom: 12px; }
+  .seg { display: inline-flex; background: var(--card-bg); border: 1px solid var(--border-strong); border-radius: 999px; overflow: hidden; }
+  .seg button { background: transparent; color: var(--muted); border: 0; padding: 7px 16px; cursor: pointer; font-weight: 700; }
+  .seg button:hover:not(.active) { color: var(--text); background: var(--surface-2); }
+  .seg button.active { background: var(--c-red); color: var(--c-cream); }
+
+  .chips { display: flex; flex-wrap: wrap; gap: 7px; }
+  .chip { background: var(--card-bg); border: 1px solid var(--border-strong); border-radius: 999px; padding: 6px 13px; cursor: pointer; font-weight: 700; color: var(--text); }
+  .chip:hover:not(.active) { background: var(--surface-2); }
+  .chip.active { background: var(--c-red); color: var(--c-cream); border-color: var(--c-red); }
+  .chip .meta { font-weight: 500; font-size: 10px; opacity: .7; margin-left: 5px; }
+  .statusline { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+  .statusline .badge { background: rgba(0,95,115,0.10); color: var(--c-deep-teal); border: 1px solid rgba(0,95,115,0.30); border-radius: 8px; padding: 4px 10px; font-weight: 700; font-size: 12px; }
+  .statusline .note { color: var(--muted); font-size: 12px; }
+
+  /* ===== Main two-pane ===== */
+  .main { display: grid; grid-template-columns: 1.05fr 0.95fr; gap: 26px; align-items: start; position: relative; }
+  @media (max-width: 900px) { .main { grid-template-columns: 1fr; } }
+
+  /* LEFT — vertical learning axis */
+  .journey { background: var(--card-bg); border: 1px solid var(--border); border-radius: 14px; padding: 16px 18px 22px; }
+  .journey .jhead { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 6px; }
+  .journey .jhead h2 { margin: 0; font-size: 15px; font-weight: 600; flex: 1; }
+  .journey .jhead .jinst { font-size: 11px; color: var(--muted); margin-right: 10px; }
+  .journey .jhead .reset { background: transparent; border: 1px solid var(--border-strong); border-radius: 8px; padding: 4px 10px; cursor: pointer; color: var(--muted); font-weight: 700; }
+  .journey .jhead .reset[hidden] { display: none; }
+  .journey .jsub { color: var(--muted); font-size: 12px; margin-bottom: 12px; }
+
+  .axis { position: relative; padding-left: 26px; }
+  .axis::before { content: ""; position: absolute; left: 9px; top: 6px; bottom: 6px; width: 2px; background: var(--border-strong); }
+
+  .vterm { position: relative; margin-bottom: 12px; }
+  .vterm .node { position: absolute; left: -22px; top: 3px; width: 14px; height: 14px; border-radius: 50%; background: var(--card-bg); border: 3px solid var(--c-warmgray); }
+  .vterm.done .node { border-color: var(--c-deep-teal); background: var(--c-deep-teal); }
+  .vterm.here .node { border-color: var(--c-red); box-shadow: 0 0 0 3px rgba(174,32,18,.2); }
+  .vterm.faded { opacity: .42; }
+  .vterm .th { font-size: 12px; font-weight: 800; display: flex; align-items: center; gap: 8px; }
+  .vterm .th .dates { font-weight: 500; color: var(--muted); font-size: 10px; }
+  .vterm .th .here-tag { font-size: 9px; background: var(--c-red); color: #fff; padding: 1px 6px; border-radius: 4px; font-weight: 800; letter-spacing: .3px; }
+  .vterm .courses { display: flex; flex-direction: column; gap: 5px; margin-top: 5px; }
+  .ccard { border-radius: 7px; padding: 5px 9px; font-size: 10.5px; line-height: 1.2; border: 1px solid transparent; min-height: 32px; }
+  .ccard.t { background: var(--transfer-fill); color: var(--transfer-text); }
+  .ccard.n { background: var(--lost-fill); color: var(--lost-text); border: 1px dashed var(--lost-border); }
+  .ccard.gened { background-image: repeating-linear-gradient(45deg, rgba(0,18,25,.05) 0 6px, transparent 6px 12px); }
+  .ccard .id { font-weight: 800; display: flex; align-items: center; gap: 8px; }
+  .ccard .id .code { flex: 1; }
+  .ccard .id .cr { font-size: 9px; font-weight: 600; opacity: .65; }
+  .ccard .id .mk { font-weight: 800; }
+  .ccard .id .ge-tag { font-size: 8.5px; font-weight: 800; letter-spacing: .3px; color: var(--c-warmgray); background: rgba(120,113,80,.14); border: 1px solid rgba(120,113,80,.3); border-radius: 4px; padding: 0 4px; line-height: 1.5; }
+  .ccard .nm { opacity: .85; font-size: 9.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .jtotal { margin: 8px 0 2px; padding-top: 8px; border-top: 2px solid var(--border-strong); font-size: 12px; font-weight: 800; }
+  .jtotal span { font-weight: 600; color: var(--muted); }
+
+  /* exit arrow */
+  .exit-row { position: relative; margin: 2px 0 14px; }
+  .exit-arrow {
+    display: inline-flex; align-items: center; gap: 7px;
+    background: var(--surface); border: 1px dashed var(--border-strong);
+    border-radius: 999px; padding: 4px 12px 4px 10px; cursor: pointer;
+    color: var(--muted); font-weight: 700; font-size: 11px;
+    transition: background-color .12s, color .12s, border-color .12s, transform .12s;
+  }
+  .exit-arrow:hover { background: var(--c-red); color: #fff; border-color: var(--c-red); transform: translateX(3px); }
+  .exit-arrow.sel { background: var(--c-red); color: #fff; border-color: var(--c-red); }
+  .exit-arrow .score { font-weight: 800; }
+
+  /* university handoff + segment */
+  .handoff { display: flex; align-items: center; gap: 8px; margin: 16px 0 12px; }
+  .handoff .line { flex: 1; height: 2px; background: var(--uni-border); }
+  .handoff .tag { background: var(--c-deep-teal); color: #fff; font-weight: 800; font-size: 11px; padding: 4px 12px; border-radius: 999px; }
+  .uni-seg { background: var(--uni-fill); border: 1px solid var(--uni-border); border-radius: 12px; padding: 12px 14px; }
+  .uni-seg h3 { margin: 0 0 4px; font-size: 13px; font-weight: 800; color: var(--c-deep-teal); }
+  .uni-seg .meta { font-size: 11px; color: var(--muted); margin-bottom: 8px; }
+  .uni-group { margin-top: 8px; }
+  .uni-group .gh { font-size: 10px; text-transform: uppercase; letter-spacing: .4px; color: var(--muted); font-weight: 800; margin-bottom: 4px; }
+  .uni-pills { display: flex; flex-wrap: wrap; gap: 5px; }
+  .uni-pill { background: var(--card-bg); border: 1px solid var(--uni-border); border-radius: 6px; padding: 3px 8px; font-size: 10.5px; font-weight: 600; }
+  .uni-pill.credit { background: rgba(0,95,115,0.14); }
+  .tbd { font-size: 11px; color: var(--c-burnt); background: rgba(202,103,2,.08); border: 1px dashed var(--lost-border); border-radius: 8px; padding: 8px 10px; margin-top: 10px; }
+
+  /* move info (above the diversion) */
+  .move-info { margin: 14px 0 0; background: var(--surface); border: 1px solid var(--border-strong); border-radius: 12px; padding: 10px 14px; }
+  .move-info .mt { font-weight: 700; font-size: 12.5px; }
+  .move-info .chips2 { display: flex; gap: 7px; flex-wrap: wrap; margin-top: 7px; }
+  .move-info .mc { font-size: 11px; font-weight: 700; border-radius: 999px; padding: 3px 10px; }
+  .move-info .mc.save { background: rgba(0,95,115,.12); color: var(--c-deep-teal); }
+  .move-info .mc.lost { background: rgba(202,103,2,.12); color: var(--c-burnt); }
+  .move-info .mc.bsc  { background: rgba(106,76,156,.13); color: #5a3e86; }
+  .move-info .mc.pct  { background: var(--surface-2); color: var(--text); }
+  .move-info .mc.time { background: rgba(0,18,25,.06); color: var(--text); }
+  table.cmp { width: 100%; border-collapse: collapse; font-size: 12px; }
+  table.cmp th { text-align: left; font-size: 10px; text-transform: uppercase; letter-spacing: .4px; color: var(--muted); font-weight: 700; padding: 6px 10px; border-bottom: 1px solid var(--border-strong); }
+  table.cmp th.num, table.cmp td.num { text-align: right; }
+  table.cmp td { padding: 9px 10px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+  table.cmp tbody tr { cursor: pointer; }
+  table.cmp tbody tr:hover { background: var(--surface); }
+  table.cmp tr.sel { background: rgba(174,32,18,.10); }
+  table.cmp tr.sel td { border-color: rgba(174,32,18,.3); }
+  table.cmp tr.plateau { opacity: .5; }
+  table.cmp td.aft { font-weight: 700; white-space: nowrap; }
+  table.cmp td .sub { display: block; font-size: 9.5px; font-weight: 600; color: var(--muted); }
+  table.cmp td.waste { color: var(--c-burnt); }
+  table.cmp td.bs { color: #5a3e86; }
+  table.cmp .mk { display: inline-block; font-size: 9px; font-weight: 800; padding: 1px 6px; border-radius: 999px; margin-left: 4px; vertical-align: middle; }
+  table.cmp .mk.credit { background: rgba(45,106,79,.16); color: var(--c-green); }
+  table.cmp .mk.fast { background: rgba(0,95,115,.14); color: var(--c-deep-teal); }
+  .cmp-ref { font-size: 10.5px; color: var(--muted); margin-top: 10px; line-height: 1.5; }
+
+  /* the divergence */
+  .fork { width: 100%; height: 34px; display: block; }
+  .fork path { fill: none; stroke-width: 2; }
+  .diverge { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; align-items: start; }
+  .track { border-radius: 12px; padding: 11px 12px; }
+  .track .trh { font-size: 10px; text-transform: uppercase; letter-spacing: .4px; font-weight: 800; margin-bottom: 10px; }
+  .track.college { background: rgba(0,18,25,.03); border: 1px dashed var(--border-strong); }
+  .track.college .trh { color: var(--muted); }
+  .track.university { background: var(--uni-fill); border: 1px solid var(--uni-border); }
+  .track.university .trh { color: var(--c-deep-teal); }
+  .track .cap { font-size: 10px; color: var(--muted); margin-top: 4px; }
+
+  .mini-rail { position: relative; padding-left: 18px; }
+  .mini-rail::before { content: ""; position: absolute; left: 5px; top: 4px; bottom: 8px; width: 2px; background: var(--border-strong); }
+  .track.university .mini-rail::before { background: var(--uni-border); }
+  .mini-node { position: relative; margin-bottom: 11px; }
+  .mini-node:last-child { margin-bottom: 0; }
+  .mini-node .nd { position: absolute; left: -16px; top: 3px; width: 10px; height: 10px; border-radius: 50%; background: var(--card-bg); border: 2px solid var(--c-warmgray); }
+  .track.college .mini-node { opacity: .55; }
+  .track.university .mini-node .nd { border-color: var(--c-deep-teal); background: var(--c-deep-teal); }
+  .mini-node .mh { font-size: 11px; font-weight: 800; }
+  .mini-node .mb { font-size: 10px; color: var(--muted); margin-top: 1px; }
+  .mini-node .mpills { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 4px; }
+  .mini-node .mpill { background: var(--card-bg); border: 1px solid var(--uni-border); border-radius: 5px; padding: 2px 6px; font-size: 9.5px; font-weight: 600; }
+  .mini-node .mpill.credit { background: rgba(0,95,115,.14); }
+
+  /* RIGHT — details */
+  .details { position: relative; background: var(--card-bg); border: 1px solid var(--border); border-radius: 14px; padding: 0; overflow: hidden; }
+  .details:not(.empty) { border-color: var(--uni-border); box-shadow: 0 0 0 3px rgba(0,95,115,.08); }
+  .details.empty { padding: 28px 22px; color: var(--muted); }
+  .details .dhead { padding: 14px 18px; border-bottom: 1px solid var(--border); background: var(--surface); display: flex; justify-content: space-between; align-items: baseline; gap: 10px; }
+  .details .dhead h2 { margin: 0; font-size: 15px; font-weight: 600; }
+  .details .dhead .date { font-size: 11px; color: var(--muted); }
+  .inst-badge { display: inline-block; font-size: 11px; font-weight: 600; letter-spacing: .5px; text-transform: uppercase; vertical-align: middle; margin-right: 7px; }
+  .inst-badge.college { color: var(--c-burnt); }
+  .inst-badge.univ { color: var(--c-deep-teal); }
+  .details.plateau .dhead { background: rgba(170,165,127,.20); }
+
+  .bigstats { display: flex; padding: 16px 18px 6px; gap: 6px; }
+  .bigstat { flex: 1; text-align: center; }
+  .bigstat .big { font-size: 26px; font-weight: 800; line-height: 1; }
+  .bigstat .lbl { font-size: 9.5px; text-transform: uppercase; letter-spacing: .4px; color: var(--muted); font-weight: 700; margin-top: 4px; }
+  .bigstat.save .big { color: var(--c-deep-teal); }
+  .bigstat.lost .big { color: var(--c-burnt); }
+
+  .savebar { margin: 10px 18px 4px; height: 14px; border-radius: 999px; background: var(--surface-2); position: relative; overflow: hidden; }
+  .savebar .fill { height: 100%; background: var(--c-deep-teal); }
+  .savebar .cap { position: absolute; top: -3px; bottom: -3px; width: 2px; background: var(--c-red); }
+  .savecaption { font-size: 11px; color: var(--muted); margin: 0 18px 12px; }
+  .savecaption b { color: var(--text); }
+
+  .dgroup { padding: 8px 18px; }
+  .dgroup h3 { margin: 6px 0 6px; font-size: 11px; text-transform: uppercase; letter-spacing: .4px; }
+  .dgroup h3.t { color: var(--c-deep-teal); }
+  .dgroup h3.n { color: var(--c-burnt); }
+  .drow { display: flex; align-items: center; gap: 8px; padding: 4px 0; border-bottom: 1px solid var(--row-alt); font-size: 12px; }
+  .drow:last-child { border-bottom: 0; }
+  .pill { width: 15px; height: 15px; border-radius: 5px; flex: 0 0 auto; }
+  .pill.t { background: var(--transfer-fill); border: 1px solid rgba(31,61,36,.3); }
+  .pill.n { background: var(--lost-fill); border: 1px dashed var(--lost-border); }
+  .drow .cid { font-weight: 800; min-width: 62px; }
+  .drow .cn { color: var(--muted); flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .drow .cr { font-variant-numeric: tabular-nums; font-weight: 700; font-size: 11px; }
+  .drow .uq { font-size: 10px; color: var(--muted-2); }
+  .clears2 { font-size: 9px; background: var(--c-deep-teal); color: #fff; border-radius: 4px; padding: 0 5px; font-weight: 800; }
+  .narrative { margin: 6px 18px 16px; padding: 10px 12px; background: var(--surface); border-radius: 10px; font-size: 12px; }
+  .narrative b { color: var(--c-red); }
+  .emptyhint { font-size: 13px; }
+  .emptyhint b { color: var(--c-red); }
+
+  /* parallel new-degree view (right) + connector */
+  .ccard.uni { background: var(--uni-fill); border: 1px solid var(--uni-border); color: var(--c-deep-teal); }
+  .vterm.uni .node { border-color: var(--c-deep-teal); background: #fff; }
+  .connector { position: absolute; left: 0; top: 0; pointer-events: none; z-index: 6; overflow: visible; }
+  .nd-title { margin: 16px 18px 8px; font-size: 13px; font-weight: 600; color: var(--c-deep-teal); }
+  .nd-not { margin: 8px 18px 0; font-size: 11px; color: var(--c-burnt); }
+  .nd-axis-wrap, .rj-axis-wrap { padding: 0 18px 6px; }
+  /* right parallel journey — same UI as the left, aligned row-for-row */
+  .here-tag.uni { background: var(--c-deep-teal); }
+  .here-tag.trunk { background: var(--c-warmgray); }
+  .vterm.trunk .node { border-color: var(--c-warmgray); }
+  .vterm.uni-term .node { border-color: var(--c-deep-teal); background: #fff; }
+  .vterm.uni-term .node.done { background: var(--c-deep-teal); }
+  .ccard.ph { visibility: hidden; }
+  .vterm.diverge-top .node { box-shadow: 0 0 0 3px rgba(0,95,115,.22); }
+  .rj-note { margin: 9px 18px 2px; font-size: 10px; font-weight: 800; color: var(--c-deep-teal); text-transform: uppercase; letter-spacing: .3px; }
+  .ccard[data-tw] { cursor: help; }
+  #axis .ccard[data-maps] { cursor: pointer; }
+  .ccard.mapsrc, .ccard.maplit { outline: 2px solid var(--c-red); outline-offset: 1px; box-shadow: 0 0 0 3px rgba(174,32,18,.16); }
+  .ccard.ex { background: var(--c-tan); color: #5a531f; border: 1px solid rgba(0,18,25,.14); }
+  .ccard.done { opacity: .55; }
+  .tip { position: fixed; z-index: 100; max-width: 320px; background: var(--c-brown); color: var(--c-cream); border-radius: 8px; padding: 10px 12px; font-size: 11px; line-height: 1.4; box-shadow: 0 8px 24px rgba(0,18,25,.32); pointer-events: none; display: none; }
+  .tip b { color: #fff; display: block; margin-bottom: 5px; font-size: 12px; }
+  .tip .trow { display: flex; gap: 10px; margin-top: 3px; }
+  .tip .tl { color: var(--c-cream); opacity: .65; min-width: 66px; flex: 0 0 auto; }
+  .tip .tv { color: #fff; font-weight: 600; }
+
+  /* below sections */
+  .twocol { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  @media (max-width: 820px) { .twocol { grid-template-columns: 1fr; } }
+  .gap-list { columns: 2; font-size: 12px; }
+  .gap-list li { margin-bottom: 3px; }
+  .foot { font-size: 11px; color: var(--muted); }
+  .foot li { margin-bottom: 6px; }
+  .missing { border-left: 4px solid var(--c-burnt); }
+  .missing ol { margin: 8px 0 0; padding-left: 20px; font-size: 12px; }
+  .missing ol li { margin-bottom: 6px; }
+  .missing .req { color: var(--c-burnt); font-weight: 800; }
+  .legend { display: flex; gap: 16px; flex-wrap: wrap; font-size: 11px; color: var(--muted); margin-top: 12px; }
+  .legend .sw { display: inline-flex; align-items: center; gap: 6px; }
+  .legend .box { width: 14px; height: 14px; border-radius: 4px; display: inline-block; }
+</style>
+</head>
+<body>
+  <div class="topbar">
+    <span class="dot"></span>
+    <h1>Transfer Planner</h1>
+    <span class="sub">AAS in Business (Maestro College) → AS in Business (Maestro University)</span>
+  </div>
+
+  <div class="wrap">
+    <section class="panel">
+      <h2>The scenario</h2>
+      <p class="lede">Pick an <b>exit point</b> — the end of any term — and see what transferring to Maestro University then would mean: which credits carry over, which are lost, how much of the degree you save, and what your learning journey looks like from that point on.</p>
+      <div class="rules" id="rulesRow"></div>
+    </section>
+
+    <section>
+      <div class="controls">
+        <div class="seg" id="progSeg">
+          <button data-prog="business" class="active">Business</button>
+          <button data-prog="sw">AI Software Eng</button>
+        </div>
+        <div class="seg" id="modeSeg">
+          <button data-mode="general" class="active">General degree</button>
+          <button data-mode="cohort">By cohort</button>
+        </div>
+        <div id="cohortControls" style="display:none; align-items:center; gap:14px; flex-wrap:wrap;">
+          <div class="chips" id="chips"></div>
+        </div>
+      </div>
+      <div class="statusline" id="statusline"></div>
+    </section>
+
+    <section class="main">
+      <!-- LEFT: learning axis -->
+      <div class="journey">
+        <div class="jhead">
+          <h2 id="journeyTitle">Your learning journey</h2>
+          <span class="jinst" id="journeyInst"></span>
+          <button class="reset" id="resetBtn" hidden>← View full degree</button>
+        </div>
+        <div class="jsub" id="journeySub">The 9-term AAS in Business. Click an exit arrow ▶ at the end of any term to branch into the transfer path.</div>
+        <div class="axis" id="axis"></div>
+      </div>
+
+      <!-- RIGHT: changing detail -->
+      <div class="details empty" id="details">
+        <div class="emptyhint">Select an <b>exit arrow ▶</b> on the left to see what transferring at that point means — transferred credits, lost credits, and how much of the degree you'd save.</div>
+      </div>
+    </section>
+
+    <section class="panel">
+      <h2>When should you transfer — and what does it cost?</h2>
+      <p class="lede">Every row leads to the same A.S. degree; the trade-offs are how much credit carries over, how much is wasted, and how long it takes. There's no single “best”: transferring <b>earlier</b> wastes fewer credits and finishes sooner but carries less over; <b style="color:var(--c-green)">◆ most credit</b> is the peak you can transfer — rows after it (<span style="color:var(--c-warmgray)">greyed</span>) only add waste and time. Click a row to branch.</p>
+      <div class="chart" id="chart"></div>
+    </section>
+
+    <section class="panel">
+      <h2>Notes &amp; honest caveats</h2>
+      <ul class="foot" id="foot"></ul>
+      <div class="legend">
+        <span class="sw"><span class="box" style="background:var(--transfer-fill);border:1px solid rgba(31,61,36,.3)"></span> ✓ Transfers to the A.S.</span>
+        <span class="sw"><span class="box" style="background:var(--c-tan);border:1px solid rgba(0,18,25,.14)"></span> ↗ Counts toward a B.S. only</span>
+        <span class="sw"><span class="box" style="background:var(--lost-fill);border:1px dashed var(--lost-border)"></span> ✗ No equivalent (lost)</span>
+        <span class="sw"><span class="box" style="background:var(--uni-fill);border:1px solid var(--uni-border)"></span> University course to take</span>
+        <span class="sw"><span class="ge-tag" style="margin:0">GE</span> General-education / liberal-arts</span>
+      </div>
+    </section>
+
+    <section class="panel">
+      <h2>Quarter vs semester credits (QCH ↔ SCH)</h2>
+      <div class="rules">
+        <div class="rule"><div class="k">QCH</div><div class="v">Quarter credit hours</div><div class="d">Maestro College's unit. The AAS runs on quarter terms — every course on the <b>left</b> is shown in QCH.</div></div>
+        <div class="rule"><div class="k">SCH</div><div class="v">Semester credit hours</div><div class="d">The University's unit. The A.S./B.S. and every course on the <b>right</b> is in SCH — the A.S. is <b>60 SCH</b>.</div></div>
+        <div class="rule"><div class="k">Conversion</div><div class="v">1 SCH ≈ 1.5 QCH</div><div class="d">6 QCH ≈ 4 SCH · 4 QCH ≈ 2.67 SCH.</div></div>
+      </div>
+      <p class="lede" style="margin-top:12px">Transfer is decided <b>course-to-course</b>, not by credit total: one College course clears <b>at most one</b> University course, whatever each is worth. That's why a 6-QCH College course yields only the University course's 3 SCH — the leftover (≈1.5 QCH) shows up as <b>conversion shrinkage</b> in “wasted credit.” A College course with no University match is <b>lost</b> outright; one that matches a course above the A.S. counts <b>↗ toward a B.S.</b></p>
+    </section>
+  </div>
+
+<script src="programs-data.js"></script>
+<script src="data.js"></script>
+<script>
+(function () {
+  "use strict";
+
+  var COHORT_SCOPE = ['Sep25','Oct25','Nov25','Dec25','Jan26','Feb26','Mar26','Apr26','May26','Jun26'];
+  // ── timing & credit-conversion assumptions ──
+  var COLLEGE_TERM_WK = 11;   // College term length incl. breaks
+  var UNIV_TERM_WK    = 13;   // University term length incl. breaks
+  var QCH_PER_SCH     = 1.5;  // 1 semester credit ≈ 1.5 quarter credits (so 6 QCH ≈ 4 SCH)
+  var TODAY = new Date('2026-06-14T00:00:00');
+  var RULES = {}; // credit params for the active program (set by buildProgram)
+
+  var PROGRAMS = {
+    business: {
+      label:'AAS in Business', syllabusKey:'business',
+      destShort:'A.S. Business', destKey:'asb', degreeSCH:60, exact:true,
+      // College courses that are general-education (in addition to any auto-detected via the University gen-ed map)
+      collegeGenEd:['PSYC140','PHIL110','COMM180','MATH110'],
+      rules:[
+        {k:'Destination',v:'A.S. Business',d:'Maestro University · 60 SCH'},
+        {k:'Transfers in',v:'24 of 60',d:'8 of 21 courses covered'},
+        {k:'Matching',v:'course → course',d:'one College course clears one University course'},
+        {k:'Still needed',v:'13 courses',d:'mostly gen-ed & economics'}
+      ],
+      // College AAS Business course (dashboard code) → Maestro University course id(s) it satisfies
+      collegeToUniv:{
+        MGMT101:['BA201','BA205'], PSYC140:['BA210'], PHIL110:['BA375'],
+        COMM180:['CM101'], MKTG120:['BA220'], ACCT150:['BA280'],
+        MATH110:['MA125'], ENTR242:['BA252'],
+        PMGT170:['BA490'], PERF210:['BA445'], BUSN302:['BA464'],
+        OPMT130:[], FINC160:[], ENTR243:[], BUSN303:[], BUSN305:[], BUSN306:[], CAPS300:[]
+      },
+      gap:[
+        {code:'BA271',name:'Macroeconomics'},{code:'BA272',name:'Microeconomics'},
+        {code:'CM110',name:'Developing Critical Thinking Skills'},{code:'CM220',name:'Presentation Skills'},
+        {code:'CM258',name:'Conflict Management'},{code:'CS110',name:'Introduction to Computers'},
+        {code:'EN111',name:'Composition I'},{code:'EN112',name:'Composition II'},
+        {code:'GS150',name:'General Biology'},{code:'PY141',name:'General Psychology'},
+        {code:'NS101',name:'New Student Orientation'},{code:'PF101',name:'Academic Strategies'}
+      ],
+      missing:[
+        'The Maestro University <b>per-term schedule</b> for the A.S. Business — programs-data.js gives the course list &amp; credits, not the term sequence/dates.',
+        'The <b>transfer placement &amp; residency policy</b> — standing on entry and minimum credits earned at the University.',
+        '<b>Prerequisite chains</b> to sequence the remaining courses into valid terms.'
+      ],
+      notes:[
+        'Destination: A.S. Business (60 SCH), computed from the real A.S. Business curriculum (programs-data.js). Each University course is 3 SCH (NS101 = 1, PF101 = 2).',
+        'Credit = the University courses you clear: a normal match = 3 SCH; “Management Fundamentals” (6 QCH) clears BA201 + BA205 = 6 SCH.',
+        '9 of 21 University courses are covered (27 SCH); 12 remain — mostly gen-ed (English, math, science, psychology) and economics the AAS never covered.',
+        'Courses marked ↗ transfer to the University but sit above the A.S. Business (BA490 Project Management, BA445 Effective Leadership, BA464 Marketing Strategy) — they count toward a Bachelor’s, not the A.S.',
+        'MATH110 (College Algebra & Trigonometry) is matched to MA125 (College Algebra) on content; the course codes differ.'
+      ]
+    },
+    sw: {
+      label:'AAS in AI Software Engineering', syllabusKey:'sw',
+      destShort:'A.S. Computer Science', destKey:'ascs', degreeSCH:60, exact:true,
+      rules:[
+        {k:'Destination',v:'A.S. Computer Science',d:'Maestro University · 60 SCH'},
+        {k:'Transfers in',v:'36 of 60',d:'12 of 21 courses covered'},
+        {k:'Matching',v:'course → course',d:'exact, from the A.S. CS curriculum'},
+        {k:'Still needed',v:'9 courses',d:'BA201/205/271 · CM101/285 · CS110 · EN112 · NS101/PF101'}
+      ],
+      // College AAS AI SE course (dashboard code) → Maestro University course id(s) it satisfies
+      collegeToUniv:{
+        PY101:['CS277'], CS102:[], CS103:['CS384'], BE101:['CS100'], BE103:['CS382'],
+        FE101:['CS301'], FE102:['CS497'], BE106:['CS300'], AI101:['CM110'], SPH100:['CM220'],
+        ENGL100:['EN111'], ENVR100:['GS150'], HIST100:['HI171'], MATH100:['MA125'], PSYC100:['PY141'],
+        CD101:['PF101'], AI104:['CS499'], FE103:['CS301'],
+        CS101:[], BE102:[], BE104:[], BE105:[], AI102:[], AI103:[], CD102:[], CD103:[], CD104:[]
+      },
+      gap:[
+        {code:'BA201',name:'Introduction to Business'},{code:'BA205',name:'Principles of Management'},
+        {code:'BA271',name:'Microeconomics'},{code:'CM101',name:'Principles of Communication'},
+        {code:'CM285',name:'Diversity and Inclusion'},{code:'EN112',name:'Composition II'}
+      ],
+      missing:[
+        'The Maestro University <b>per-term schedule</b> for the A.S. CS — programs-data.js gives the course list &amp; credits, not the term sequence/dates.',
+        'Confirmation that A.S. CS accepts these specific <b>course-to-course substitutions</b> (e.g. the CS110 / CS499-capstone swap noted in the source).',
+        '<b>Prerequisite chains</b> &amp; transfer/residency policy at the University.'
+      ],
+      notes:[
+        'Destination: A.S. Computer Science (60 SCH). AAS AI SWE also maps to the B.S. CS – Business (120) and, with an added A.S. Business, the B.S. Business.',
+        'Computed from the real A.S. CS curriculum (programs-data.js): 13 of 21 University courses are covered by transfer (39 of 60 SCH); 8 remain — BA201, BA205, BA271, CM101, CM285, EN112, plus orientation NS101 &amp; PF101 (always taken on arrival).',
+        'Code reconciliation: dashboard sw codes CS101/CS102/CS103/ENVR100/HIST100/MATH100 map from the catalog’s PY104/PY102/PY103/ENVR200/HIST200/MATH200.',
+        'Courses marked ↗ transfer to the University but are not part of the A.S. CS degree (e.g. CS300, HI171, CS499), so they don’t reduce the requirement.'
+      ]
+    }
+  };
+  var program='business';
+  function cfg(){ return PROGRAMS[program]; }
+
+  function normId(id){ var n=String(id).replace(/\s+/g,'').toUpperCase(); if(n==='AACT150')n='ACCT150'; return n; }
+  function parseDate(s){ var p=String(s).split('-'); return new Date(+p[0],+p[1]-1,+p[2]); }
+  function fmt(d){ return d.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}); }
+  function el(tag,cls,html){ var e=document.createElement(tag); if(cls)e.className=cls; if(html!=null)e.innerHTML=html; return e; }
+
+  var CAL = {}; (window.CALENDAR||[]).forEach(function(c){ CAL[c.cohort]=c; });
+
+  // reverse index: University course id → short labels of programs that include it
+  var COURSE_IN = {};
+  (function(){ var MD=window.MAESTRO_DATA; if(!MD) return;
+    MD.MATRIX_PROGS.forEach(function(mp){ (MD.COURSES[mp.key]||[]).forEach(function(co){
+      (COURSE_IN[co.id]=COURSE_IN[co.id]||[]).push({key:mp.key,label:mp.label}); }); });
+  })();
+  // University course id → semester credits (across all programs)
+  var UNIV_SCH = {};
+  (function(){ var MD=window.MAESTRO_DATA; if(!MD) return;
+    Object.keys(MD.COURSES).forEach(function(k){ (MD.COURSES[k]||[]).forEach(function(co){ UNIV_SCH[co.id]=co.sch; }); });
+  })();
+  function programsForCourse(id){
+    var dk=cfg().destKey;
+    var labels=(COURSE_IN[id]||[]).filter(function(p){return p.key!==dk;}).map(function(p){return p.label;});
+    if(!labels.length) return 'a higher degree';
+    return labels.slice(0,3).join(', ')+(labels.length>3?' +'+(labels.length-3)+' more':'');
+  }
+
+  var byTerm={}, termNumbers=[], lastTerm, EXIT_TERMS=[], DESTCOURSES=null, DESTMAP={};
+  function buildProgram(){
+    var c=cfg();
+    RULES={ degreeSCH:c.degreeSCH, capSCH:(c.exact?c.degreeSCH:c.capSCH) };
+    DESTCOURSES = (c.exact && window.MAESTRO_DATA) ? (window.MAESTRO_DATA.COURSES[c.destKey]||[]) : null;
+    DESTMAP={}; if(DESTCOURSES) DESTCOURSES.forEach(function(co){ DESTMAP[co.id]=co; });
+    var syll=(window.SYLLABI && window.SYLLABI[c.syllabusKey]) || [];
+    byTerm={};
+    syll.forEach(function(co){
+      var nid=normId(co.courseId);
+      var card={ id:nid, name:co.name, isGenEd:!!co.isGenEd, qch:co.credits||0, transfers:false, univ:[], coversIds:[], coversSch:0, extraNamed:[], elective:false, flag:false };
+      if(c.exact){
+        var ids=c.collegeToUniv[nid]||[];
+        var GE=(window.MAESTRO_DATA&&window.MAESTRO_DATA.GEN_ED)||{};
+        // gen-ed if explicitly listed for this program, or if it maps to a University gen-ed course
+        card.isGenEd = (c.collegeGenEd||[]).indexOf(nid)>=0 || ids.some(function(id){return GE[id];});
+        // candidate University courses this College course could satisfy (orientation taken on arrival, not transferred)
+        var cand=ids.filter(function(id){return DESTMAP[id] && id!=='NS101' && id!=='PF101';});
+        // RULE: one College course clears AT MOST ONE University requirement — pick the first candidate; the rest are alternatives only
+        var covers=cand.slice(0,1);
+        card.coversIds=covers;
+        card.altIds=cand.slice(1);
+        card.univ=covers.map(function(id){return id+' '+DESTMAP[id].name;});
+        card.coversSch=covers.reduce(function(s,id){return s+(DESTMAP[id].sch||0);},0);
+        card.extraNamed=ids.filter(function(id){return !DESTMAP[id];});
+        card.transfers=covers.length>0;
+      } else {
+        var m=c.transfer[nid]||{};
+        card.univ=m.u||[]; card.elective=!!m.elective; card.flag=!!m.flag;
+        card.coversSch=card.univ.length?c.schPerCourse:(card.elective?c.schPerCourse:0);
+        card.transfers=(card.univ.length>0)||card.elective;
+      }
+      (byTerm[co.term]=byTerm[co.term]||[]).push(card);
+    });
+    termNumbers=Object.keys(byTerm).map(Number).sort(function(a,b){return a-b;});
+    lastTerm=termNumbers[termNumbers.length-1];
+    EXIT_TERMS=termNumbers.filter(function(n){return n<lastTerm;});
+  }
+  buildProgram();
+
+  function cumulativeThrough(n){
+    var c=cfg();
+    var courses=[]; termNumbers.forEach(function(t){ if(t<=n) courses=courses.concat(byTerm[t]); });
+    var tr=courses.filter(function(x){return x.transfers;});
+    if(c.exact){
+      var covered={}; courses.forEach(function(x){ x.coversIds.forEach(function(id){covered[id]=true;}); });
+      var transSCH=0, clearedCount=0, remaining=[], clearedList=[];
+      (DESTCOURSES||[]).forEach(function(co){ if(covered[co.id]){ transSCH+=co.sch; clearedCount++; clearedList.push({code:co.id,name:co.name,sch:co.sch}); } else { remaining.push({code:co.id,name:co.name,sch:co.sch}); } });
+      var lostCourses=courses.filter(function(x){return !x.transfers && !x.extraNamed.length;});
+      var extraCourses=courses.filter(function(x){return !x.transfers && x.extraNamed.length;});
+      var bscSeen={}, bscSCH=0;
+      extraCourses.forEach(function(x){ x.extraNamed.forEach(function(id){ if(!bscSeen[id]){ bscSeen[id]=true; bscSCH+=(UNIV_SCH[id]||3); } }); });
+      return { term:n, courses:courses, tr:tr, nt:courses.filter(function(x){return !x.transfers;}),
+        transSCH:transSCH, capped:false,
+        transQCH:tr.reduce(function(s,x){return s+x.qch;},0),
+        lostQCH:lostCourses.reduce(function(s,x){return s+x.qch;},0), bscSCH:bscSCH,
+        extraQCH:extraCourses.reduce(function(s,x){return s+x.qch;},0),
+        lostIds:lostCourses.map(function(x){return x.id;}), clearedCourses:clearedList,
+        pct:Math.round(transSCH/c.degreeSCH*100), cleared:clearedCount, extraCount:extraCourses.length,
+        remSCH:c.degreeSCH-transSCH, remCourses:remaining.length, remaining:remaining,
+        univCleared:[] };
+    }
+    var nt=courses.filter(function(x){return !x.transfers;});
+    var named=tr.filter(function(x){return x.univ.length;});
+    var raw=tr.length*c.schPerCourse, transSCH2=Math.min(raw,c.capSCH);
+    var cleared=named.reduce(function(s,x){return s+x.univ.length;},0);
+    return { term:n, courses:courses, tr:tr, nt:nt, transSCH:transSCH2, capped:raw>c.capSCH,
+      transQCH:tr.reduce(function(s,x){return s+x.qch;},0), lostQCH:nt.reduce(function(s,x){return s+x.qch;},0),
+      pct:Math.round(transSCH2/c.degreeSCH*100), cleared:cleared, elective:tr.filter(function(x){return x.elective;}).length,
+      remSCH:c.degreeSCH-transSCH2, remCourses:Math.max(0,Math.round((c.degreeSCH-transSCH2)/3)),
+      univCleared:named.reduce(function(a,x){return a.concat(x.univ);},[]) };
+  }
+  function plateauAt(n){ return n>1 && cumulativeThrough(n).transSCH===cumulativeThrough(n-1).transSCH; }
+
+  // Full accounting of an exit after College term n — every College credit earned is
+  // bucketed into: counts toward the A.S., counts only toward a B.S., or wasted
+  // (no equivalent + conversion shrinkage). Plus how long the whole path takes.
+  function exitStats(n){
+    var cum=cumulativeThrough(n), c=cfg(), MD=window.MAESTRO_DATA;
+    var dest=(MD&&MD.COURSES&&MD.COURSES[c.destKey])||[];
+    var destCount=dest.length, perTerm=(MD&&MD.COURSES_PER_TERM)||3;
+    var earnedQCH=cum.courses.reduce(function(s,x){return s+x.qch;},0);
+    var toAS=cum.transSCH;          // University SCH credited toward the A.S.
+    var toBS=cum.bscSCH;            // University SCH credited only toward a B.S. (the ↗ extra courses)
+    // WASTE, in College quarter-credits (what the student actually earned):
+    //  (a) no-equivalent — College courses that transfer nowhere
+    var noEquivQCH=cum.lostQCH;
+    //  (b) conversion shrinkage — on courses that DO transfer, the QCH paid for beyond the SCH granted (6 QCH → 3 SCH ≈ 1.5 QCH lost; small SW courses lose ~nothing)
+    var convQCH=0;
+    cum.courses.forEach(function(x){
+      var granted=0;
+      if(x.transfers) granted=x.coversSch;                                                   // clears an A.S. course
+      else if(x.extraNamed&&x.extraNamed.length) granted=x.extraNamed.reduce(function(s,id){return s+(UNIV_SCH[id]||3);},0); // clears only a B.S. course
+      if(granted>0) convQCH+=Math.max(0, x.qch - granted*QCH_PER_SCH);
+    });
+    var wastedQCH=noEquivQCH+convQCH;
+    // time-to-degree: College terms already spent + University terms still needed for the A.S.
+    var univTermsLeft=Math.ceil((destCount-cum.cleared)/perTerm);
+    var weeks=n*COLLEGE_TERM_WK + univTermsLeft*UNIV_TERM_WK;
+    return { n:n, cum:cum, earnedQCH:earnedQCH, toAS:toAS, toBS:toBS,
+      wastedQCH:wastedQCH, noEquivQCH:noEquivQCH, convQCH:convQCH,
+      univTermsLeft:univTermsLeft, weeks:weeks, destCount:destCount, perTerm:perTerm };
+  }
+  function fmtWeeks(w){ return w+'w (' + (w/52).toFixed(1) + 'y)'; }
+  function directUnivWeeks(){ var s=exitStats(EXIT_TERMS[0]); return Math.ceil(s.destCount/s.perTerm)*UNIV_TERM_WK; }
+  function fullCollegeWeeks(){ return lastTerm*COLLEGE_TERM_WK; }
+
+  function currentTermOf(cohort){
+    var cal=CAL[cohort]; if(!cal) return {state:'none'};
+    if(TODAY<parseDate(cal.start)) return {state:'before'};
+    if(TODAY>parseDate(cal.end)) return {state:'after'};
+    for(var i=0;i<cal.terms.length;i++){ var t=cal.terms[i];
+      if(TODAY>=parseDate(t.start)&&TODAY<=parseDate(t.end)) return {state:'in',term:t.number}; }
+    return {state:'between'};
+  }
+
+  // ---- state ----
+  var mode='general';
+  var selectedCohort=COHORT_SCOPE.filter(function(c){return CAL[c];}).slice(-1)[0];
+  var selectedExit=null;
+
+  // ---- program-aware info panels ----
+  function renderInfo(){
+    var c=cfg();
+    var row=document.getElementById('rulesRow'); row.innerHTML='';
+    c.rules.forEach(function(r){ row.appendChild(el('div','rule','<div class="k">'+r.k+'</div><div class="v">'+r.v+'</div><div class="d">'+r.d+'</div>')); });
+    var ft=document.getElementById('foot'); ft.innerHTML='';
+    (c.notes||[]).forEach(function(f){ ft.appendChild(el('li',null,f)); });
+  }
+  renderInfo();
+
+  // ---- cohort chips ----
+  (function(){
+    var box=document.getElementById('chips');
+    COHORT_SCOPE.filter(function(c){return CAL[c];}).forEach(function(c){
+      var chip=el('button','chip',c+'<span class="meta">'+fmt(parseDate(CAL[c].start))+'</span>');
+      chip.dataset.cohort=c;
+      chip.addEventListener('click',function(){ selectedCohort=c; selectedExit=null; render(); });
+      box.appendChild(chip);
+    });
+  })();
+
+  // ---- program toggle ----
+  document.getElementById('progSeg').addEventListener('click',function(e){
+    var b=e.target.closest('button'); if(!b||b.dataset.prog===program) return;
+    program=b.dataset.prog; selectedExit=null; buildProgram(); renderInfo(); render();
+  });
+
+  // ---- mode toggle ----
+  document.getElementById('modeSeg').addEventListener('click',function(e){
+    var b=e.target.closest('button'); if(!b) return;
+    mode=b.dataset.mode; selectedExit=null; render();
+  });
+
+  function termDates(n){
+    if(mode!=='cohort') return null;
+    var cal=CAL[selectedCohort]; if(!cal) return null;
+    var t=cal.terms[n-1]; return t?{start:parseDate(t.start),end:parseDate(t.end)}:null;
+  }
+
+  // ---- render ----
+  function render(){
+    var c=cfg();
+    document.querySelector('.topbar .sub').textContent = c.label+' (Maestro College) → '+c.destShort+' (Maestro University)';
+    Array.prototype.forEach.call(document.querySelectorAll('#progSeg button'),function(b){ b.classList.toggle('active',b.dataset.prog===program); });
+    // mode seg
+    Array.prototype.forEach.call(document.querySelectorAll('#modeSeg button'),function(b){ b.classList.toggle('active',b.dataset.mode===mode); });
+    document.getElementById('cohortControls').style.display = mode==='cohort'?'flex':'none';
+    Array.prototype.forEach.call(document.querySelectorAll('.chip'),function(ch){ ch.classList.toggle('active',ch.dataset.cohort===selectedCohort); });
+
+    // status line
+    var sl=document.getElementById('statusline'); sl.innerHTML='';
+    if(mode==='cohort'){
+      var cal=CAL[selectedCohort], cur=currentTermOf(selectedCohort);
+      var txt = cur.state==='in'?'Currently in Term '+cur.term : cur.state==='after'?'Program complete' : cur.state==='before'?'Not started' : 'On a break';
+      sl.appendChild(el('span','badge','● '+txt));
+      sl.appendChild(el('span','note', selectedCohort+' · '+fmt(parseDate(cal.start))+' → '+fmt(parseDate(cal.end))+' · as of '+fmt(TODAY)));
+    } else {
+      sl.appendChild(el('span','note','Showing the '+cfg().label+' as a general degree map (no specific dates). Switch to “By cohort” to overlay real term dates and “you are here”.'));
+    }
+
+    document.getElementById('journeyTitle').innerHTML = '<span class="inst-badge college">Maestro College</span>'+cfg().label;
+    document.getElementById('journeyInst').textContent = '';
+    document.getElementById('journeySub').innerHTML = 'The full 9-term AAS. Click an exit arrow ▶ at the end of any term to branch your new University degree on the right.';
+    var rb=document.getElementById('resetBtn'); rb.hidden=!selectedExit; rb.textContent='✕ Clear move';
+    rb.onclick=function(){ selectedExit=null; render(); };
+
+    renderAxis();
+    renderChart();
+    renderDetails();
+  }
+
+  function courseCard(c){
+    var dest=cfg().destShort, tw, tc, tcr, mark, cls;
+    if(c.transfers && c.univ.length){ mark='\u2713'; cls='t';
+      tw='\u2713 Yes'; tc=c.univ.join(', ')+((c.altIds&&c.altIds.length)?' (or '+c.altIds.join('/')+')':''); tcr=c.qch+' QCH \u2192 '+(c.coversSch||cfg().schPerCourse||0)+' SCH (clears one course)';
+    } else if(c.transfers && c.elective){ mark='\u2248'; cls='t';
+      tw='\u2248 Yes (elective)'; tc='elective credit \u2014 no named course'; tcr=c.qch+' QCH';
+    } else if(c.extraNamed && c.extraNamed.length){ mark='\u2197'; cls='ex';
+      tw='\u2197 Transfers \u2014 counts toward '+programsForCourse(c.extraNamed[0]); tc=c.extraNamed.join(', ')+' (not in '+dest+')'; tcr=c.qch+' QCH \u00b7 not counted here';
+    } else if(c.flag){ mark='\u2717'; cls='n';
+      tw='\u2717 Needs review'; tc='MATH 200 \u2192 MA125 (code mismatch)'; tcr=c.qch+' QCH would be lost';
+    } else { mark='\u2717'; cls='n';
+      tw='\u2717 No'; tc='\u2014'; tcr=c.qch+' QCH lost';
+    }
+    return '<div class="ccard '+cls+'" data-tipt="'+c.id+' \u00b7 '+c.name+'" data-tw="'+tw+'" data-tc="'+tc+'" data-tcr="'+tcr+'" data-maps="'+(c.coversIds||[]).join(' ')+'">'+
+      '<div class="id"><span class="code">'+c.id+'</span>'+(c.isGenEd?'<span class="ge-tag" title="General-education / liberal-arts foundation">GE</span>':'')+'<span class="cr">'+c.qch+' QCH</span><span class="mk">'+mark+'</span></div>'+
+      '<div class="nm">'+c.name+'</div></div>';
+  }
+
+  function renderAxis(){
+    // LEFT — the current degree. Never restructures; selecting only highlights an arrow.
+    var axis=document.getElementById('axis'); axis.innerHTML='';
+    var cur = mode==='cohort'?currentTermOf(selectedCohort):{state:'none'};
+    termNumbers.forEach(function(n){
+      var vt=el('div','vterm'+((cur.state==='in'&&cur.term===n)?' here':''));
+      vt.appendChild(el('div','node'));
+      var dates=termDates(n);
+      vt.appendChild(el('div','th','Term '+n+
+        (cur.state==='in'&&cur.term===n?' <span class="here-tag">YOU ARE HERE</span>':'')+
+        (dates?' <span class="dates">'+fmt(dates.end)+'</span>':'')));
+      var cc=el('div','courses'); byTerm[n].forEach(function(c){ cc.innerHTML+=courseCard(c); }); vt.appendChild(cc);
+      axis.appendChild(vt);
+      if(n<lastTerm){
+        var cum=cumulativeThrough(n);
+        var row=el('div','exit-row');
+        var a=el('button','exit-arrow'+(selectedExit===n?' sel':''),
+          '▶ Move after Term '+n+' · <span class="score">'+cum.transSCH+' SCH transfer</span>');
+        a.addEventListener('click',function(){ selectedExit=(selectedExit===n?null:n); render(); });
+        row.appendChild(a); axis.appendChild(row);
+      }
+    });
+    var totalQCH=0, nCourses=0;
+    termNumbers.forEach(function(n){ byTerm[n].forEach(function(c){ totalQCH+=c.qch; nCourses++; }); });
+    axis.appendChild(el('div','jtotal','Total · '+totalQCH+' quarter credits <span>('+nCourses+' courses)</span>'));
+  }
+
+  function renderChart(){
+    var host=document.getElementById('chart'); host.removeAttribute('style'); host.innerHTML='';
+    var rows=EXIT_TERMS.map(exitStats);
+    var maxAS=rows.reduce(function(m,r){return Math.max(m,r.toAS);},0);
+    var bestCredit=null; rows.forEach(function(r){ if(bestCredit===null && r.toAS===maxAS) bestCredit=r.n; });
+    var fastest=null, minW=Infinity; rows.forEach(function(r){ if(r.weeks<minW){ minW=r.weeks; fastest=r.n; } });
+    var direct=directUnivWeeks();
+    var t=el('table','cmp');
+    var html='<thead><tr><th>Transfer after</th><th class="num">Counts → A.S.</th><th class="num">Wasted credit</th><th class="num">→ B.S. only</th><th class="num">Finish A.S. in</th></tr></thead><tbody>';
+    rows.forEach(function(r){
+      var isSel=(selectedExit===r.n), isBestC=(r.n===bestCredit), isFast=(r.n===fastest), isPlateau=(bestCredit!==null && r.n>bestCredit);
+      var later=r.weeks-direct;
+      html+='<tr class="'+(isSel?'sel ':'')+(isPlateau?'plateau':'')+'" data-term="'+r.n+'">'+
+        '<td class="aft">Term '+r.n+' '+(isBestC?'<span class="mk credit">◆ most credit</span>':'')+(isFast?'<span class="mk fast">⚡ soonest</span>':'')+'</td>'+
+        '<td class="num"><b>'+r.toAS+'</b> SCH <span class="sub">'+r.cum.cleared+' courses</span></td>'+
+        '<td class="num waste">−<b>'+Math.round(r.wastedQCH)+'</b> QCH <span class="sub">'+Math.round(r.noEquivQCH)+' no-equiv · '+Math.round(r.convQCH)+' conv.</span></td>'+
+        '<td class="num bs">'+(r.toBS?('+'+r.toBS+' SCH'):'—')+'</td>'+
+        '<td class="num"><b>'+r.weeks+'w</b> <span class="sub">'+(later>0?'+'+later+'w later':'soonest')+'</span></td>'+
+      '</tr>';
+    });
+    t.innerHTML=html+'</tbody>';
+    host.appendChild(t);
+    Array.prototype.forEach.call(t.querySelectorAll('tbody tr'),function(tr){
+      tr.addEventListener('click',function(){ var n=+tr.getAttribute('data-term'); selectedExit=(selectedExit===n?null:n); render(); var det=document.getElementById('details'); if(det) det.scrollIntoView({behavior:'smooth',block:'center'}); });
+    });
+    var ref=el('div','cmp-ref','Reference: straight to the University A.S. ≈ <b>'+direct+'w</b> ('+(direct/52).toFixed(1)+'y) · finishing the College AAS ≈ <b>'+fullCollegeWeeks()+'w</b> ('+(fullCollegeWeeks()/52).toFixed(1)+'y). College terms '+COLLEGE_TERM_WK+'w · University terms '+UNIV_TERM_WK+'w. “Wasted” = College credits earned that count toward neither degree (no University equivalent + the 6 QCH→3 SCH shrinkage on courses that do transfer).');
+    host.appendChild(ref);
+  }
+
+  function renderDetails(){
+    var d=document.getElementById('details');
+    var laxis=document.getElementById('axis'); if(laxis) laxis.style.marginTop='0px';
+    var MD=window.MAESTRO_DATA, destKey=cfg().destKey;
+    var pt=(MD&&MD.PROGRAM_TERMS&&MD.PROGRAM_TERMS[destKey])||{};
+    var po=(MD&&MD.PROGRAM_ORDER&&MD.PROGRAM_ORDER[destKey])||{};
+    function ord(x){ var k=x.code||x.id; return (k in po)?po[k]:999; }
+    function byOrder(a,b){ return ord(a)-ord(b); }
+    var destCourses=(MD&&MD.COURSES&&MD.COURSES[destKey])||[];
+    var destTotal=destCourses.reduce(function(s,co){return s+co.sch;},0);
+    var perTerm=(MD&&MD.COURSES_PER_TERM)||3;
+    var GE=(MD&&MD.GEN_ED)||{};
+    function geTag(id){ return GE[id]?'<span class="ge-tag" title="General-education / liberal-arts foundation">GE</span>':''; }
+
+    // program-wide transfer-coverable set (used for default-mode green + tooltips)
+    var coverableIds={}, coverableBy={};
+    termNumbers.forEach(function(n){ byTerm[n].forEach(function(x){ (x.coversIds||[]).forEach(function(id){ coverableIds[id]=true; if(!coverableBy[id]) coverableBy[id]=x.id; }); }); });
+    var coverableTotal=destCourses.reduce(function(s,co){return s+(coverableIds[co.id]?co.sch:0);},0);
+
+    var sel=!!selectedExit;
+    d.className='details'+(sel&&plateauAt(selectedExit)?' plateau':'');
+    var html='';
+
+    if(sel){
+      // ---- ACTUAL TRANSFER → efficient plan: skip terms, show only what's left ----
+      var cum=cumulativeThrough(selectedExit), dates=termDates(selectedExit);
+      var st=exitStats(selectedExit), later=st.weeks-directUnivWeeks();
+      // transferred (already-cleared) destination courses, in program-term order, fill the early terms
+      var cleared=(cum.clearedCourses||[]).slice().sort(byOrder);
+      var priorTerms=Math.ceil(cleared.length/perTerm);   // terms fully/partly satisfied by transfer
+      var startTerm=priorTerms+1;                          // first term of new University work
+      html+='<div class="dhead"><h2><span class="inst-badge univ">Maestro University</span>Move after Term '+selectedExit+'</h2><span class="date">'+(dates?fmt(dates.end):'general map')+'</span></div>';
+      html+='<div class="move-info" style="margin:10px 18px 0;"><div class="mt">New degree · '+cfg().destShort+' (Maestro University)</div>'+
+        '<div class="chips2">'+
+          '<span class="mc save">+'+cum.transSCH+' SCH to the A.S.</span>'+
+          '<span class="mc pct">'+cum.pct+'%</span>'+
+          '<span class="mc lost" title="'+Math.round(st.noEquivQCH)+' QCH no equivalent + '+Math.round(st.convQCH)+' QCH conversion shrinkage">−'+Math.round(st.wastedQCH)+' QCH wasted</span>'+
+          (cum.bscSCH?'<span class="mc bsc">+'+cum.bscSCH+' SCH toward a B.S.</span>':'')+
+          '<span class="mc time">⏱ A.S. in '+st.weeks+'w'+(later>0?' (+'+later+'w)':'')+'</span>'+
+          '<span class="mc pct">start at Term '+startTerm+'</span>'+
+        '</div></div>';
+      html+='<div class="rj-note">'+(priorTerms>0?('↓ Terms 1–'+priorTerms+' cleared by transfer ('+cum.transSCH+' SCH, '+cleared.length+' courses). New work begins Term '+startTerm+' (orientation first):'):('↓ your University plan (orientation first):'))+'</div>';
+
+      // remaining to-take, orientation pinned first, rest in program-term order
+      var toTake=(cum.remaining||[]).slice();
+      var orient=toTake.filter(function(r){return r.code==='NS101'||r.code==='PF101';});
+      var rest=toTake.filter(function(r){return r.code!=='NS101'&&r.code!=='PF101';}).sort(byOrder);
+      var seq=orient.concat(rest);
+
+      html+='<div class="rj-axis-wrap"><div class="axis" id="raxis">';
+      // PRIOR terms — completed via transfer (shown done)
+      for(var ci=0;ci<cleared.length;ci+=perTerm){
+        var ptNo=Math.floor(ci/perTerm)+1, pchunk=cleared.slice(ci,ci+perTerm);
+        html+='<div class="vterm uni-term"><div class="node done"></div>';
+        html+='<div class="th">Term '+ptNo+' <span class="here-tag uni">TRANSFERRED</span></div>';
+        html+='<div class="courses">';
+        pchunk.forEach(function(co){
+          var src=coverableBy[co.code];
+          html+='<div class="ccard t done" data-cid="'+co.code+'" data-tipt="'+co.code+' · '+co.name+'" data-tw="✓ Transferred in" data-tc="'+(src?('from your AAS '+src):'from your AAS')+'" data-tcr="'+co.sch+' SCH credited">'+
+            '<div class="id"><span class="code">'+co.code+'</span>'+geTag(co.code)+'<span class="cr">'+co.sch+' SCH</span><span class="mk">✓</span></div>'+
+            '<div class="nm">'+co.name+'</div></div>';
+        });
+        html+='</div></div>';
+      }
+      // NEW work terms — start right after the transferred block
+      if(!seq.length){
+        html+='<div class="vterm uni-term diverge-top" id="rterm-start"><div class="node"></div><div class="th">Term '+startTerm+'</div><div class="courses"><div class="ccard t"><div class="id"><span class="code">—</span></div><div class="nm">All requirements cleared by transfer 🎉</div></div></div></div>';
+      }
+      for(var i=0;i<seq.length;i+=perTerm){
+        var termNo=startTerm+Math.floor(i/perTerm), chunk=seq.slice(i,i+perTerm), firstT=(i===0);
+        html+='<div class="vterm uni-term'+(firstT?' diverge-top':'')+'"'+(firstT?' id="rterm-start"':'')+'>';
+        html+='<div class="node"></div>';
+        html+='<div class="th">Term '+termNo+' <span class="here-tag uni">UNIVERSITY</span></div>';
+        html+='<div class="courses">';
+        chunk.forEach(function(co){
+          var isOrient=(co.code==='NS101'||co.code==='PF101');
+          var tc = isOrient ? 'orientation — taken on arrival'
+                 : (coverableIds[co.code] ? ('would transfer via '+(coverableBy[co.code]||'your AAS')+' — you exited before taking it') : 'no AAS equivalent');
+          html+='<div class="ccard uni" data-cid="'+co.code+'" data-tipt="'+co.code+' · '+co.name+'" data-tw="✗ Take at University" data-tc="'+tc+'" data-tcr="'+co.sch+' SCH">'+
+            '<div class="id"><span class="code">'+co.code+'</span>'+geTag(co.code)+'<span class="cr">'+co.sch+' SCH</span><span class="mk">○</span></div>'+
+            '<div class="nm">'+co.name+'</div></div>';
+        });
+        html+='</div></div>';
+      }
+      html+='</div></div>';
+      html+='<div class="jtotal" style="margin:8px 18px 2px;">Total · '+destTotal+' SCH <span>('+cum.transSCH+' transferred in, '+cum.remSCH+' to earn over '+Math.max(1,Math.ceil(seq.length/perTerm))+' terms)</span></div>';
+      html+='<div class="savebar" style="margin:8px 18px 4px;"><div class="fill" style="width:'+(cum.transSCH/RULES.degreeSCH*100)+'%"></div><div class="cap" style="left:'+(RULES.capSCH/RULES.degreeSCH*100)+'%"></div></div>';
+      html+='<div class="savecaption"><b>'+cum.transSCH+' of '+destTotal+' SCH</b> credited · <b>'+cum.remSCH+' SCH</b> ('+cum.remCourses+' courses) still required'+((cum.lostIds&&cum.lostIds.length)?' · lost (no equivalent): '+cum.lostIds.join(', '):'')+(cum.bscSCH?' · '+cum.bscSCH+' SCH still count toward a B.S.':'')+'</div>';
+
+    } else {
+      // ---- DEFAULT (cleared) → full degree, green = coverable by transfer ----
+      var uniTerms={}, maxT=0;
+      destCourses.forEach(function(co){ var t=pt[co.id]||1; (uniTerms[t]=uniTerms[t]||[]).push(co); if(t>maxT)maxT=t; });
+      html+='<div class="dhead"><h2><span class="inst-badge univ">Maestro University</span>'+cfg().destShort+'</h2></div>';
+      html+='<div class="rj-note">The normal '+cfg().destShort+' journey · green = coverable by your AAS transfer.</div>';
+      html+='<div class="rj-axis-wrap"><div class="axis" id="raxis">';
+      for(var t2=1;t2<=maxT;t2++){
+        var list=(uniTerms[t2]||[]).slice().sort(byOrder);
+        html+='<div class="vterm uni-term'+(t2===1?' diverge-top" id="rterm-start':'')+'">';
+        html+='<div class="node"></div>';
+        html+='<div class="th">Term '+t2+'</div>';
+        html+='<div class="courses">';
+        list.forEach(function(co){
+          var canCov=!!coverableIds[co.id];
+          var cls=canCov?'t':'uni', mark=canCov?'✓':'•';
+          var tw=canCov?'✓ Coverable by transfer':'No AAS equivalent';
+          var tc=canCov?('via '+(coverableBy[co.id]||'your AAS')):'not covered by your AAS';
+          html+='<div class="ccard '+cls+'" data-cid="'+co.id+'" data-tipt="'+co.id+' · '+co.name+'" data-tw="'+tw+'" data-tc="'+tc+'" data-tcr="'+co.sch+' SCH">'+
+            '<div class="id"><span class="code">'+co.id+'</span>'+geTag(co.id)+'<span class="cr">'+co.sch+' SCH</span><span class="mk">'+mark+'</span></div>'+
+            '<div class="nm">'+co.name+'</div></div>';
+        });
+        html+='</div></div>';
+      }
+      html+='</div></div>';
+      html+='<div class="jtotal" style="margin:8px 18px 2px;">Total · '+destTotal+' SCH <span>('+destCourses.length+' courses · up to '+coverableTotal+' SCH coverable by transfer)</span></div>';
+    }
+    html+='<div class="tbd" style="margin:6px 18px 16px;">⚚ University term order is from the program plan; exact dates need the University calendar (see “What’s missing”).</div>';
+    d.innerHTML=html;
+    alignAndConnect();
+  }
+
+  var SVGNS='http://www.w3.org/2000/svg';
+  function sideBySide(){
+    var j=document.querySelector('.journey').getBoundingClientRect();
+    var d=document.getElementById('details').getBoundingClientRect();
+    return d.left > j.right - 5;
+  }
+  function removeConnector(){ var c=document.querySelector('.connector'); if(c) c.remove(); }
+  function alignAndConnect(){
+    removeConnector();
+    var laxis=document.getElementById('axis'); if(laxis) laxis.style.marginTop='0px';
+    var d=document.getElementById('details'); d.style.marginTop='0px';
+    var main=document.querySelector('.main');
+    if(!sideBySide()) return; // stacked layout: no float / connector
+    // float the whole right panel down so its first University term aligns with the left's divergence term (N+1)
+    var leftV=document.querySelectorAll('#axis > .vterm');
+    var lterm=leftV[selectedExit];                              // left Term (N+1)
+    var rterm=document.getElementById('rterm-start'); // right first University term
+    if(lterm && rterm){
+      var delta=lterm.getBoundingClientRect().top - rterm.getBoundingClientRect().top;
+      if(delta>0){ d.style.marginTop=delta+'px'; }
+    }
+    // connector from the selected exit arrow to that divergence term
+    var arrow=document.querySelector('#axis .exit-arrow.sel');
+    rterm=document.getElementById('rterm-start');
+    if(!arrow||!rterm) return;
+    var mr=main.getBoundingClientRect(), ar=arrow.getBoundingClientRect(), tr=rterm.getBoundingClientRect();
+    var x1=ar.right-mr.left, y1=ar.top+ar.height/2-mr.top;
+    var x2=tr.left-mr.left-20, y2=tr.top+12-mr.top; // end 20px left of the term bullet
+    var W=main.clientWidth, H=Math.max(main.scrollHeight,main.clientHeight);
+    var svg=document.createElementNS(SVGNS,'svg'); svg.setAttribute('class','connector'); svg.style.width=W+'px'; svg.style.height=H+'px';
+    var midx=(x1+x2)/2;
+    var p=document.createElementNS(SVGNS,'path'); p.setAttribute('d','M'+x1+' '+y1+' C '+midx+' '+y1+', '+midx+' '+y2+', '+(x2-8)+' '+y2);
+    p.setAttribute('fill','none'); p.setAttribute('stroke','var(--c-deep-teal)'); p.setAttribute('stroke-width','2.5'); svg.appendChild(p);
+    var head=document.createElementNS(SVGNS,'path'); head.setAttribute('d','M'+x2+' '+y2+' l -9 -5 v 10 z'); head.setAttribute('fill','var(--c-deep-teal)'); svg.appendChild(head);
+    main.appendChild(svg);
+  }
+  window.addEventListener('resize', function(){ if(selectedExit) alignAndConnect(); });
+
+  // hover tooltips explaining how each course's transfer works (or doesn't)
+  (function(){
+    var tip=document.createElement('div'); tip.className='tip'; document.body.appendChild(tip);
+    document.addEventListener('mouseover', function(e){
+      var c=e.target.closest && e.target.closest('.ccard[data-tw]');
+      if(c){ var row=function(l,v){return '<div class="trow"><span class="tl">'+l+'</span><span class="tv">'+v+'</span></div>';};
+        tip.innerHTML='<b>'+c.getAttribute('data-tipt')+'</b>'+row('Transfers?',c.getAttribute('data-tw'))+row('Course →',c.getAttribute('data-tc'))+row('Credits →',c.getAttribute('data-tcr'));
+        tip.style.display='block'; }
+      else { tip.style.display='none'; }
+    });
+    document.addEventListener('mousemove', function(e){
+      if(tip.style.display!=='block') return;
+      var x=e.clientX+14, y=e.clientY+16, w=tip.offsetWidth, h=tip.offsetHeight;
+      if(x+w>window.innerWidth-8) x=e.clientX-w-14;
+      if(y+h>window.innerHeight-8) y=e.clientY-h-16;
+      tip.style.left=x+'px'; tip.style.top=y+'px';
+    });
+    // click a left course -> highlight the University course(s) it maps to on the right
+    document.addEventListener('click', function(e){
+      var src=e.target.closest && e.target.closest('#axis .ccard[data-maps]');
+      if(!src) return;
+      var was=src.classList.contains('mapsrc');
+      Array.prototype.forEach.call(document.querySelectorAll('.ccard.mapsrc,.ccard.maplit'),function(x){ x.classList.remove('mapsrc','maplit'); });
+      if(was) return;
+      src.classList.add('mapsrc');
+      var ids=(src.getAttribute('data-maps')||'').split(' ').filter(Boolean), first=null;
+      ids.forEach(function(id){ var t=document.querySelector('#raxis .ccard[data-cid="'+id+'"]'); if(t){ t.classList.add('maplit'); if(!first)first=t; } });
+      if(first) first.scrollIntoView({behavior:'smooth',block:'center'});
+    });
+  })();
+
+  if(!window.CALENDAR || !window.SYLLABI){
+    document.querySelector('.wrap').prepend(el('div','panel','<b>Could not load data.js.</b> Open from the same folder as data.js.'));
+    return;
+  }
+  render();
+})();
+</script>
+</body>
+</html>

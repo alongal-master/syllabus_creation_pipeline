@@ -1,0 +1,1117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Maestro University — Programs by Field</title>
+<style>
+  :root {
+    --c-red:    #ae2012;
+    --c-green:  #cdeac0;
+    --c-cream:  #ffecd1;
+    --c-tan:    #efe9ae;
+    --c-brown:  #001219;
+    --c-blush:  #fec3a6;
+    --c-warmgray: #aaa57f;
+    --c-coral:  #ff928b;
+    --c-orange: #ffac81;
+    --c-deep-teal: #005f73;
+    --c-burnt:     #ca6702;
+
+    --bg:        #ffecd1;
+    --surface:   #fff5e3;
+    --surface-2: #e9d8a6;
+    --card-bg:   #ffffff;
+    --row-alt:   rgba(0, 18, 25, 0.025);
+    --border:    rgba(0, 18, 25, 0.10);
+    --border-strong: rgba(0, 18, 25, 0.22);
+    --text:      #001219;
+    --muted:     rgba(0, 18, 25, 0.60);
+    --muted-2:   rgba(0, 18, 25, 0.42);
+
+    --shared-fill:  #cdeac0;
+    --shared-text:  #1f3d24;
+    --shared-bord:  rgba(31,61,36,.35);
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, "Helvetica Neue", Arial, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    font-size: 13px;
+    line-height: 1.45;
+  }
+  button { font-family: inherit; font-size: inherit; cursor: pointer; }
+  h1, h2, h3, h4 { font-family: 'Avenir Next', 'Inter', 'SF Pro Display', system-ui, sans-serif; letter-spacing: -0.2px; font-weight: 600; }
+
+  .topbar {
+    display: flex; align-items: baseline; gap: 10px;
+    padding: 14px 24px;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    position: sticky; top: 0; z-index: 40;
+  }
+  .topbar .dot { width: 9px; height: 9px; border-radius: 50%; background: var(--c-red); box-shadow: 0 0 6px rgba(174,32,18,.35); align-self: center; }
+  .topbar h1 { font-size: 17px; font-weight: 600; margin: 0; }
+  .topbar .sub { color: var(--muted); font-size: 12px; }
+
+  .wrap { max-width: 1440px; margin: 0 auto; padding: 20px 24px 80px; }
+
+  /* ── Field section ── */
+  .field-section { margin-bottom: 30px; }
+  .field-head {
+    display: flex; align-items: baseline; gap: 10px;
+    padding: 0 4px 10px;
+    border-bottom: 2px solid var(--border-strong);
+    margin-bottom: 14px;
+  }
+  .field-head .ficon {
+    width: 28px; height: 28px; border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px; font-weight: 800;
+    align-self: center;
+  }
+  .field-head h2 { margin: 0; font-size: 18px; font-weight: 700; }
+  .field-head .fcount { font-size: 12px; color: var(--muted); font-weight: 600; }
+  .field-head .fdesc { font-size: 12px; color: var(--muted); margin-left: auto; max-width: 50ch; text-align: right; }
+
+  .field-section.software .ficon { background: rgba(0,95,115,.15); color: var(--c-deep-teal); }
+  .field-section.business .ficon { background: rgba(174,32,18,.12); color: var(--c-red); }
+  .field-section.communication .ficon { background: rgba(202,103,2,.15); color: var(--c-burnt); }
+
+  /* ── Program cards (compact, in rows) ── */
+  .program-row {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 10px;
+    margin-bottom: 16px;
+  }
+  .pcard {
+    background: var(--card-bg); border: 1px solid var(--border); border-radius: 10px;
+    padding: 11px 13px; display: flex; flex-direction: column; gap: 4px;
+    transition: border-color .15s, transform .12s, box-shadow .15s;
+  }
+  .pcard.clickable { cursor: pointer; }
+  .pcard.clickable:hover {
+    border-color: var(--c-red); transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(174,32,18,.15);
+  }
+  .pcard.clickable .pmeta::after {
+    content: "View syllabus →";
+    font-size: 10px; color: var(--muted); margin-left: auto;
+    opacity: 0; transition: opacity .12s;
+  }
+  .pcard.clickable:hover .pmeta::after {
+    opacity: 1; color: var(--c-red); font-weight: 700;
+  }
+  .pcard.flagship { border-color: var(--c-deep-teal); box-shadow: 0 0 0 2px rgba(0,95,115,.10); }
+  .pcard .ptop { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; }
+  .pcard .pname { font-size: 12.5px; font-weight: 700; line-height: 1.25; flex: 1; }
+  .pcard .pbadge { font-size: 9px; font-weight: 800; text-transform: uppercase; letter-spacing: .5px; border-radius: 4px; padding: 2px 6px; white-space: nowrap; flex-shrink: 0; }
+  .pbadge.certificate { background: rgba(170,165,127,.25); color: #5a5535; }
+  .pbadge.associate   { background: rgba(0,95,115,.12);    color: var(--c-deep-teal); }
+  .pbadge.bachelor    { background: rgba(174,32,18,.10);   color: var(--c-red); }
+  .pbadge.master      { background: rgba(0,18,25,.08);     color: var(--text); }
+  .pcard .pmeta { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; font-size: 10.5px; }
+  .pcard .pcred { font-weight: 800; color: var(--c-deep-teal); }
+  .pcard .pcost { color: var(--muted); }
+  .pcard .pdesc { font-size: 10.5px; color: var(--muted); margin-top: 2px; }
+
+  /* ── Mutual courses panel ── */
+  .mutual-panel {
+    background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px;
+    padding: 14px 16px; margin-top: 8px;
+  }
+  .mutual-head { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; margin-bottom: 12px; flex-wrap: wrap; }
+  .mutual-head h3 { margin: 0; font-size: 13px; font-weight: 700; }
+  .mutual-head .mstats { display: flex; gap: 6px; flex-wrap: wrap; }
+  .mutual-head .mstat { font-size: 10.5px; font-weight: 700; padding: 3px 8px; border-radius: 5px; }
+  .mstat.shared { background: var(--shared-fill); color: var(--shared-text); }
+  .mstat.asonly { background: rgba(0,95,115,.10); color: var(--c-deep-teal); }
+  .mstat.bsonly { background: rgba(174,32,18,.08); color: var(--c-red); }
+
+  /* unified course list */
+  .course-list {
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+  }
+  .course-list-head {
+    display: grid;
+    grid-template-columns: 80px 1fr 100px 50px;
+    gap: 10px;
+    padding: 8px 14px;
+    background: var(--surface-2);
+    font-size: 9.5px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: .5px;
+    color: var(--muted);
+    border-bottom: 1px solid var(--border);
+  }
+  .clist-controls {
+    display: flex; gap: 6px; padding: 8px 14px; background: var(--surface);
+    border-bottom: 1px solid var(--border); align-items: center;
+  }
+  .clist-controls .label { font-size: 11px; color: var(--muted); font-weight: 700; margin-right: 4px; }
+  .filter-pill {
+    background: var(--card-bg); border: 1px solid var(--border-strong);
+    border-radius: 999px; padding: 3px 10px; font-size: 11px; font-weight: 700;
+    cursor: pointer; color: var(--text);
+    transition: all .12s;
+  }
+  .filter-pill:hover:not(.active) { background: var(--surface-2); }
+  .filter-pill.active { background: var(--c-red); color: var(--c-cream); border-color: var(--c-red); }
+  .filter-pill .ct { opacity: .75; margin-left: 4px; font-weight: 600; }
+
+  .crow {
+    display: grid;
+    grid-template-columns: 80px 1fr 100px 50px;
+    gap: 10px; align-items: center;
+    padding: 7px 14px;
+    font-size: 12px;
+    border-bottom: 1px solid var(--row-alt);
+    background: var(--card-bg);
+  }
+  .crow:last-child { border-bottom: 0; }
+  .crow.hidden { display: none; }
+  .crow .cid { font-weight: 800; font-size: 11.5px; }
+  .crow .cname { color: var(--text); }
+  .crow .cch  { font-size: 10.5px; color: var(--muted); font-weight: 700; text-align: right; }
+  .crow .cstatus {
+    font-size: 9.5px; font-weight: 800; text-transform: uppercase; letter-spacing: .3px;
+    padding: 3px 8px; border-radius: 5px; text-align: center;
+    white-space: nowrap;
+  }
+  .crow.both     { background: rgba(205,234,192,.30); }
+  .crow.both    .cstatus { background: var(--shared-fill); color: var(--shared-text); }
+  .crow.asonly  .cstatus { background: rgba(0,95,115,.14); color: var(--c-deep-teal); }
+  .crow.bsonly  .cstatus { background: rgba(174,32,18,.10); color: var(--c-red); }
+  .crow.asonly  .cid { color: var(--c-deep-teal); }
+  .crow.bsonly  .cid { color: var(--c-red); }
+  .crow.both    .cid { color: var(--shared-text); }
+
+  /* ── Banner ── */
+  .banner {
+    background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px;
+    padding: 14px 18px; margin-bottom: 22px;
+  }
+  .banner h2 { margin: 0 0 4px; font-size: 15px; font-weight: 600; }
+  .banner p { color: var(--muted); margin: 0; max-width: 75ch; font-size: 12.5px; }
+  .banner .summary {
+    display: flex; gap: 10px; flex-wrap: wrap; margin-top: 12px;
+  }
+  .banner .sbox {
+    flex: 1 1 110px; background: var(--surface); border: 1px solid var(--border); border-radius: 8px;
+    padding: 8px 12px;
+  }
+  .banner .sbox .sk { font-size: 9.5px; text-transform: uppercase; letter-spacing: .4px; color: var(--muted); font-weight: 700; }
+  .banner .sbox .sv { font-size: 18px; font-weight: 800; line-height: 1.1; }
+  .banner .sbox.sw .sv { color: var(--c-deep-teal); }
+  .banner .sbox.sb .sv { color: var(--c-red); }
+  .banner .sbox.sc .sv { color: var(--c-burnt); }
+  .banner .sbox.sa .sv { color: var(--text); }
+
+  /* ── Tab bar ── */
+  .tab-bar {
+    display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 18px;
+    border-bottom: 2px solid var(--border-strong);
+    padding-bottom: 0;
+  }
+  .tab-bar .tab {
+    background: transparent; border: 0;
+    padding: 9px 16px;
+    font-size: 13px; font-weight: 700; color: var(--muted);
+    cursor: pointer;
+    border-bottom: 3px solid transparent;
+    margin-bottom: -2px;
+    transition: color .12s, border-color .12s;
+  }
+  .tab-bar .tab:hover:not(.active) { color: var(--text); }
+  .tab-bar .tab.active { color: var(--c-red); border-bottom-color: var(--c-red); }
+  .tab-bar .tab .ct { font-weight: 500; font-size: 10.5px; opacity: .7; margin-left: 4px; }
+
+  /* Sections hidden when not active tab */
+  .field-section.hidden, .matrix-wrap.hidden { display: none; }
+
+  /* ── Global course matrix ── */
+  .matrix-wrap {
+    background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px;
+    padding: 18px 20px; margin-top: 30px;
+  }
+  .matrix-wrap h2 { margin: 0 0 4px; font-size: 16px; font-weight: 700; }
+  .matrix-wrap .lede { color: var(--muted); margin: 0 0 14px; max-width: 75ch; font-size: 12.5px; }
+
+  .matrix-controls {
+    display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 8px; align-items: center;
+  }
+  .matrix-controls .label { font-size: 10px; text-transform: uppercase; letter-spacing: .5px; font-weight: 700; color: var(--muted); margin-right: 4px; }
+
+  /* program-toggle grid (one row per field) */
+  .prog-toggle-controls { display: flex; align-items: center; gap: 8px; margin: 4px 0 8px; flex-wrap: wrap; }
+  .bulk-btn {
+    background: var(--card-bg); border: 1px solid var(--border-strong); border-radius: 6px;
+    padding: 4px 12px; font-size: 11px; font-weight: 700; color: var(--text);
+    cursor: pointer; transition: background .12s;
+  }
+  .bulk-btn:hover { background: var(--surface-2); }
+  .bulk-btn:active { background: var(--c-red); color: #fff; border-color: var(--c-red); }
+  .prog-toggle-grid { display: flex; flex-direction: column; gap: 6px; margin: 4px 0 0; }
+  .ptg-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .ptg-row .ptg-label {
+    font-size: 10px; text-transform: uppercase; letter-spacing: .5px; font-weight: 800;
+    min-width: 110px;
+    padding: 4px 10px;
+    border-radius: 6px;
+  }
+  .ptg-row.sw   .ptg-label { background: rgba(0,95,115,.12); color: var(--c-deep-teal); }
+  .ptg-row.biz  .ptg-label { background: rgba(174,32,18,.10); color: var(--c-red); }
+  .ptg-row.comm .ptg-label { background: rgba(202,103,2,.12); color: var(--c-burnt); }
+
+  .prog-toggle {
+    background: var(--card-bg); border: 1px solid var(--border-strong);
+    border-radius: 999px; padding: 5px 13px; font-size: 12px; font-weight: 700;
+    cursor: pointer; color: var(--text);
+    display: inline-flex; align-items: center; gap: 7px;
+    transition: all .12s;
+  }
+  .prog-toggle:hover:not(.active) { background: var(--surface-2); }
+  .prog-toggle .pdot { width: 8px; height: 8px; border-radius: 50%; background: var(--c-warmgray); flex-shrink: 0; }
+  .prog-toggle .plvl { font-size: 9px; opacity: .65; font-weight: 600; margin-left: 2px; }
+
+  .prog-toggle.active.sw    { background: var(--c-deep-teal); color: #fff; border-color: var(--c-deep-teal); }
+  .prog-toggle.active.biz   { background: var(--c-red);       color: #fff; border-color: var(--c-red); }
+  .prog-toggle.active.comm  { background: var(--c-burnt);     color: #fff; border-color: var(--c-burnt); }
+  .prog-toggle.active .pdot { background: #fff; }
+  .prog-toggle.active .plvl { opacity: .8; }
+
+  .matrix-scroll {
+    /* No overflow here so the table's <thead> can position:sticky against the page.
+       The table itself sets a min-width; if it overflows, the page (or the wider
+       wrap) handles horizontal scroll. */
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--card-bg);
+  }
+  .matrix-table {
+    width: 100%; min-width: 700px;
+    border-collapse: collapse;
+    font-size: 12px;
+  }
+  .matrix-table thead th {
+    background: var(--surface);
+    border-bottom: 2px solid var(--border-strong);
+    text-align: center;
+    padding: 9px 6px;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: .4px;
+    font-weight: 800;
+    color: var(--muted);
+    position: sticky;
+    top: 54px;  /* slot in below the page-level topbar */
+    z-index: 5;
+    box-shadow: 0 1px 0 var(--border-strong);
+  }
+  .matrix-table thead th.col-code { text-align: left; padding-left: 14px; width: 70px; }
+  .matrix-table thead th.col-name { text-align: left; min-width: 180px; }
+  .matrix-table thead th.col-cr   { width: 36px; }
+  .matrix-table thead th.col-cnt  { width: 56px; color: var(--c-deep-teal); }
+  .matrix-table thead th.col-ge   { width: 44px; color: var(--c-burnt); }
+  .matrix-table thead th.col-prog { width: 60px; }
+  .matrix-table thead th.col-prog .ptitle { font-size: 9px; line-height: 1.15; display: block; }
+  .matrix-table thead th.col-prog .plvl { font-size: 8px; opacity: .7; font-weight: 600; }
+
+  .matrix-table td.cge {
+    font-size: 9px; color: var(--c-burnt); font-weight: 800;
+    background: transparent;
+    line-height: 1;
+  }
+  .matrix-table td.cge.no { color: transparent; }
+
+  /* Merged Term cell — column 0, spans multiple course rows in term mode */
+  .matrix-table thead th.col-term-merge {
+    width: 56px; font-size: 9px;
+    background: var(--surface);
+  }
+  .matrix-table td.cterm-merge {
+    text-align: center;
+    background: rgba(0,95,115,.10);
+    color: var(--c-deep-teal);
+    border-right: 2px solid var(--border-strong);
+    border-top: 2px solid var(--border-strong);
+    font-weight: 800;
+    padding: 6px 4px;
+    vertical-align: middle;
+    line-height: 1.25;
+  }
+  /* Bold separator between terms: rows whose previous sibling is from a different term
+     get a thicker top border. Easiest way — every row that follows a cterm-merge row
+     in the same term has no extra border; but rows that START a new term automatically
+     align with the cterm-merge's top-border. To make the line span the entire row,
+     also style the first course cell of a new term. */
+  .matrix-table tbody tr td.cterm-merge ~ td { border-top: 2px solid var(--border-strong); }
+  .matrix-table td.cterm-merge.biz  { background: rgba(174,32,18,.07);  color: var(--c-red);   }
+  .matrix-table td.cterm-merge.comm { background: rgba(202,103,2,.07);  color: var(--c-burnt); }
+  .matrix-table td.cterm-merge .tn { font-size: 14px; line-height: 1; }
+  .matrix-table td.cterm-merge .tl { font-size: 8px; opacity: .8; font-weight: 700; display:block; margin-top: 2px; line-height: 1.1; }
+  .matrix-table td.cterm-merge .ts { font-size: 8.5px; opacity: .85; font-weight: 700; display:block; margin-top: 3px; line-height: 1.1; }
+
+  .matrix-table tbody tr { border-bottom: 1px solid var(--row-alt); }
+  .matrix-table tbody tr:hover { background: rgba(0,95,115,.04); }
+  .matrix-table tbody tr.hidden { display: none; }
+  .matrix-table tbody tr.shared-many { background: rgba(205,234,192,.30); }
+  .matrix-table tbody tr.shared-many:hover { background: rgba(205,234,192,.45); }
+
+  .matrix-table tbody tr.group-divider td {
+    padding: 8px 14px;
+    font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: .5px;
+    text-align: left;
+    background: var(--surface-2);
+    color: var(--muted);
+    border-bottom: 1px solid var(--border-strong);
+    border-top: 1px solid var(--border-strong);
+  }
+  .matrix-table tbody tr.group-divider.as td { background: rgba(0,95,115,.12); color: var(--c-deep-teal); }
+  .matrix-table tbody tr.group-divider.bs td { background: rgba(174,32,18,.08); color: var(--c-red); }
+
+  /* subtotal / total rows — single compact line, right-aligned */
+  .matrix-table tbody tr.subtotal td {
+    padding: 4px 14px; font-size: 11px; font-weight: 600;
+    letter-spacing: .2px;
+    text-align: right;
+    border-top: 1px solid var(--border-strong);
+    border-bottom: 1px solid var(--border-strong);
+    background: var(--surface);
+    line-height: 1.2;
+  }
+  .matrix-table tbody tr.subtotal.as td { background: rgba(0,95,115,.06); color: var(--c-deep-teal); }
+  .matrix-table tbody tr.subtotal.bs td { background: rgba(174,32,18,.05); color: var(--c-red); }
+  .matrix-table tbody tr.subtotal.grand td {
+    background: var(--surface-2); color: var(--text);
+    border-top: 2px solid var(--border-strong);
+    border-bottom: 2px solid var(--border-strong);
+  }
+
+  .matrix-table td { padding: 6px 6px; text-align: center; }
+  .matrix-table td.cid { font-weight: 800; padding-left: 14px; text-align: left; }
+  .matrix-table td.cname { text-align: left; color: var(--text); }
+  .matrix-table td.ccr   { font-size: 10.5px; color: var(--muted); font-weight: 700; }
+  .matrix-table td.ccnt  { font-weight: 800; color: var(--c-deep-teal); font-size: 13px; }
+  .matrix-table td.cv    { font-size: 14px; font-weight: 800; }
+  .matrix-table td.cv.no  { color: var(--row-alt); }
+
+  /* V color + column tint by field */
+  .matrix-table td.cv.yes.sw   { color: var(--c-deep-teal); background: rgba(0,95,115,.08); }
+  .matrix-table td.cv.yes.biz  { color: var(--c-red);       background: rgba(174,32,18,.08); }
+  .matrix-table td.cv.yes.comm { color: var(--c-burnt);     background: rgba(202,103,2,.08); }
+
+  /* header column tint by field — opaque so sticky header doesn't show content through */
+  .matrix-table thead th.col-prog.sw   { color: var(--c-deep-teal); background: #e5e6d8; }
+  .matrix-table thead th.col-prog.biz  { color: var(--c-red);       background: #f9e6d5; }
+  .matrix-table thead th.col-prog.comm { color: var(--c-burnt);     background: #fbebd3; }
+
+  .matrix-table tbody tr.dimmed-col td.dim { opacity: .25; }
+
+  /* Filter result caption */
+  .filter-caption {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 8px; padding: 8px 14px;
+    font-size: 12px; font-weight: 600;
+    color: var(--muted);
+    margin: 14px 0 10px;
+    display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+  }
+  .filter-caption b { color: var(--c-red); font-weight: 800; }
+  .filter-caption .fc-active { color: var(--c-deep-teal); font-weight: 700; }
+
+  /* Summary line — tiny single line of two facts */
+  .matrix-summary {
+    font-size: 11px; color: var(--muted);
+    margin: 0 0 10px; padding: 0 2px;
+  }
+  .matrix-summary b { color: var(--text); font-weight: 800; }
+
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <span class="dot"></span>
+  <h1>Maestro University — Programs by Field</h1>
+  <span class="sub">19 programs · 3 fields · associate → bachelor pathways</span>
+</div>
+
+<div class="wrap">
+
+  <div class="banner">
+    <h2>What Maestro University offers</h2>
+    <p>19 programs across three fields. Each field has an associate-level degree that ladders into a corresponding bachelor's, plus master's degrees layered on top.</p>
+    <div class="summary">
+      <div class="sbox sw"><div class="sk">Software</div><div class="sv">3 programs</div></div>
+      <div class="sbox sb"><div class="sk">Business</div><div class="sv">14 programs</div></div>
+      <div class="sbox sc"><div class="sk">Communication</div><div class="sv">2 programs</div></div>
+    </div>
+  </div>
+
+  <div class="tab-bar" id="tabBar">
+    <button class="tab active" data-tab="matrix">All-courses matrix</button>
+    <button class="tab" data-tab="software">Software <span class="ct">3</span></button>
+    <button class="tab" data-tab="business">Business <span class="ct">14</span></button>
+    <button class="tab" data-tab="communication">Communication <span class="ct">2</span></button>
+  </div>
+
+  <!-- ═══════════════════ SOFTWARE ═══════════════════ -->
+  <section class="field-section software" id="software">
+    <div class="field-head">
+      <div class="ficon">⌘</div>
+      <h2>Software</h2>
+      <span class="fcount">3 programs</span>
+      <span class="fdesc">Computer science track centered on web/full-stack development. Business-oriented — there is no AI, data-science, or theory track at any level.</span>
+    </div>
+
+    <div class="program-row" id="row-software"></div>
+  </section>
+
+  <!-- ═══════════════════ BUSINESS ═══════════════════ -->
+  <section class="field-section business" id="business">
+    <div class="field-head">
+      <div class="ficon">$</div>
+      <h2>Business</h2>
+      <span class="fcount">14 programs</span>
+      <span class="fdesc">The largest field by volume — one associate, four bachelor specializations, and nine MBA emphases. All built on the same BA-prefix core.</span>
+    </div>
+
+    <div class="program-row" id="row-business"></div>
+  </section>
+
+  <!-- ═══════════════════ COMMUNICATION ═══════════════════ -->
+  <section class="field-section communication" id="communication">
+    <div class="field-head">
+      <div class="ficon">✦</div>
+      <h2>Communication</h2>
+      <span class="fcount">2 programs</span>
+      <span class="fdesc">Associate-to-bachelor pathway focused on communication theory, media, and PR. Liberal arts foundation.</span>
+    </div>
+
+    <div class="program-row" id="row-communication"></div>
+  </section>
+
+  <!-- ═══════════════════ GLOBAL COURSE MATRIX ═══════════════════ -->
+  <section class="matrix-wrap" id="matrix">
+    <h2>All Courses Across Programs</h2>
+    <p class="lede">Every course that appears in any Maestro University program with full curriculum data. Toggle programs to compare them side-by-side, and filter by how many programs share each course.</p>
+
+    <div class="prog-toggle-controls">
+      <button class="bulk-btn" id="selectAllProgs">Select all</button>
+      <button class="bulk-btn" id="clearAllProgs">Clear all</button>
+      <span style="font-size:11px;color:var(--muted);margin-left:8px"><span id="activeProgCount">10</span> of 10 programs active</span>
+    </div>
+    <div class="prog-toggle-grid" id="progToggles"></div>
+    <p style="font-size:11px;color:var(--muted);margin:6px 0 12px">Masters / MBA programs are excluded — only programs with full curriculum data are shown.</p>
+    <div class="matrix-controls">
+      <span class="label">By programs:</span>
+      <button class="filter-pill active" data-mfilter="all">All courses</button>
+      <button class="filter-pill" data-mfilter="multi">In 2+ programs</button>
+      <button class="filter-pill" data-mfilter="3plus">In 3+ programs</button>
+      <button class="filter-pill" data-mfilter="unique">In only 1 program</button>
+    </div>
+    <div class="matrix-controls">
+      <span class="label">By fields:</span>
+      <button class="filter-pill active" data-ffilter="all">All</button>
+      <button class="filter-pill" data-ffilter="1">In 1 field</button>
+      <button class="filter-pill" data-ffilter="2">In 2 fields</button>
+      <button class="filter-pill" data-ffilter="3">In all 3 fields</button>
+    </div>
+
+    <div class="filter-caption" id="filterCaption"></div>
+    <div class="matrix-summary" id="matrixSummary"></div>
+
+    <div class="matrix-scroll">
+      <table class="matrix-table" id="matrixTable"></table>
+    </div>
+  </section>
+
+</div>
+
+<script src="programs-data.js"></script>
+<script>
+(function(){
+"use strict";
+
+if (!window.MAESTRO_DATA) {
+  document.body.insertAdjacentHTML('afterbegin',
+    '<div style="background:#ffd0c0;color:#7a4626;padding:14px 22px;font-weight:700">' +
+    '<b>Data file not loaded.</b> Ensure <code>programs-data.js</code> is present in the same folder as this page.' +
+    '</div>');
+  return;
+}
+
+var PROGRAMS     = MAESTRO_DATA.PROGRAMS;
+var COURSES      = MAESTRO_DATA.COURSES;
+var MATRIX_PROGS = MAESTRO_DATA.MATRIX_PROGS;
+var AS_KEYS      = MAESTRO_DATA.AS_KEYS;
+var BS_KEYS      = MAESTRO_DATA.BS_KEYS;
+var GEN_ED       = MAESTRO_DATA.GEN_ED || {};
+var CHRONO_ORDER = MAESTRO_DATA.CHRONO_ORDER || [];
+
+// build a lookup: course id → manual chrono index (lower = earlier)
+var CHRONO_INDEX = {};
+CHRONO_ORDER.forEach(function(id, i){ CHRONO_INDEX[id] = i; });
+
+// Per-program term mapping (built in programs-data.js)
+var PROGRAM_TERMS = MAESTRO_DATA.PROGRAM_TERMS || {};
+var PROGRAM_ORDER = MAESTRO_DATA.PROGRAM_ORDER || {};
+
+/* ─── HELPERS ─── */
+function diff(asList, bsList){
+  var asIds = {}; asList.forEach(function(c){ asIds[c.id] = c; });
+  var bsIds = {}; bsList.forEach(function(c){ bsIds[c.id] = c; });
+  var shared = asList.filter(function(c){ return bsIds[c.id]; });
+  var asOnly = asList.filter(function(c){ return !bsIds[c.id]; });
+  var bsOnly = bsList.filter(function(c){ return !asIds[c.id]; });
+  return { shared:shared, asOnly:asOnly, bsOnly:bsOnly };
+}
+function sortIds(list){
+  return list.slice().sort(function(a, b){
+    return a.id.localeCompare(b.id);
+  });
+}
+
+/* ─── RENDER PROGRAM CARDS ─── */
+// Field-PROGRAMS uses hyphenated ids ('bsb-gen'); MATRIX_PROGS uses camelCase ('bsbGen').
+// This map turns a field-PROGRAMS id into the matching MATRIX_PROGS key, or null
+// if no per-course curriculum is available (e.g. MBA programs).
+var FIELD_TO_MATRIX_KEY = {
+  fsdc: 'fsdc', ascs: 'ascs', bscs: 'bscs',
+  asb: 'asb',
+  'bsb-gen':   'bsbGen',
+  'bsb-mgmt':  'bsbMgmt',
+  'bsb-entr':  'bsbEntr',
+  'bsb-sales': 'bsbSales',
+  asc: 'asc', bac: 'bac',
+};
+
+function renderPrograms(){
+  ['software','business','communication'].forEach(function(field){
+    var row = document.getElementById('row-' + field);
+    PROGRAMS[field].forEach(function(p){
+      var matrixKey = FIELD_TO_MATRIX_KEY[p.id];
+      var clickable = !!matrixKey;
+      var card = document.createElement('div');
+      card.className = 'pcard' + (p.flagship ? ' flagship' : '') + (clickable ? ' clickable' : '');
+      card.innerHTML =
+        '<div class="ptop">' +
+          '<div class="pname">' + p.name + '</div>' +
+          '<span class="pbadge ' + p.level + '">' + p.level + '</span>' +
+        '</div>' +
+        '<div class="pmeta">' +
+          '<span class="pcred">' + p.credits + ' cr</span>' +
+          '<span class="pcost">' + p.tuition + '</span>' +
+        '</div>' +
+        '<div class="pdesc">' + p.desc + '</div>';
+
+      if (clickable) {
+        card.title = 'Open this program\'s syllabus in the all-courses matrix';
+        card.addEventListener('click', function(){
+          // Switch to the "matrix" tab, then narrow to just this program.
+          activateTab('matrix');
+          activePrograms = [matrixKey];
+          renderMatrix();
+          window.scrollTo({ top: document.getElementById('matrix').offsetTop - 60, behavior: 'smooth' });
+        });
+      }
+
+      row.appendChild(card);
+    });
+  });
+}
+
+/* ─── RENDER MUTUAL VIEW ─── */
+function renderMutual(field, asKey, bsKey, asLabel, bsLabel){
+  var asList = COURSES[asKey];
+  var bsList = COURSES[bsKey];
+  var asIds = {}; asList.forEach(function(c){ asIds[c.id] = c; });
+  var bsIds = {}; bsList.forEach(function(c){ bsIds[c.id] = c; });
+
+  // Build union with status
+  var allIds = {};
+  asList.forEach(function(c){ allIds[c.id] = { id:c.id, name:c.name, sch:c.sch, status:'asonly' }; });
+  bsList.forEach(function(c){
+    if (allIds[c.id]) {
+      allIds[c.id].status = 'both';
+      allIds[c.id].sch = c.sch; // prefer B.S. credit count
+    } else {
+      allIds[c.id] = { id:c.id, name:c.name, sch:c.sch, status:'bsonly' };
+    }
+  });
+
+  var unified = sortChronological(Object.keys(allIds).map(function(k){ return allIds[k]; }));
+
+  var bothCount   = unified.filter(function(c){ return c.status === 'both'; }).length;
+  var asOnlyCount = unified.filter(function(c){ return c.status === 'asonly'; }).length;
+  var bsOnlyCount = unified.filter(function(c){ return c.status === 'bsonly'; }).length;
+
+  var stats = document.getElementById('stats-' + field);
+  stats.innerHTML =
+    '<span class="mstat shared">' + bothCount + ' in both</span>' +
+    '<span class="mstat asonly">' + asOnlyCount + ' ' + asLabel + ' only</span>' +
+    '<span class="mstat bsonly">' + bsOnlyCount + ' ' + bsLabel + ' only</span>';
+
+  var statusLabel = { both: 'Both', asonly: asLabel + ' only', bsonly: bsLabel + ' only' };
+
+  var rowsHtml = unified.map(function(c){
+    return '<div class="crow ' + c.status + '" data-status="' + c.status + '">' +
+      '<span class="cid">' + c.id + '</span>' +
+      '<span class="cname">' + c.name + '</span>' +
+      '<span class="cstatus">' + statusLabel[c.status] + '</span>' +
+      '<span class="cch">' + c.sch + ' cr</span>' +
+    '</div>';
+  }).join('');
+
+  var grid = document.getElementById('grid-' + field);
+  grid.innerHTML =
+    '<div class="clist-controls" data-field="' + field + '">' +
+      '<span class="label">Filter:</span>' +
+      '<button class="filter-pill active" data-filter="all">All <span class="ct">' + unified.length + '</span></button>' +
+      '<button class="filter-pill" data-filter="both">In both <span class="ct">' + bothCount + '</span></button>' +
+      '<button class="filter-pill" data-filter="asonly">' + asLabel + ' only <span class="ct">' + asOnlyCount + '</span></button>' +
+      '<button class="filter-pill" data-filter="bsonly">' + bsLabel + ' only <span class="ct">' + bsOnlyCount + '</span></button>' +
+    '</div>' +
+    '<div class="course-list-head">' +
+      '<span>Code</span><span>Course</span><span>In</span><span style="text-align:right">Credits</span>' +
+    '</div>' +
+    '<div class="course-list-body">' + rowsHtml + '</div>';
+
+  // wire filter clicks
+  var controls = grid.querySelector('.clist-controls');
+  controls.addEventListener('click', function(e){
+    var b = e.target.closest('.filter-pill'); if (!b) return;
+    var f = b.dataset.filter;
+    Array.prototype.forEach.call(controls.querySelectorAll('.filter-pill'), function(x){
+      x.classList.toggle('active', x === b);
+    });
+    Array.prototype.forEach.call(grid.querySelectorAll('.crow'), function(r){
+      var show = (f === 'all') || (r.dataset.status === f);
+      r.classList.toggle('hidden', !show);
+    });
+  });
+}
+
+/* ─── GLOBAL COURSE MATRIX ─── */
+var activePrograms = MATRIX_PROGS.map(function(p){ return p.key; }); // all on by default
+var activeFilter   = 'all';
+var activeFieldFilter = 'all';
+
+// shared chronological-sort helpers (used by matrix + per-field lists)
+function levelOf(id){
+  var m = String(id).match(/\d+/);
+  if (!m) return 9999;
+  return Math.floor(parseInt(m[0], 10) / 100) * 100;
+}
+function prefixOf(id){
+  var m = String(id).match(/^[A-Za-z]+/);
+  return m ? m[0] : '';
+}
+// Chronological sort:
+// 1. Use the manual CHRONO_ORDER index when available (catalog-grounded sequence)
+// 2. Fall back to course-number bucket, then prefix, then full id
+function chronoKey(id){
+  if (id in CHRONO_INDEX) return CHRONO_INDEX[id];
+  // unknown courses fall after all known ones, ordered by level/prefix/id
+  return 100000 + levelOf(id);
+}
+function sortChronological(list){
+  return list.slice().sort(function(a, b){
+    var ka = chronoKey(a.id), kb = chronoKey(b.id);
+    if (ka !== kb) return ka - kb;
+    var pa = prefixOf(a.id), pb = prefixOf(b.id);
+    if (pa !== pb) return pa.localeCompare(pb);
+    return a.id.localeCompare(b.id);
+  });
+}
+
+function buildCourseUniverse(){
+  // course id -> { id, name, sch, programs:Set }
+  var u = {};
+  MATRIX_PROGS.forEach(function(prog){
+    (COURSES[prog.key] || []).forEach(function(c){
+      if (!u[c.id]) {
+        u[c.id] = { id:c.id, name:c.name, sch:c.sch, programs:{} };
+      }
+      u[c.id].programs[prog.key] = true;
+      if (!c.id.startsWith('EL')) u[c.id].name = c.name;
+    });
+  });
+  return Object.keys(u).map(function(k){ return u[k]; });
+}
+
+// Classify + sort the visible courses, based on which programs are currently toggled on.
+// Group 'as' means the course appears in at least one currently-visible A.S./certificate
+// program; 'bs' means it only appears in currently-visible bachelor programs.
+function classifyAndSort(courses, visibleKeys){
+  var visibleSet = {}; visibleKeys.forEach(function(k){ visibleSet[k] = true; });
+  var asVisible = AS_KEYS.filter(function(k){ return visibleSet[k]; });
+  var bsVisible = BS_KEYS.filter(function(k){ return visibleSet[k]; });
+
+  courses.forEach(function(c){
+    var inAS = asVisible.some(function(p){ return c.programs[p]; });
+    var inBS = bsVisible.some(function(p){ return c.programs[p]; });
+    c.group = inAS ? 'as' : (inBS ? 'bs' : null);
+  });
+
+  var list = courses.filter(function(c){ return c.group !== null; });
+  list.sort(function(a, b){
+    if (a.group !== b.group) return a.group === 'as' ? -1 : 1;
+    var ka = chronoKey(a.id), kb = chronoKey(b.id);
+    if (ka !== kb) return ka - kb;
+    var pa = prefixOf(a.id), pb = prefixOf(b.id);
+    if (pa !== pb) return pa.localeCompare(pb);
+    return a.id.localeCompare(b.id);
+  });
+  return list;
+}
+
+var COURSE_UNIVERSE = buildCourseUniverse();
+
+function renderMatrixToggles(){
+  var box = document.getElementById('progToggles');
+  box.innerHTML = '';
+  var fieldLabels = { sw: 'Software', biz: 'Business', comm: 'Communication' };
+  ['sw', 'biz', 'comm'].forEach(function(field){
+    var progs = MATRIX_PROGS.filter(function(p){ return p.field === field; });
+    if (!progs.length) return;
+    var row = document.createElement('div');
+    row.className = 'ptg-row ' + field;
+    row.innerHTML = '<span class="ptg-label">' + fieldLabels[field] + '</span>';
+    progs.forEach(function(p){
+      var b = document.createElement('button');
+      b.className = 'prog-toggle ' + field + (activePrograms.indexOf(p.key) >= 0 ? ' active' : '');
+      b.dataset.prog = p.key;
+      b.innerHTML = '<span class="pdot"></span>' + p.full + '<span class="plvl">· ' + p.lvl + '</span>';
+      b.addEventListener('click', function(){
+        var i = activePrograms.indexOf(p.key);
+        if (i >= 0) activePrograms.splice(i, 1);
+        else activePrograms.push(p.key);
+        renderMatrix();
+      });
+      row.appendChild(b);
+    });
+    box.appendChild(row);
+  });
+}
+
+function renderMatrix(){
+  // refresh toggle highlights (keep field class, toggle .active)
+  Array.prototype.forEach.call(document.querySelectorAll('#progToggles .prog-toggle'), function(b){
+    var on = activePrograms.indexOf(b.dataset.prog) >= 0;
+    b.classList.toggle('active', on);
+  });
+
+  // update active program count display
+  var cnt = document.getElementById('activeProgCount');
+  if (cnt) cnt.textContent = activePrograms.length;
+
+  var visibleProgs = MATRIX_PROGS.filter(function(p){ return activePrograms.indexOf(p.key) >= 0; });
+
+  // Term mode: show "Term" column(s) when 1 or 2 programs are active.
+  var termMode = visibleProgs.length >= 1 && visibleProgs.length <= 2;
+
+  var table = document.getElementById('matrixTable');
+
+  // header — Term column at index 0 when term mode is on (rowspan-merged cells in body)
+  var thead = '<thead><tr>' +
+    (termMode ? '<th class="col-term-merge">Term</th>' : '') +
+    '<th class="col-code">Code</th>' +
+    '<th class="col-name">Course</th>' +
+    '<th class="col-cr">Cr</th>' +
+    '<th class="col-ge" title="General education / liberal-arts foundation course">Gen-ed</th>' +
+    visibleProgs.map(function(p){
+      return '<th class="col-prog ' + p.field + '"><span class="ptitle">' + p.label + '</span><span class="plvl">' + p.lvl + '</span></th>';
+    }).join('') +
+    '</tr></thead>';
+
+  // count per course among visible programs
+  function visCount(c){
+    var n = 0;
+    visibleProgs.forEach(function(p){ if (c.programs[p.key]) n++; });
+    return n;
+  }
+  // distinct fields a course appears in (among visible programs)
+  function visFieldCount(c){
+    var fields = {};
+    visibleProgs.forEach(function(p){ if (c.programs[p.key]) fields[p.field] = true; });
+    return Object.keys(fields).length;
+  }
+
+  // Re-classify groups based on the currently-visible programs, then sort.
+  var sortedCourses = classifyAndSort(COURSE_UNIVERSE, activePrograms);
+
+  // When in term mode, sort by term (using primary visible program's term as the key).
+  // Within the same term, use the program's explicit course-order position so the
+  // intended within-term sequence (e.g., BA210 first in T3 of A.S. Business) is preserved.
+  if (termMode) {
+    sortedCourses.sort(function(a, b){
+      // Keep group ordering: A.S. before B.S.-only
+      if (a.group !== b.group) return a.group === 'as' ? -1 : 1;
+      for (var i = 0; i < visibleProgs.length; i++){
+        var pk = visibleProgs[i].key;
+        var ta = (PROGRAM_TERMS[pk] && PROGRAM_TERMS[pk][a.id]) || 999;
+        var tb = (PROGRAM_TERMS[pk] && PROGRAM_TERMS[pk][b.id]) || 999;
+        if (ta !== tb) return ta - tb;
+      }
+      // Within the same term, prefer the primary program's curriculum-order position
+      var primaryKey = visibleProgs[0] && visibleProgs[0].key;
+      if (primaryKey && PROGRAM_ORDER[primaryKey]) {
+        var po = PROGRAM_ORDER[primaryKey];
+        var oa = (a.id in po) ? po[a.id] : 9999;
+        var ob = (b.id in po) ? po[b.id] : 9999;
+        if (oa !== ob) return oa - ob;
+      }
+      // Final fallback: chrono key
+      return chronoKey(a.id) - chronoKey(b.id);
+    });
+  }
+
+  // filter rows + insert group dividers + subtotal rows
+  var nCols = 4 + visibleProgs.length + (termMode ? 1 : 0);
+  var lastGroup = null;
+  var rows = '';
+  var asSum = 0, asCount = 0;
+  var bsSum = 0, bsCount = 0;
+
+  function subtotalRow(group, sum, count){
+    var label = group === 'as' ? 'A.S. TOTAL' : 'B.S. TOTAL';
+    return '<tr class="subtotal ' + group + '">' +
+      '<td colspan="' + nCols + '">' + label +
+      ' · <span style="font-weight:700">' + sum + '</span> Credits' +
+      ' · <span style="font-weight:700">' + count + '</span> courses</td>' +
+      '</tr>';
+  }
+
+  // ── Term helpers (used when termMode is on) ──
+  var primaryProg = termMode ? visibleProgs[0] : null;
+  var secondaryProg = (termMode && visibleProgs.length === 2) ? visibleProgs[1] : null;
+  function termOf(c, p){
+    return (p && PROGRAM_TERMS[p.key] && PROGRAM_TERMS[p.key][c.id]) || null;
+  }
+
+  // First pass — filter the courses that will actually be rendered, then count
+  // how many fall in each (group, term) bucket so we can emit a rowspan-merged
+  // cell for column 0 in term mode.
+  var visibleRendered = sortedCourses.filter(function(c){
+    var n = visCount(c);
+    var f = visFieldCount(c);
+    var keep = true;
+    if (activeFilter === 'multi') keep = n >= 2;
+    else if (activeFilter === '3plus') keep = n >= 3;
+    else if (activeFilter === 'unique') keep = n === 1;
+    if (keep) {
+      if (activeFieldFilter === '1') keep = f === 1;
+      else if (activeFieldFilter === '2') keep = f === 2;
+      else if (activeFieldFilter === '3') keep = f === 3;
+    }
+    if (n === 0) keep = false;
+    return keep;
+  });
+
+  // termCountByKey['as|3'] = number of A.S. courses scheduled in term 3 (primary prog)
+  var termCountByKey = {};
+  if (termMode) {
+    visibleRendered.forEach(function(c){
+      var t = termOf(c, primaryProg);
+      if (t == null) return;
+      var k = c.group + '|' + t;
+      termCountByKey[k] = (termCountByKey[k] || 0) + 1;
+    });
+  }
+
+  // Track which (group, term) buckets we've already emitted the rowspan cell for
+  var emittedMergeFor = {};
+
+  visibleRendered.forEach(function(c){
+    var n = visCount(c);
+
+    // close previous group's subtotal before opening a new one
+    if (lastGroup && c.group !== lastGroup) {
+      if (lastGroup === 'as') rows += subtotalRow('as', asSum, asCount);
+      else if (lastGroup === 'bs') rows += subtotalRow('bs', bsSum, bsCount);
+    }
+
+    // group header
+    if (c.group !== lastGroup) {
+      var groupLabel = c.group === 'as'
+        ? 'A.S. / Certificate-level courses — foundation of the associates'
+        : 'B.S.-only courses — upper-division at the bachelor level';
+      rows += '<tr class="group-divider ' + c.group + '"><td colspan="' + nCols + '">' + groupLabel + '</td></tr>';
+      lastGroup = c.group;
+    }
+
+    // accumulate credits
+    if (c.group === 'as') { asSum += c.sch; asCount += 1; }
+    else if (c.group === 'bs') { bsSum += c.sch; bsCount += 1; }
+
+    var sharedClass = n >= 2 ? ' shared-many' : '';
+    var cells = visibleProgs.map(function(p){
+      var has = !!c.programs[p.key];
+      return '<td class="cv ' + (has ? 'yes ' + p.field : 'no') + '">' + (has ? '✓' : '·') + '</td>';
+    }).join('');
+
+    // Build the optional rowspan-merged Term cell for column 0 (term mode only).
+    var termCell = '';
+    if (termMode) {
+      var t = termOf(c, primaryProg);
+      if (t != null) {
+        var bucketKey = c.group + '|' + t;
+        if (!emittedMergeFor[bucketKey]) {
+          var span = termCountByKey[bucketKey] || 1;
+          var secondaryHtml = '';
+          if (secondaryProg) {
+            var t2 = termOf(c, secondaryProg);
+            if (t2 != null) secondaryHtml = '<span class="ts">' + secondaryProg.label + '<br>T' + t2 + '</span>';
+          }
+          termCell = '<td class="cterm-merge ' + primaryProg.field + '" rowspan="' + span + '">' +
+            '<span class="tn">T' + t + '</span>' +
+            (primaryProg ? '<span class="tl">' + primaryProg.label + '</span>' : '') +
+            secondaryHtml +
+            '</td>';
+          emittedMergeFor[bucketKey] = true;
+        }
+      } else {
+        // course has no term in primary prog — still need a placeholder cell
+        if (!emittedMergeFor['_no_term_' + c.group]) {
+          termCell = '<td class="cterm-merge none" rowspan="1" style="background:transparent;color:var(--muted-2)">—</td>';
+        } else {
+          termCell = '<td class="cterm-merge none" style="background:transparent;color:var(--muted-2)">—</td>';
+        }
+      }
+    }
+
+    var isGen = !!GEN_ED[c.id];
+    rows += '<tr class="' + sharedClass + (isGen ? ' is-gened' : '') + '">' +
+      termCell +
+      '<td class="cid">' + c.id + '</td>' +
+      '<td class="cname">' + c.name + '</td>' +
+      '<td class="ccr">' + c.sch + '</td>' +
+      '<td class="cge ' + (isGen ? 'yes' : 'no') + '" title="' + (isGen ? 'General-education course' : '') + '">' + (isGen ? '◆' : '') + '</td>' +
+      cells +
+      '</tr>';
+  });
+
+  // close last group's subtotal
+  if (lastGroup === 'as') rows += subtotalRow('as', asSum, asCount);
+  else if (lastGroup === 'bs') rows += subtotalRow('bs', bsSum, bsCount);
+
+  // grand total
+  var grandSum = asSum + bsSum;
+  var grandCount = asCount + bsCount;
+  if (grandCount > 0) {
+    rows += '<tr class="subtotal grand">' +
+      '<td colspan="' + nCols + '">TOTAL' +
+      ' · <span style="font-weight:700">' + grandSum + '</span> Credits' +
+      ' · <span style="font-weight:700">' + grandCount + '</span> courses</td>' +
+      '</tr>';
+  }
+
+  table.innerHTML = thead + '<tbody>' + rows + '</tbody>';
+
+  // summary — courses and credits across visible programs
+  var totalVisible = COURSE_UNIVERSE.filter(function(c){ return visCount(c) > 0; }).length;
+  var totalCredits = COURSE_UNIVERSE.reduce(function(s, c){ return visCount(c) > 0 ? s + c.sch : s; }, 0);
+  document.getElementById('matrixSummary').innerHTML =
+    '<b>' + totalVisible + '</b> courses · <b>' + totalCredits + '</b> credits';
+
+  // filter caption — how many actual course rows match (exclude dividers/subtotals)
+  var displayed = document.querySelectorAll('#matrixTable tbody tr').length
+                  - document.querySelectorAll('#matrixTable tbody tr.group-divider').length
+                  - document.querySelectorAll('#matrixTable tbody tr.subtotal').length;
+  var filterParts = [];
+  var progLabels = { all:'all', multi:'in 2+ programs', '3plus':'in 3+ programs', unique:'in only 1 program' };
+  var fieldLabels = { all:'all', '1':'in 1 field', '2':'in 2 fields', '3':'in all 3 fields' };
+  if (activeFilter !== 'all') filterParts.push(progLabels[activeFilter]);
+  if (activeFieldFilter !== 'all') filterParts.push(fieldLabels[activeFieldFilter]);
+  var filterDesc = filterParts.length ? filterParts.join(' · ') : 'no filter applied';
+  document.getElementById('filterCaption').innerHTML =
+    'Showing <b>' + displayed + '</b> of <b>' + totalVisible + '</b> courses' +
+    ' <span class="fc-active">— ' + filterDesc + '</span>';
+}
+
+// wire Select all / Clear all buttons
+document.getElementById('selectAllProgs').addEventListener('click', function(){
+  activePrograms = MATRIX_PROGS.map(function(p){ return p.key; });
+  renderMatrix();
+});
+document.getElementById('clearAllProgs').addEventListener('click', function(){
+  activePrograms = [];
+  renderMatrix();
+});
+
+// wire program-count filter pills
+document.querySelectorAll('.matrix-controls [data-mfilter]').forEach(function(b){
+  b.addEventListener('click', function(){
+    activeFilter = b.dataset.mfilter;
+    document.querySelectorAll('.matrix-controls [data-mfilter]').forEach(function(x){
+      x.classList.toggle('active', x === b);
+    });
+    renderMatrix();
+  });
+});
+// wire field-count filter pills
+document.querySelectorAll('.matrix-controls [data-ffilter]').forEach(function(b){
+  b.addEventListener('click', function(){
+    activeFieldFilter = b.dataset.ffilter;
+    document.querySelectorAll('.matrix-controls [data-ffilter]').forEach(function(x){
+      x.classList.toggle('active', x === b);
+    });
+    renderMatrix();
+  });
+});
+
+/* ─── TAB SWITCHING ─── */
+// When a field tab is active, show its program cards AND the matrix table with
+// only that field's programs toggled on. The "matrix" tab shows the full matrix
+// with every program selected.
+var FIELD_MATRIX_KEYS = {
+  software:      ['ascs', 'bscs', 'fsdc'],
+  business:      ['asb', 'bsbGen', 'bsbMgmt', 'bsbEntr', 'bsbSales'],
+  communication: ['asc', 'bac'],
+};
+
+function activateTab(tabKey){
+  // toggle button states
+  Array.prototype.forEach.call(document.querySelectorAll('#tabBar .tab'), function(b){
+    b.classList.toggle('active', b.dataset.tab === tabKey);
+  });
+  // Show/hide field sections — only the active field's cards are visible.
+  ['software', 'business', 'communication'].forEach(function(k){
+    var el = document.getElementById(k);
+    if (el) el.classList.toggle('hidden', k !== tabKey);
+  });
+  // Matrix is ALWAYS visible (every tab shows the matrix table).
+  var matrixEl = document.getElementById('matrix');
+  if (matrixEl) matrixEl.classList.remove('hidden');
+
+  // Drive the matrix filter from the tab.
+  if (FIELD_MATRIX_KEYS[tabKey]) {
+    activePrograms = FIELD_MATRIX_KEYS[tabKey].slice();
+  } else {
+    // "matrix" tab → all programs
+    activePrograms = MATRIX_PROGS.map(function(p){ return p.key; });
+  }
+  renderMatrix();
+}
+
+document.getElementById('tabBar').addEventListener('click', function(e){
+  var b = e.target.closest('.tab'); if (!b) return;
+  activateTab(b.dataset.tab);
+});
+
+/* ─── INIT ─── */
+renderPrograms();
+renderMatrixToggles();
+renderMatrix();
+activateTab('matrix'); // default tab
+
+})();
+</script>
+</body>
+</html>
